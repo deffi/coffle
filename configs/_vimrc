@@ -1,0 +1,128 @@
+" .vimrc
+" Martin Herrmann
+" 2003-11-26
+
+" GUI, Editorverhalten
+set cmdheight=2
+set nocompatible
+set ruler							" Cursorposition
+set guioptions=amgt					" Menüleiste, graue Menüeinträge, tearoff
+set backspace=indent,eol,start
+set visualbell
+set t_kb=
+set showcmd
+set showmatch
+set ignorecase
+set incsearch
+"set tb=								" Keine Toolbar. Funktioniert nicht?
+set foldmethod=marker
+set modelines=0
+set selectmode=mouse,key			" Select mode mit Maus und Shift+Cursor
+set keymodel=startsel,stopsel		" Select mode mit Shift+Cursor
+
+
+" Editormodus
+set autoindent
+set tabstop=4
+set shiftwidth=4
+set noexpandtab
+set nowrap
+"set encoding=iso-8859-15
+set showmode
+
+
+" Dateizugriff
+set nobackup						" Keine Backups beim Überschreiben
+set nowritebackup					" Backups löschen
+set viminfo='64,f1,\"512,:32,/32
+set history=64
+set autowrite
+set suffixes=.bak,~,.swp,.o,.info,.aux,.log,.dvi,.bbl,.blg,.brf,.cb,.ind,.idx,.ilg,.inx,.out,.toc
+filetype plugin indent on
+
+
+" Terminal mit Farbe oder GUI
+if &t_Co > 2 || has("gui_running")
+	syntax on						" Syntax highlighting
+	set hlsearch					" Suchergebnishervorhebung
+	colorscheme habiLight
+endif
+
+
+if has("autocmd")
+	autocmd BufRead *.txt set textwidth=80		" Textbreite 80 in *.txt
+
+	augroup cprog
+	au!
+	" C und C++: Kommentarformatierung, C-Einrückung
+	autocmd FileType *      set formatoptions=tcql nocindent comments&
+	autocmd FileType c,cpp  set formatoptions=croql cindent comments=sr:/*,mb:*,el:*/,://
+	autocmd FileType html	set ts=2 sw=2 tw=80
+	augroup END
+endif
+
+
+" Make p in Visual mode replace the selected text with the "" register.
+vnoremap p <Esc>:let current_reg = @"<CR>gvdi<C-R>=current_reg<CR><Esc>
+
+nnoremap <silent> <F8> :Tlist<CR>
+nmap <silent> <F9> :make<CR>
+nmap <F10> :cn<CR>
+nmap <F11> :cp<CR>
+nmap <F12> :make depend<CR>
+nmap <C-F9> :make run<CR>
+
+
+map ## :new %:r.h<cr>
+map #! :new <cfile><cr>
+map #@ :new <cfile><cr>100<C-W>+
+map ,s o--- snip ---<cr>--- snap ---<esc>ko
+"map ,p :!killall povray ; pov640 %<cr>
+
+" C++ create class member function from prototype
+" TODO: use class name instead of file name
+" TODO: delete "static " if exists
+" TODO: remove default values
+map ,f yy<C-W>jGp<<<<<<<<<<<<o{<cr>}<cr><esc>kkkVGzfzco<esc>kzo0f(Bi::<esc>0f:"%Pf:F.dt:0f;x0f(l
+map ,i 0i#include<<esc>A><esc>
+
+" nmap <silent> <C-N> :silent noh<CR>
+map ,/ :noh<CR>
+
+nmap <SPACE> <C-W>
+
+map ,ca 0f;i const
+map ,cs 0f)a const
+" TODO 2cc does strange things
+" map cc 0i//j
+map ,y "*y
+map ,p "*p
+map ,P "*P
+
+nmap Q :!./make<cr>
+nmap <F2> :!./make<cr>
+nmap S :!bash<cr>
+
+" Insert mode
+map! <F3> <esc>:N<cr>
+map! <F4> <esc>:n<cr>
+
+" Command mode
+map <F3> :N<cr>
+map <F4> :n<cr>
+
+" Command mode
+au FileType rb,ruby  nmap <f2> :w<cr>:!./%<cr>
+" Insert mode
+au FileType rb,ruby  map! <f2> <esc>:w<cr>:!./%<cr>
+
+" Command mode
+au FileType tex nmap <f2> :w<cr>:!pdflatex %<cr>
+" Insert mode
+au FileType tex map! <f2> <esc>:w<cr>:!pdflated %<cr>
+
+
+set fileencodings=ucs-bom,utf-8,latin1
+
+au BufNewFile,BufRead *.prawn set filetype=ruby
+

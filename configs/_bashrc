@@ -1,0 +1,58 @@
+# ~/.bashrc: executed by bash(1) for non-login shells.
+# see /usr/share/doc/bash/examples/startup-files (in the package bash-doc)
+
+# If not running interactively, don't do anything
+[ -z "$PS1" ] && return
+
+# Shell-Optionen
+HISTCONTROL="ignorespace:ignoredups"
+shopt -s cmdhist
+shopt -s histreedit
+shopt -s checkwinsize
+
+# Programmierbare Vervollständigung
+if [ -f /etc/bash_completion ]; then . /etc/bash_completion; fi
+
+# make less more friendly for non-text input files, see lesspipe(1)
+[ -x /usr/bin/lesspipe ] && eval "$(lesspipe)"
+
+# Farbeinstellungen
+if [ -x /usr/bin/tput ] && tput setaf 1 >&/dev/null; then
+	# We have color support; assume it's compliant with Ecma-48
+
+	# Prompt einstellen: \[\e[x,y,zm\] (\[ und \], damit der Zeilenumbruch korrekt funktioniert)
+	# Farben: schwarz rot gr�n gelb blau magenta cyan wei� default
+	#     VG:      30  31   32   33   34      35   36   37      39
+	#     VG:      40  41   42   43   44      45   46   47      49
+	# Attribute: default bold underline blink inverse
+	#        On:       0    1         4     5       7
+	#       Off:           22        24    25      27
+	if [ "`id -u`" -eq 0 ]; then # root
+		PS1='\[\e[0;7;31m\]\u\[\e[0;36m\]@\[\e[32m\]\h\[\e[36m\]:\[\e[33m\]\w\[\e[36m\]\$\[\e[0m\] '
+	else # user
+		#                \u          @          \h          :          \w          \$         _
+		PS1='\[\e[0;31m\]\u\[\e[36m\]@\[\e[32m\]\h\[\e[36m\]:\[\e[33m\]\w\[\e[36m\]\$\[\e[0m\] '
+	fi
+
+	# Kommandos farbig
+    eval "`dircolors -b`"
+    alias ls='ls --color=auto'
+	alias grep='grep --color=auto'
+	alias fgrep='fgrep --color=auto'
+	alias egrep='egrep --color=auto'
+else
+	PS1="\u@\h:\w\$ "
+fi
+
+# If this is an xterm set the title to user@host:dir
+case "$TERM" in
+	xterm*|rxvt*) PROMPT_COMMAND='echo -ne "\033]0;${USER}@${HOSTNAME}: ${PWD/$HOME/~}\007"' ;;
+	*) ;;
+esac
+
+# Aliase für ls
+alias ls='ls --color=auto'
+alias l='ls -l'
+alias ll='ls -lA'
+alias la='ls -A'
+

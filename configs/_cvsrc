@@ -1,0 +1,3 @@
+update -Pd
+checkout -P
+

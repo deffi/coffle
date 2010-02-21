@@ -1,0 +1,12 @@
+class Integer
+	def ti(&block)
+		Benchmark.bm do |x|
+			x.report do
+				self.times do
+					yield
+				end
+			end
+		end
+	end
+end
+

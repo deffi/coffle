@@ -4,13 +4,17 @@ require File.dirname(__FILE__) + '/../lib/config'
 
 def help
 	puts <<help
-Usage: #{$0} [--overwrite|-o] [--help|-h|-?]
+Usage: #{$0} [--overwrite|-o] [--help|-h|-?] [--version]
+  --overwrite : overwrite existing files (a backup will be created)
+  --help      : print help message and exit
+  --version   : print version and exit
 help
 end
 
 opts={
 	['--help', '-h', '-?'] => Proc.new { help; exit 1 },
-	['--overwrite', '-o' ] => :overwrite
+	['--overwrite', '-o' ] => :overwrite,
+	['--version'         ] => Proc.new { puts Config::VERSION; exit 1 }
 }
 
 options={}
@@ -26,8 +30,10 @@ while arg=ARGV.shift
 	end
 end
 
+backup_dir="backups/#{Time.now.strftime("%Y-%m-%d_%H-%M-%S")}"
 
-installer=Config::Installer.new('configs', ENV['HOME'])
+
+installer=Config::Installer.new('configs', ENV['HOME'], backup_dir)
 installer.install options
 
 

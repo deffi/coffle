@@ -4,17 +4,20 @@ module Config
 	class Base
 		include Filenames
 
-		def initialize(source, target)
+		def initialize(source, target, backup)
 			@source=source.dup
 			@target=target.dup
+			@backup=backup.dup
 
 			# Convert to Pathname
 			@source=Pathname.new(@source) unless @source.is_a?(Pathname)
 			@target=Pathname.new(@target) unless @target.is_a?(Pathname)
+			@backup=Pathname.new(@backup) unless @backup.is_a?(Pathname)
 
 			# Convert to absolute
 			@source=@source.realpath
 			@target=@target.realpath
+			#@backup=@backup.realpath
 
 			# Make sure they exist
 			raise "Source directory #{@source} does not exist" if !@source.exist?
@@ -23,8 +26,7 @@ module Config
 			# Make sure they are directories
 			raise "Source #{source} is not a directory" if !@source.directory?
 			raise "Target #{target} is not a directory" if !@target.directory?
-
-			@relative=@source.relative_path_from(@target)
+			raise "Backup location #{backup} is not a directory" if @backup.exist? && !@backup.directory?
 		end
 
 		def entries
@@ -50,26 +52,30 @@ module Config
 			@target.join unescape_path(entry)
 		end
 
+		def backup_path(entry)
+			@backup.join unescape_path(entry)
+		end
+
 		# Whether the entry represents a directory
 		def directory?(entry)
-			source_path(entry).directory?
+			!source_path(entry).symlink? && source_path(entry).directory?
 		end
 
 		# Whether the target for the entry already exists
 		def exist?(entry)
-			target_path(entry).exist?
+			target_path(entry).exist? || target_path(entry).symlink?
 		end
 
 		# The target the link should point to
 		def link_target(entry)
-			@relative.join entry
+			source_path(entry).relative_path_from(target_path(entry).dirname)
 		end
 
 		# Whether the target for the entry is a symlink to the correct location
 		def current?(entry)
 			if directory? entry
 				# Directory entry
-				target_path(entry).directory?
+				!target_path(entry).symlink? && target_path(entry).directory?
 			else
 				# File entry
 				if target_path(entry).symlink?
@@ -82,26 +88,32 @@ module Config
 	end
 
 	class Installer <Base
-		MDir      ="Directory "
-		MCreate   ="Creating  "
-		MExist    ="Exists    "
-		MCurrent  ="Current   "
-		MOverwrite="Overwrite "
+		MDir       = "Directory "
+		MCreate    = "Creating  "
+		MExist     = "Exists    "
+		MCurrent   = "Current   "
+		MOverwrite = "Overwrite "
 
-		def initialize(source, target)
+		def initialize(source, target, backup)
 			super
 		end
 
 		def remove!(entry)
+			backup=backup_path(entry)
+			backup.dirname.mkpath
+			target_path(entry).rename backup
 		end
 
 		def create!(entry)
-			#puts "(not) Create link from #{target_path(entry)} to #{link_target(entry)}"
-			target_path(entry).make_symlink link_target(entry)
+			if directory? entry
+				# Directory
+				target_path(entry).mkpath
+			else
+				# Link
+				target_path(entry).make_symlink link_target(entry)
+			end
 		end
 
-		# TODO Add backups
-		# TODO Add remove
 		def install(options={})
 			puts "Installing from #{@source} to #{@target}"
 
@@ -115,14 +127,12 @@ module Config
 					puts "#{MCurrent} #{target}"
 				elsif exist?(entry)
 					# target already exists
-					# for now we assume that if the target already exists, it
-					# has the correct type (directory/non-directory)
 					if directory? entry
 						# directory entry - no need to overwrite
 						puts "#{MExist} #{target}"
 					else
 						if overwrite
-							puts "#{MOverwrite} #{target}"
+							puts "#{MOverwrite} #{target} (backup in #{backup_path(entry)})"
 							remove!(entry)
 							create!(entry)
 						else

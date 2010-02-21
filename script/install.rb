@@ -36,7 +36,3 @@ backup_dir="backups/#{Time.now.strftime("%Y-%m-%d_%H-%M-%S")}"
 installer=Config::Installer.new('configs', ENV['HOME'], backup_dir)
 installer.install options
 
-
-
-
-

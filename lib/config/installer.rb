@@ -115,9 +115,9 @@ module Config
 		end
 
 		def install(options={})
-			puts "Installing from #{@source} to #{@target}"
-
 			overwrite=options[:overwrite]
+
+			puts "Installing from #{@source} to #{@target} (#{(overwrite)?"overwriting":"non-overwriting"})"
 
 			entries.each do |entry|
 				target=target_path(entry)

@@ -1,0 +1,13 @@
+* Template processing
+* Hosts, host classes
+* Special files, like ssh authorized keys: define keys, then invoke keys in
+  host blocks
+* Warning before overwriting when generated file was changed 
+* Create uninstall (restore latest (?) backup)
+* Add script for querying status
+* Introduce class Entry
+* More unit tests
+* Separate library and config files (rubygem?)
+* Name it, possible names:
+  * Coffle
+

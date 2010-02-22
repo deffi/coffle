@@ -1,13 +1,30 @@
+== Basic
+
 * Template processing
-* Hosts, host classes
-* Special files, like ssh authorized keys: define keys, then invoke keys in
-  host blocks
-* Warning before overwriting when generated file was changed 
-* Create uninstall (restore latest (?) backup)
-* Add script for querying status
-* Introduce class Entry
+  * Conditional processing (hosts, host classes, user)
+  * Warning before overwriting when generated file was changed 
+* Uninstall (restore latest (?) backup)
+* Query status (like svn status, svn diff)
 * More unit tests
+
+== Meta
+
 * Separate library and config files (rubygem?)
 * Name it, possible names:
   * Coffle
+
+== Advanced
+
+* Special files, like ssh authorized keys: define keys, then invoke keys in
+  host blocks:
+  {{{
+  <% ssh_define_keys do %>
+    ssh-dss AAAAB3N...DjB/A martin@magrathea
+    ssh-dss AAAAB3N...Y2KjL martin@damogran
+  <% end %>
+
+  <% host "sedna" do %>
+    <%= ssh_keys "martin@magrathea", "martin@damogran" %>
+  <% end %>
+  }}}
 

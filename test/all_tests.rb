@@ -1,6 +1,6 @@
 #!/usr/bin/env ruby
 
-Dir.glob("#{File.dirname(__FILE__)}/test_*.rb").each do |entry|
+Dir.glob("#{File.dirname(__FILE__)}/*_test.rb").each do |entry|
 	require "#{entry}"
 end
 

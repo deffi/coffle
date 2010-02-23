@@ -2,8 +2,13 @@ require 'pathname'
 
 module Config
 	class Base
-		attr_accessor :source, :target, :backup
+		# Absolute
+		attr_accessor :source, :target
 
+		# Relative
+		attr_accessor :backup
+
+		# TODO verbose
 		def initialize(source, target, backup)
 			@source=source.dup
 			@target=target.dup
@@ -19,7 +24,7 @@ module Config
 
 			# Create the target if does not exist
 			if !@target.exist?
-				puts "Creating #{@target}"
+				puts "Creating #{@target}" if @verbose
 				@target.mkpath unless @target.exist?
 			end
 

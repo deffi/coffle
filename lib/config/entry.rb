@@ -6,6 +6,9 @@ module Config
 	class Entry
 		include Filenames
 
+		# The relative path
+		attr_reader :path
+
 		def initialize(base, path)
 			@base=base
 			@path=path

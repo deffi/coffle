@@ -33,6 +33,6 @@ end
 backup_dir="testdata/backups/#{Time.now.strftime("%Y-%m-%d_%H-%M-%S")}"
 
 
-installer=Config::Installer.new('testdata/source', 'testdata/target', backup_dir)
+installer=Config::Installer.new('testdata/source', 'testdata/target', backup_dir, :verbose=>true)
 installer.install options
 

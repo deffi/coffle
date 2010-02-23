@@ -9,9 +9,13 @@ module Config
 		# The relative path
 		attr_reader :path
 
-		def initialize(base, path)
+		# Options:
+		# * :verbose: print messages; recommended for interactive applications
+		def initialize(base, path, options={})
 			@base=base
 			@path=path
+
+			@verbose = options.fetch :verbose, false
 		end
 
 		# The absolute path to the source (i. e. where the actual file is)
@@ -24,7 +28,7 @@ module Config
 			@base.target.join unescape_path(@path)
 		end
 
-		# The absolute path to the backup file
+		# The relative path to the backup file
 		def backup
 			@base.backup.join unescape_path(@path)
 		end
@@ -66,8 +70,24 @@ module Config
 			# Make sure the backup directory exists
 			backup.dirname.mkpath
 
-			# Move the target to the backup
-			target.rename backup
+			if target.directory? && backup.directory?
+				# The target is a directory and the backup already exists.
+				# This can happen if a file inside the directory was backed up
+				# before the directory itself.
+
+				# Move all the files inside the directory to the backup
+				target.entries.reject { |entry|
+					# Exclude . and ..
+					['.', '..'].include? entry.to_s
+				}.each { |entry|
+					target.join(entry).rename backup.join(entry)
+				}
+
+				target.rmdir
+			else
+				# Move the target to the backup
+				target.rename backup
+			end
 		end
 
 		# Create the target (which may not exist)
@@ -102,24 +122,25 @@ module Config
 		# * overwrite: If true, existing entries will be backed up and replaced.
 		#   If false, existing entries will not be touched.
 		def install!(overwrite)
+			# TODO verbose
 			if target_current?
 				# Nothing to do
-				puts "#{MCurrent} #{target}"
+				puts "#{MCurrent} #{target}" if @verbose
 			elsif target_exist?
 				# Target already exists and is not current (i. e. for
 				# directory entries, the target is not a directory,
 				# and for file entries it is not a symlink to the
 				# correct position)
 				if overwrite
-					puts "#{MOverwrite} #{target} #{create_description} (backup in #{backup})"
+					puts "#{MOverwrite} #{target} #{create_description} (backup in #{backup})" if @verbose
 					remove!
 					create!
 				else
-					puts "#{MExist} #{target} (not overwriting)"
+					puts "#{MExist} #{target} (not overwriting)" if @verbose
 				end
 			else
 				# Target does not exist - create it
-				puts "#{MCreate} #{target} #{create_description}"
+				puts "#{MCreate} #{target} #{create_description}" if @verbose
 				create!
 			end
 		end

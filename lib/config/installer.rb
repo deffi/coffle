@@ -1,15 +1,21 @@
 require 'pathname'
 
+class Pathname
+	def absolute
+		Pathname.getwd.join self
+	end
+end
+
 module Config
 	class Base
 		# Absolute
-		attr_accessor :source, :target
+		attr_accessor :source, :target, :backup
 
-		# Relative
-		attr_accessor :backup
+		# Options:
+		# * :verbose: print messages; recommended for interactive applications
+		def initialize(source, target, backup, options={})
+			@verbose = options.fetch :verbose, false
 
-		# TODO verbose
-		def initialize(source, target, backup)
 			@source=source.dup
 			@target=target.dup
 			@backup=backup.dup
@@ -30,8 +36,10 @@ module Config
 
 			# Convert to absolute (the backup path need not exist, it
 			# will be created when first used)
-			@source=@source.realpath
-			@target=@target.realpath
+			# Not using realpath - backup need not exist
+			@source=@source.absolute
+			@target=@target.absolute
+			@backup=@backup.absolute
 
 			# Make sure they are directories
 			raise "Source #{source} is not a directory" if !@source.directory?
@@ -48,20 +56,20 @@ module Config
 				dir.gsub(/^#{@source}/, '').gsub(/^\/*/, '')
 			}.map { |dir|
 				# Create an entry with the (relative) pathname
-				Entry.new(self, Pathname.new(dir))
+				Entry.new(self, Pathname.new(dir), :verbose=>@verbose)
 			}
 		end
 	end
 
 	class Installer <Base
-		def initialize(source, target, backup)
+		def initialize(source, target, backup, options={})
 			super
 		end
 
 		def install(options={})
 			overwrite=options[:overwrite]
 
-			puts "Installing from #{@source} to #{@target} (#{(overwrite)?"overwriting":"non-overwriting"})"
+			puts "Installing from #{@source} to #{@target} (#{(overwrite)?"overwriting":"non-overwriting"})" if @verbose
 
 			entries.each do |entry|
 				entry.install! overwrite

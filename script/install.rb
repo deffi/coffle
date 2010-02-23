@@ -33,6 +33,6 @@ end
 backup_dir="backups/#{Time.now.strftime("%Y-%m-%d_%H-%M-%S")}"
 
 
-installer=Config::Installer.new('configs', ENV['HOME'], backup_dir)
+installer=Config::Installer.new('configs', ENV['HOME'], backup_dir, :verbose=>true)
 installer.install options
 

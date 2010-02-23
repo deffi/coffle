@@ -8,6 +8,8 @@ module Config
 
 		def test_paths
 			with_testdir do |dir|
+				assert dir.relative?
+
 				# If the source does not exist, an error must be raised
 				assert_raise RuntimeError do
 					Base.new("#{dir}/source", "#{dir}/target", "#{dir}/backup")
@@ -23,11 +25,9 @@ module Config
 				assert_directory dir.join("target")
 
 				# Absolute paths
-				assert_equal "#{dir.realpath}/source", base.source.to_s
-				assert_equal "#{dir.realpath}/target", base.target.to_s
-
-				# Relative paths
-				assert_equal "#{dir}/backup", base.backup.to_s
+				assert_equal "#{dir.absolute}/source", base.source.to_s
+				assert_equal "#{dir.absolute}/target", base.target.to_s
+				assert_equal "#{dir.absolute}/backup", base.backup.to_s
 
 				# The backup direcory must not exist (only created when used)
 				assert_not_exist base.backup
@@ -43,6 +43,7 @@ module Config
 				dir.join("source", "_bar", "baz").touch
 				dir.join("source", ".ignore").touch # Must be ignored
 
+				# Construct with relative paths and strings
 				base=Base.new("#{dir}/source", "#{dir}/target", "#{dir}/backup")
 				entries=base.entries.map { |entry| entry.path.to_s }
 
@@ -53,9 +54,6 @@ module Config
 				assert_include "_foo", entries
 				assert_include "_bar", entries
 				assert_include "_bar/baz", entries
-
-
-				#dir.dump
 			end
 		end
 	end

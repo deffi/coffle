@@ -9,6 +9,12 @@ module Config
 		# The relative path
 		attr_reader :path
 
+		# Absolute paths to entries
+		attr_reader :source, :target, :backup
+
+		# Relative link target
+		attr_reader :link_target
+
 		# Options:
 		# * :verbose: print messages; recommended for interactive applications
 		def initialize(base, path, options={})
@@ -16,31 +22,21 @@ module Config
 			@path=path
 
 			@verbose = options.fetch :verbose, false
-		end
 
-		# The absolute path to the source (i. e. where the actual file is)
-		def source
-			@base.source.join @path
-		end
+			# The absolute path to the source (i. e. where the actual file is)
+			@source=@base.source.join @path
+			# The absolute path to the target (i. e. the config file location)
+			@target=@base.target.join unescape_path(@path)
+			# The absolute path to the backup file
+			@backup=@base.backup.join unescape_path(@path)
 
-		# The absolute path to the target (i. e. the config file location)
-		def target
-			@base.target.join unescape_path(@path)
-		end
-
-		# The relative path to the backup file
-		def backup
-			@base.backup.join unescape_path(@path)
+			# The target the link should point to
+			@link_target=source.relative_path_from(target.dirname)
 		end
 
 		# Whether the entry represents a directory
 		def directory?
 			!source.symlink? && source.directory?
-		end
-
-		# The target the link should point to
-		def link_target
-			source.relative_path_from(target.dirname)
 		end
 
 		# Whether the target already exists (file, directory or symlink)

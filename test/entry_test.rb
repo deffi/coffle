@@ -33,7 +33,11 @@ module Config
 				# (e. g. files after the directory they're in)
 				entries=[foo, bar, baz]
 
-				# The path names must be correct
+				# The path names must be absolute and correct
+				assert baz.source.absolute?
+				assert baz.target.absolute?
+				assert baz.backup.absolute?
+
 				assert_equal dir.join("source", "_bar", "baz").absolute, baz.source
 				assert_equal dir.join("target", ".bar", "baz").absolute, baz.target
 				assert_equal dir.join("backup", ".bar", "baz").absolute, baz.backup

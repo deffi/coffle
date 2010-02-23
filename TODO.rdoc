@@ -1,9 +1,9 @@
 == Basic
 
-* More unit tests
 * Template processing
-  * Conditional processing (hosts, host classes, user)
-  * Warning before overwriting when generated file was changed 
+  * Unprocessed files: symlink directly?
+  * Conditional content (hosts, host classes, user)
+  * Warning before overwriting when generated file was changed
 * Uninstall (restore latest (?) backup)
 * Query status (like svn status, svn diff)
 

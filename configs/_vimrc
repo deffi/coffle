@@ -106,10 +106,12 @@ nmap S :!bash<cr>
 " Insert mode
 map! <F3> <esc>:N<cr>
 map! <F4> <esc>:n<cr>
+map! <F5> <esc>@q
 
 " Command mode
 map <F3> :N<cr>
 map <F4> :n<cr>
+map <F5> @q
 
 " Command mode
 au FileType rb,ruby  nmap <f2> :w<cr>:!./%<cr>

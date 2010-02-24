@@ -135,7 +135,7 @@ module Coffle
 					build.dirname.mkpath
 
 					# TODO test dereferencing
-					FileUtils.copy_file source.to_s, build.to_s, preserve=false, dereference=true
+					Builder.build source.to_s, build.to_s
 				end
 			end
 		end

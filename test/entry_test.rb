@@ -17,7 +17,7 @@ module Config
 				dir.join("source", "_bar", "baz").touch
 
 				# Create the base (also creates the target directory)
-				base=Base.new("#{dir}/source", "#{dir}/target", "#{dir}/backup")
+				base=Base.new("#{dir}/source", "#{dir}/build", "#{dir}/target", "#{dir}/backup")
 				entries=base.entries
 
 				# Extract the entries by name and make sure they are found
@@ -35,10 +35,12 @@ module Config
 
 				# The path names must be absolute and correct
 				assert baz.source.absolute?
+				assert baz.build .absolute?
 				assert baz.target.absolute?
 				assert baz.backup.absolute?
 
 				assert_equal dir.join("source", "_bar", "baz").absolute, baz.source
+				assert_equal dir.join("build" , "_bar", "baz").absolute, baz.build
 				assert_equal dir.join("target", ".bar", "baz").absolute, baz.target
 				assert_equal dir.join("backup", ".bar", "baz").absolute, baz.backup
 
@@ -48,9 +50,9 @@ module Config
 				assert_equal false, baz.directory?
 
 				# link_target must return the correct relative link
-				assert_equal    "../source/_foo"    , foo.link_target.to_s
-				assert_equal    "../source/_bar"    , bar.link_target.to_s
-				assert_equal "../../source/_bar/baz", baz.link_target.to_s
+				assert_equal    "../build/_foo"    , foo.link_target.to_s
+				assert_equal    "../build/_bar"    , bar.link_target.to_s
+				assert_equal "../../build/_bar/baz", baz.link_target.to_s
 
 				# The target may not exist at this point
 				assert_not_exist foo.target
@@ -99,6 +101,8 @@ module Config
 				assert_equal false, baz.target_current?
 
 				entries.each do |entry|
+					# create! must create the target
+
 					# Test create! with existing target - Directory
 					entry.target.mkdir;
 					assert_raise(RuntimeError) { entry.create! }
@@ -159,6 +163,36 @@ module Config
 				assert_exist     dir.join "backup/.bar"
 				assert_exist     dir.join "backup/.bar/bull"
 				assert_exist     dir.join "backup/.bar/.bull"
+
+				# Basic building
+				assert_not_exist dir.join "build/_foo"
+				assert !foo.built?
+				foo.build!
+				assert_exist     dir.join "build/_foo"
+				assert foo.built?
+
+				# Build current
+				assert foo.build_current?
+				foo.build.utime(foo.source.mtime-1, foo.source.mtime-1)
+				assert !foo.build_current?
+				foo.build!
+				assert foo.build_current?
+				foo.build.delete
+				assert !foo.build_current?
+
+				# Building a directory
+				assert_not_exist dir.join "build/_bar"
+				bar.build!
+				assert_directory dir.join "build/_bar"
+
+				# Remove it
+				dir.join("build/_bar").rmdir
+
+				# Building a file in a non-existing directory
+				assert_not_exist dir.join "build/_bar"
+				baz.build!
+				assert_directory dir.join "build/_bar"
+				assert_exist     dir.join "build/_bar/baz"
 			end
 
 			# TODO test install!(overwrite)
@@ -173,20 +207,29 @@ module Config
 				dir.join("source", "_bar", "baz").touch
 
 				# Create the expected target data
+				dir.join("expected", "target").mkpath
+				dir.join("expected", "target", ".foo").make_symlink("../build/_foo")
+				dir.join("expected", "target", ".bar").mkdir
+				dir.join("expected", "target", ".bar", "baz").make_symlink("../../build/_bar/baz")
+
+				# Create the expected build data
+				dir.join("expected", "build").mkpath
+				dir.join("expected", "build", "_foo").touch
+				dir.join("expected", "build", "_bar").mkdir
+				dir.join("expected", "build", "_bar", "baz").touch
+
 				expected=dir.join("expected").absolute
-				dir.join("expected").mkdir
-				dir.join("expected", ".foo").make_symlink("../source/_foo")
-				dir.join("expected", ".bar").mkdir
-				dir.join("expected", ".bar", "baz").make_symlink("../../source/_bar/baz")
+				actual  =dir.join("actual"  ).absolute
 
 				# Create the base (also creates the target directory)
-				base=Base.new("#{dir}/source", "#{dir}/target", "#{dir}/backup")
+				base=Base.new("#{dir}/source", "#{dir}/actual/build", "#{dir}/actual/target", "#{dir}/backup")
 
 				base.entries.each do |entry|
+					entry.build!
 					entry.install!(false)
 				end
 
-				assert_tree_equal(expected, base.target)
+				assert_tree_equal(expected, actual)
 				#p expected.tree_entries
 			end
 		end

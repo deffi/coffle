@@ -11,6 +11,8 @@ class Pathname
 
 	def touch
 		open('a') {}
+		t=Time.now
+		utime t, t
 	end
 
 	def entry_type

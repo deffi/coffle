@@ -10,7 +10,7 @@ module Config
 		attr_reader :path
 
 		# Absolute paths to entries
-		attr_reader :source, :target, :backup
+		attr_reader :source, :build, :target, :backup
 
 		# Relative link target
 		attr_reader :link_target
@@ -23,15 +23,17 @@ module Config
 
 			@verbose = options.fetch :verbose, false
 
-			# The absolute path to the source (i. e. where the actual file is)
+			# The absolute path to the source (i. e. the template)
 			@source=@base.source.join @path
+			# The absolute path to the built file
+			@build=@base.build.join @path
 			# The absolute path to the target (i. e. the config file location)
 			@target=@base.target.join unescape_path(@path)
 			# The absolute path to the backup file
 			@backup=@base.backup.join unescape_path(@path)
 
 			# The target the link should point to
-			@link_target=source.relative_path_from(target.dirname)
+			@link_target=build.relative_path_from(target.dirname)
 		end
 
 		# Whether the entry represents a directory
@@ -61,6 +63,14 @@ module Config
 			end
 		end
 
+		def built?
+			build.exist?
+		end
+
+		def build_current?
+			built? and build.mtime >= source.mtime
+		end
+
 		# Remove the target path (and make a backup)
 		def remove!
 			# Make sure the backup directory exists
@@ -86,6 +96,7 @@ module Config
 			end
 		end
 
+
 		# Create the target (which may not exist)
 		def create!
 			raise "Target exists" if target_exist?
@@ -99,12 +110,31 @@ module Config
 			end
 		end
 
-
 		MDir       = "Directory "
 		MCreate    = "Creating  "
 		MExist     = "Exists    "
 		MCurrent   = "Current   "
 		MOverwrite = "Overwrite "
+		MBuild     = "Building  "
+
+		def build!(rebuild=false)
+			if build_current? && !rebuild
+				puts "#{MCurrent} #{build}" if @verbose
+			else
+				puts "#{MBuild} #{build}" if @verbose
+				# The build file can be overwritten
+				if directory?
+					build.mkpath
+				else
+					# Create the directory if it does not exist
+					build.dirname.mkpath
+
+					# TODO test dereferencing
+					FileUtils.copy_file source.to_s, build.to_s, preserve=false, dereference=true
+				end
+			end
+		end
+
 
 		def create_description
 			if directory?
@@ -118,7 +148,8 @@ module Config
 		# * overwrite: If true, existing entries will be backed up and replaced.
 		#   If false, existing entries will not be touched.
 		def install!(overwrite)
-			# TODO verbose
+			build! if (!built? || !build_current?)
+
 			if target_current?
 				# Nothing to do
 				puts "#{MCurrent} #{target}" if @verbose
@@ -140,6 +171,7 @@ module Config
 				create!
 			end
 		end
+
 	end
 end
 

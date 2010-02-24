@@ -68,7 +68,11 @@ module Config
 		end
 
 		def build_current?
-			built? and build.mtime >= source.mtime
+			if directory?
+				built?
+			else
+				built? and build.mtime >= source.mtime
+			end
 		end
 
 		# Remove the target path (and make a backup)
@@ -105,7 +109,8 @@ module Config
 				# Directory entry - create the directory
 				target.mkpath
 			else
-				# File entry - create the symlink
+				# File entry - create the containing directory and the symlink
+				target.dirname.mkpath
 				target.make_symlink link_target
 			end
 		end

@@ -6,7 +6,21 @@ module Config
 	class FilenameTest <Test::Unit::TestCase
 		include TestHelper
 
-		def test_entries
+		# Create some test data in a test directory.
+		# The directory name will be passed to the block.
+		#
+		# Paths (relative to dir):
+		# * source: source/
+		# * build:  build/
+		# * target: target/
+		# * backup: backup/
+		#
+		# Test entries:
+		# * file      _foo
+		# * directory _bar
+		# * file      _bar/baz
+		#
+		def with_test_data
 			with_testdir do |dir|
 				# Create the source directory
 				dir.join("source").mkdir
@@ -21,185 +35,331 @@ module Config
 				entries=base.entries
 
 				# Extract the entries by name and make sure they are found
-				foo=entries.find { |entry| entry.path.to_s=="_foo" }
-				bar=entries.find { |entry| entry.path.to_s=="_bar" }
-				baz=entries.find { |entry| entry.path.to_s=="_bar/baz" }
+				@foo=entries.find { |entry| entry.path.to_s=="_foo" }
+				@bar=entries.find { |entry| entry.path.to_s=="_bar" }
+				@baz=entries.find { |entry| entry.path.to_s=="_bar/baz" }
 
-				assert_not_nil foo
-				assert_not_nil bar
-				assert_not_nil baz
+				assert_not_nil @foo
+				assert_not_nil @bar
+				assert_not_nil @baz
 
-				# Sort the entries: dependent entries after prerequisites
+				# Sort the entries: contained entries after containing entries
 				# (e. g. files after the directory they're in)
-				entries=[foo, bar, baz]
+				entries=[@foo, @bar, @baz]
 
-				# The path names must be absolute and correct
-				assert baz.source.absolute?
-				assert baz.build .absolute?
-				assert baz.target.absolute?
-				assert baz.backup.absolute?
+				yield dir, entries
 
-				assert_equal dir.join("source", "_bar", "baz").absolute, baz.source
-				assert_equal dir.join("build" , "_bar", "baz").absolute, baz.build
-				assert_equal dir.join("target", ".bar", "baz").absolute, baz.target
-				assert_equal dir.join("backup", ".bar", "baz").absolute, baz.backup
+				# Don't test the reverse order, because some of the tests
+				# require that the file does not exist before the test and
+				# creating a file also creates the directory it is in.
 
-				# directory? must return the correct value
-				assert_equal false, foo.directory?
-				assert_equal true , bar.directory?
-				assert_equal false, baz.directory?
+				# TODO test for individual entries (yield dir, [@baz]), but
+				# have to restore state first
+			end
+		end
 
-				# link_target must return the correct relative link
-				assert_equal    "../build/_foo"    , foo.link_target.to_s
-				assert_equal    "../build/_bar"    , bar.link_target.to_s
-				assert_equal "../../build/_bar/baz", baz.link_target.to_s
-
-				# The target may not exist at this point
-				assert_not_exist foo.target
-
-				# Test target_exist?, target_directory?, target_current?
-				# Not existing
-				assert_equal false, foo.target_exist?
-				assert_equal false, foo.target_directory?
-				assert_equal false, foo.target_current?
-
-				# Test target_exist?, target_directory?, target_current?
-				# File
-				foo.target.touch
-				assert_equal true , foo.target_exist?
-				assert_equal false, foo.target_directory?
-				assert_equal false, foo.target_current?
-				foo.target.delete
-
-				# Test target_exist?, target_directory?, target_current?
-				# Directory
-				foo.target.mkdir
-				assert_equal true , foo.target_exist?
-				assert_equal true , foo.target_directory?
-				assert_equal false, foo.target_current?
-				foo.target.delete
-
-				# Test target_exist?, target_directory?, target_current?
-				# Symlink to file (not current)
-				foo.target.make_symlink "../source/_bar/baz"
-				assert_equal true , foo.target_exist?
-				assert_equal false, foo.target_directory?
-				assert_equal false, foo.target_current?
-				foo.target.delete
-
-				# Test target_exist?, target_directory?, target_current?
-				# Symlink to directory (not current)
-				foo.target.make_symlink "../source/_bar"
-				assert_equal true , foo.target_exist?
-				assert_equal false, foo.target_directory?
-				assert_equal false, foo.target_current?
-				foo.target.delete
-
-				# Test target_current? - Not existing
-				assert_equal false, foo.target_current?
-				assert_equal false, bar.target_current?
-				assert_equal false, baz.target_current?
-
+		def test_paths
+			with_test_data do |dir, entries|
+				# The path names must be absolute
 				entries.each do |entry|
-					# create! must create the target
+					assert entry.source.absolute?
+					assert entry.build .absolute?
+					assert entry.target.absolute?
+					assert entry.backup.absolute?
+				end
 
-					# Test create! with existing target - Directory
-					entry.target.mkdir;
-					assert_raise(RuntimeError) { entry.create! }
+				# The path names must have the correct values
+				assert_equal dir.join("source", "_foo").absolute, @foo.source
+				assert_equal dir.join("build" , "_foo").absolute, @foo.build
+				assert_equal dir.join("target", ".foo").absolute, @foo.target
+				assert_equal dir.join("backup", ".foo").absolute, @foo.backup
+
+				assert_equal dir.join("source", "_bar").absolute, @bar.source
+				assert_equal dir.join("build" , "_bar").absolute, @bar.build
+				assert_equal dir.join("target", ".bar").absolute, @bar.target
+				assert_equal dir.join("backup", ".bar").absolute, @bar.backup
+
+				assert_equal dir.join("source", "_bar", "baz").absolute, @baz.source
+				assert_equal dir.join("build" , "_bar", "baz").absolute, @baz.build
+				assert_equal dir.join("target", ".bar", "baz").absolute, @baz.target
+				assert_equal dir.join("backup", ".bar", "baz").absolute, @baz.backup
+			end
+		end
+
+		def test_directory
+			with_test_data do |dir, entries|
+				# directory? must return true for directory entries, false for
+				# file entries
+				assert_equal false, @foo.directory?
+				assert_equal true , @bar.directory?
+				assert_equal false, @baz.directory?
+			end
+		end
+
+		def test_link_target
+			with_test_data do |dir, entries|
+				# link_target must return a relative link to the build path
+				assert_equal    "../build/_foo"    , @foo.link_target.to_s
+				assert_equal    "../build/_bar"    , @bar.link_target.to_s
+				assert_equal "../../build/_bar/baz", @baz.link_target.to_s
+			end
+		end
+
+		def test_target_checks
+			with_test_data do |dir, entries|
+				entries.each do |entry|
+					# The target may not exist (not created yet)
+					assert_not_exist entry.target
+
+					# If the target does not exist, target_exist?,
+					# target_directory? and target_current? must return false
+					assert_equal false, entry.target_exist?
+					assert_equal false, entry.target_directory?
+					assert_equal false, entry.target_current?
+
+					# If the target is a file, target_exist? must return true,
+					# target_directory? and target_current? must return false
+					entry.target.dirname.mkpath
+					entry.target.touch
+					assert_equal true , entry.target_exist?
+					assert_equal false, entry.target_directory?
+					assert_equal false, entry.target_current?
 					entry.target.delete
 
-					# Test create! with existing target - File
+					# If the target is a directory, target_exist? and
+					# target_directory? must return true, target_current? must
+					# return true exactly for directory entries
+					entry.target.mkdir
+					assert_equal true            , entry.target_exist?
+					assert_equal true            , entry.target_directory?
+					assert_equal entry.directory?, entry.target_current?
+					entry.target.delete
+
+					# If the target is a symlink to a non-existing file,
+					# target_exist? must return true, target_directory?
+					# and target_current must return false
+					entry.target.make_symlink "bull"
+					assert_equal true , entry.target_exist?
+					assert_equal false, entry.target_directory?
+					assert_equal false, entry.target_current?
+					entry.target.delete
+
+					# If the target is a symlink to a file (except the correct
+					# link target), target_exist? must return true,
+					# target_directory? and target_current? must return false
+					entry.target.dirname.join("dummy").touch
+					entry.target.make_symlink "dummy"
+					assert_equal true , entry.target_exist?
+					assert_equal false, entry.target_directory?
+					assert_equal false, entry.target_current?
+					entry.target.delete
+					entry.target.dirname.join("dummy").delete
+
+					# If the target is a symlink to a directory, target_exist?
+					# must return true, target_directory? and target_current
+					# must return false.
+					entry.target.make_symlink "."
+					assert_equal true , entry.target_exist?
+					assert_equal false, entry.target_directory?
+					assert_equal false, entry.target_current?
+					entry.target.delete
+				end
+			end
+		end
+
+		def test_create
+			with_test_data do |dir, entries|
+				entries.each do |entry|
+					# If the target already exists and is a directory, create! must
+					# raise an exception
+					entry.target.mkpath
+					assert_raise(RuntimeError) { entry.create! }
+					entry.target.rmdir
+
+					# If the target already exists and is a file, create! must
+					# raise an exception
+					entry.target.dirname.mkpath
 					entry.target.touch
 					assert_raise(RuntimeError) { entry.create! }
 					entry.target.delete
 
-					# Test create! (success)
+					# If the target does not exist, create! must succeed, the
+					# target must exist and be current, and be a directory exactly
+					# for directory entries
 					assert_nothing_raised { entry.create! }
 					assert_exist entry.target
 					assert       entry.target_exist?
 					assert       entry.target_current?
+					assert_equal entry.directory?, entry.target_directory?
 				end
-
-				# Basic backup - file
-				assert_exist     dir.join "target/.foo"
-				assert_not_exist dir.join "backup/.foo"
-				foo.remove!
-				assert_not_exist dir.join "target/.foo"
-				assert_exist     dir.join "backup/.foo"
-
-				# Basic backup - directory
-				assert_exist     dir.join "target/.bar"
-				assert_exist     dir.join "target/.bar/baz"
-				assert_not_exist dir.join "backup/.bar"
-				bar.remove!
-				assert_not_exist dir.join "target/.bar"
-				assert_exist     dir.join "backup/.bar"
-				assert_exist     dir.join "backup/.bar/baz"
-
-				# Undo the last backup
-				bar.backup.rename bar.target
-				assert_exist     dir.join "target/.bar"
-				assert_exist     dir.join "target/.bar/baz"
-				assert_not_exist dir.join "backup/.bar"
-
-				# Remove file in directory although backup directory does not
-				# exist
-				assert_exist     dir.join "target/.bar/baz"
-				assert_not_exist dir.join "backup/.bar/baz"
-				baz.remove!
-				assert_not_exist dir.join "target/.bar/baz"
-				assert_exist     dir.join "backup/.bar/baz"
-
-				# Remove directory with files although backup directory
-				# already exists
-				bar.target.join("bull").touch
-				bar.target.join(".bull").touch
-				assert_exist     dir.join "target/.bar"
-				assert_exist     dir.join "target/.bar/bull"
-				assert_exist     dir.join "target/.bar/.bull"
-				assert_exist     dir.join "backup/.bar"
-				bar.remove!
-				assert_not_exist dir.join "target/.bar"
-				assert_exist     dir.join "backup/.bar"
-				assert_exist     dir.join "backup/.bar/bull"
-				assert_exist     dir.join "backup/.bar/.bull"
-
-				# Basic building
-				assert_not_exist dir.join "build/_foo"
-				assert !foo.built?
-				foo.build!
-				assert_exist     dir.join "build/_foo"
-				assert foo.built?
-
-				# Build current
-				assert foo.build_current?
-				foo.build.utime(foo.source.mtime-1, foo.source.mtime-1)
-				assert !foo.build_current?
-				foo.build!
-				assert foo.build_current?
-				foo.build.delete
-				assert !foo.build_current?
-
-				# Building a directory
-				assert_not_exist dir.join "build/_bar"
-				bar.build!
-				assert_directory dir.join "build/_bar"
-
-				# Remove it
-				dir.join("build/_bar").rmdir
-
-				# Building a file in a non-existing directory
-				assert_not_exist dir.join "build/_bar"
-				baz.build!
-				assert_directory dir.join "build/_bar"
-				assert_exist     dir.join "build/_bar/baz"
 			end
-
-			# TODO test install!(overwrite)
 		end
+
+		def test_remove
+			with_test_data do |dir, entries|
+				entries.each do |entry|
+					# Create the entry
+					entry.create!
+
+					# The target must exist, the backup may not exist
+					assert_exist     entry.target
+					assert_not_exist entry.backup
+
+					# Remove the entry (creates a backup)
+					entry.remove!
+					
+					# The target may not exist, the backup must exist
+					assert_not_exist entry.target
+					assert_exist     entry.backup
+				end
+			end
+		end
+
+		def test_remove_directory
+			with_test_data do |dir, entries|
+				# Create an entry in a subdirectory
+				@baz.create!
+
+				# Both the target for this entry and for the containing
+				# directory must exist; the backups may not exist
+				assert_exist @bar.target
+				assert_exist @baz.target
+
+				assert_not_exist @bar.backup
+				assert_not_exist @baz.backup
+
+				# Remove the containing directory
+				@bar.remove!
+
+				# The targets may not exist; the backups must exist
+				assert_not_exist @bar.target
+				assert_not_exist @baz.target
+
+				assert_exist @bar.backup
+				assert_exist @baz.backup
+			end
+		end
+
+		def test_remove_file_from_directory
+			with_test_data do |dir, entries|
+				# Create an entry in a subdirectory
+				@baz.create!
+
+				# The backup directory for the containing entry may not exist
+				assert_not_exist @bar.backup
+
+				# Remove the entry in the subdirectory
+				@baz.remove!
+
+				# Now both the backup entry for the directory and for the entry
+				# must exist.
+				assert_exist @bar.backup
+				assert_exist @baz.backup
+
+				# The entry must not exist any more, the directory must still exist
+				assert_exist @bar.target
+				assert_not_exist @baz.target
+			end
+		end
+
+		def test_remove_directory_existing_backup
+			with_test_data do |dir, entries|
+				# Create and remove a directory entry with an additional file,
+				# so the backup directory exists.
+				@bar.create!
+				@bar.target.join("previous").touch
+				@bar.remove!
+
+				# Recreate the directory entry and create a file and a dot file
+				# in the directory
+				@bar.create!
+				@bar.target.join("bull").touch
+				@bar.target.join(".bull").touch
+
+				# Make sure the directory, the files and the backup directory exist
+				assert_exist dir.join @bar.target
+				assert_exist dir.join @bar.target.join("bull")
+				assert_exist dir.join @bar.target.join(".bull")
+				assert_exist dir.join @bar.backup
+
+				# Remove the directory
+				@bar.remove!
+
+				# Make sure the directory does not exist any more and the files
+				# exist in the backup directory.
+				assert_not_exist @bar.target
+				assert_exist     @bar.backup
+				assert_exist     @bar.backup.join("bull")
+				assert_exist     @bar.backup.join(".bull")
+				assert_exist     @bar.backup.join("previous")
+			end
+		end
+
+		def test_build
+			with_test_data do |dir, entries|
+				entries.each do |entry|
+					# Before building, the build file may not exist
+					assert_not_exist entry.build
+					assert !entry.built?
+
+					# After building, the build file must exist
+					entry.build!
+					assert_exist entry.build
+					assert entry.built?
+
+					# For directory entries, the built file must be a directory
+					assert_directory entry.build if entry.directory?
+				end
+			end
+		end
+
+		def test_build_current
+			with_test_data do |dir, entries|
+				entries.each do |entry|
+					# Before building, the build must not be current (it does
+					# not exist)
+					assert !entry.build_current?
+
+					# After building, the build must be current
+					entry.build!
+					assert entry.build_current?
+
+					# If the build file is older than the source file,
+					# build_current? must return false, except for directores,
+					# which are always current if they exist
+					entry.build.utime(entry.source.mtime-1, entry.source.mtime-1)
+					assert !entry.build_current?                                          if !entry.directory?
+					assert  entry.build_current?, "An existing directory must be current" if  entry.directory?
+
+					# After building, build_current? must return true again
+					entry.build!
+					assert entry.build_current?
+				end
+			end
+		end
+
+		def test_build_file_in_nonexistent_directory
+			with_test_data do |dir, entries|
+				# Building a file in a non-existing directory
+				assert_not_exist @bar.build
+				@baz.build!
+				assert_directory @bar.build
+				assert_exist     @baz.build
+			end
+		end
+
+		# TODO test install!(overwrite)
 
 		def test_full
 			with_testdir do |dir|
+				# source          in source/
+				# build           in actual/build
+				# target          in actual/target
+				# expected build  in expected/build
+				# expected target in expected/target
+				expected=dir.join("expected").absolute
+				actual  =dir.join("actual"  ).absolute
+
 				# Create the source data
 				dir.join("source").mkdir
 				dir.join("source", "_foo").touch
@@ -207,21 +367,18 @@ module Config
 				dir.join("source", "_bar", "baz").touch
 
 				# Create the expected target data
-				dir.join("expected", "target").mkpath
-				dir.join("expected", "target", ".foo").make_symlink("../build/_foo")
-				dir.join("expected", "target", ".bar").mkdir
-				dir.join("expected", "target", ".bar", "baz").make_symlink("../../build/_bar/baz")
+				expected.join("target").mkpath
+				expected.join("target", ".foo").make_symlink("../build/_foo")
+				expected.join("target", ".bar").mkdir
+				expected.join("target", ".bar", "baz").make_symlink("../../build/_bar/baz")
 
 				# Create the expected build data
-				dir.join("expected", "build").mkpath
-				dir.join("expected", "build", "_foo").touch
-				dir.join("expected", "build", "_bar").mkdir
-				dir.join("expected", "build", "_bar", "baz").touch
+				expected.join("build").mkpath
+				expected.join("build", "_foo").touch
+				expected.join("build", "_bar").mkdir
+				expected.join("build", "_bar", "baz").touch
 
-				expected=dir.join("expected").absolute
-				actual  =dir.join("actual"  ).absolute
-
-				# Create the base (also creates the target directory)
+				# Create the base (also creates the build and target directories)
 				base=Base.new("#{dir}/source", "#{dir}/actual/build", "#{dir}/actual/target", "#{dir}/backup")
 
 				base.entries.each do |entry|

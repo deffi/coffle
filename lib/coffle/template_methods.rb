@@ -19,6 +19,7 @@ end
 		end
 
 		def username
+			# TODO use Etc.getlogin
 			ENV['USERNAME']
 		end
 

@@ -2,7 +2,7 @@
 
 require File.dirname(__FILE__) + '/test_helper.rb'
 
-module Config
+module Coffle
 	class FilenameTest <Test::Unit::TestCase
 		include Filenames
 

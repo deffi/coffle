@@ -1,8 +1,8 @@
 require 'pathname'
 
-require 'config/filenames'
+require 'coffle/filenames'
 
-module Config
+module Coffle
 	class Entry
 		include Filenames
 
@@ -17,20 +17,20 @@ module Config
 
 		# Options:
 		# * :verbose: print messages; recommended for interactive applications
-		def initialize(base, path, options={})
-			@base=base
+		def initialize(coffle, path, options={})
+			@coffle=coffle
 			@path=path
 
 			@verbose = options.fetch :verbose, false
 
 			# The absolute path to the source (i. e. the template)
-			@source=@base.source.join @path
+			@source=@coffle.source.join @path
 			# The absolute path to the built file
-			@build=@base.build.join @path
+			@build=@coffle.build.join @path
 			# The absolute path to the target (i. e. the config file location)
-			@target=@base.target.join unescape_path(@path)
+			@target=@coffle.target.join unescape_path(@path)
 			# The absolute path to the backup file
-			@backup=@base.backup.join unescape_path(@path)
+			@backup=@coffle.backup.join unescape_path(@path)
 
 			# The target the link should point to
 			@link_target=build.relative_path_from(target.dirname)

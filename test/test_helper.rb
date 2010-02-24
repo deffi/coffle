@@ -1,6 +1,6 @@
 #require 'stringio'
 require 'test/unit'
-require File.dirname(__FILE__) + '/../lib/config'
+require File.dirname(__FILE__) + '/../lib/coffle'
 
 require 'fileutils'
 
@@ -42,7 +42,7 @@ class Pathname
 	end
 end
 
-module Config
+module Coffle
 	module Assertions
 		def assert_directory(dir, message = nil)
 			dir=dir.to_s unless dir.is_a? String

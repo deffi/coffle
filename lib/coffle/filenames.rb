@@ -1,6 +1,6 @@
 require 'pathname'
 
-module Config
+module Coffle
 	module Filenames
 		def unescape_filename(filename)
 			if filename =~ /^-/

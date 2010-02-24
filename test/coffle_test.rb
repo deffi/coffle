@@ -2,8 +2,10 @@
 
 require File.dirname(__FILE__) + '/test_helper.rb'
 
-module Config
-	class BaseTest <Test::Unit::TestCase
+require 'coffle/pathname_extensions'
+
+module Coffle
+	class CoffleTest <Test::Unit::TestCase
 		include TestHelper
 
 		def test_paths
@@ -12,27 +14,27 @@ module Config
 
 				# If the source does not exist, an error must be raised
 				assert_raise RuntimeError do
-					Base.new("#{dir}/source", "#{dir}/build", "#{dir}/target", "#{dir}/backup")
+					Coffle.new("#{dir}/source", "#{dir}/build", "#{dir}/target", "#{dir}/backup")
 				end
 
 				# Create the source directory
 				dir.join("source").mkdir
 
-				# Create the Base
-				base=Base.new("#{dir}/source", "#{dir}/build", "#{dir}/target", "#{dir}/backup")
+				# Create the Coffle
+				coffle=Coffle.new("#{dir}/source", "#{dir}/build", "#{dir}/target", "#{dir}/backup")
 
 				# The build and target directories must exist now
 				assert_directory dir.join("build")
 				assert_directory dir.join("target")
 
 				# Absolute paths
-				assert_equal "#{dir.absolute}/source", base.source.to_s
-				assert_equal "#{dir.absolute}/build" , base.build .to_s
-				assert_equal "#{dir.absolute}/target", base.target.to_s
-				assert_equal "#{dir.absolute}/backup", base.backup.to_s
+				assert_equal "#{dir.absolute}/source", coffle.source.to_s
+				assert_equal "#{dir.absolute}/build" , coffle.build .to_s
+				assert_equal "#{dir.absolute}/target", coffle.target.to_s
+				assert_equal "#{dir.absolute}/backup", coffle.backup.to_s
 
 				# The backup direcory must not exist (only created when used)
-				assert_not_exist base.backup
+				assert_not_exist coffle.backup
 			end
 		end
 
@@ -46,8 +48,8 @@ module Config
 				dir.join("source", ".ignore").touch # Must be ignored
 
 				# Construct with relative paths and strings
-				base=Base.new("#{dir}/source", "#{dir}/build", "#{dir}/target", "#{dir}/backup")
-				entries=base.entries.map { |entry| entry.path.to_s }
+				coffle=Coffle.new("#{dir}/source", "#{dir}/build", "#{dir}/target", "#{dir}/backup")
+				entries=coffle.entries.map { |entry| entry.path.to_s }
 
 				# The number of entries must be correct
 				assert_equal 3, entries.size

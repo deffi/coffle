@@ -2,7 +2,7 @@
 
 require File.dirname(__FILE__) + '/test_helper.rb'
 
-module Config
+module Coffle
 	class FilenameTest <Test::Unit::TestCase
 		include TestHelper
 
@@ -30,9 +30,9 @@ module Config
 				dir.join("source", "_bar").mkdir
 				dir.join("source", "_bar", "baz").touch
 
-				# Create the base (also creates the target directory)
-				base=Base.new("#{dir}/source", "#{dir}/build", "#{dir}/target", "#{dir}/backup")
-				entries=base.entries
+				# Create the coffle (also creates the target directory)
+				coffle=Coffle.new("#{dir}/source", "#{dir}/build", "#{dir}/target", "#{dir}/backup")
+				entries=coffle.entries
 
 				# Extract the entries by name and make sure they are found
 				@foo=entries.find { |entry| entry.path.to_s=="_foo" }
@@ -378,10 +378,10 @@ module Config
 				expected.join("build", "_bar").mkdir
 				expected.join("build", "_bar", "baz").touch
 
-				# Create the base (also creates the build and target directories)
-				base=Base.new("#{dir}/source", "#{dir}/actual/build", "#{dir}/actual/target", "#{dir}/backup")
+				# Create the coffle (also creates the build and target directories)
+				coffle=Coffle.new("#{dir}/source", "#{dir}/actual/build", "#{dir}/actual/target", "#{dir}/backup")
 
-				base.entries.each do |entry|
+				coffle.entries.each do |entry|
 					entry.build!
 					entry.install!(false)
 				end

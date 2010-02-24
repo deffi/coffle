@@ -10,8 +10,6 @@
 == Meta
 
 * Separate library and config files (rubygem?)
-* Name it, possible names:
-  * Coffle
 
 == Advanced
 

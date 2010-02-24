@@ -2,14 +2,8 @@ require 'pathname'
 require 'optparse'
 
 
-class Pathname
-	def absolute
-		Pathname.getwd.join self
-	end
-end
-
-module Config
-	class Base
+module Coffle
+	class Coffle
 		# Absolute
 		attr_accessor :source, :build, :target, :backup
 
@@ -91,7 +85,7 @@ module Config
 			opts.separator "Common options:"
 
 			opts.on("-h", "--help"   , "Show this message") { puts opts           ; exit }
-			opts.on(      "--version", "Show version"     ) { puts Config::VERSION; exit }
+			opts.on(      "--version", "Show version"     ) { puts Coffle::VERSION; exit }
 
 			begin
 				opts.parse!

@@ -31,7 +31,7 @@ module Coffle
 				dir.join("source", "_bar", "baz").touch
 
 				# Create the coffle (also creates the target directory)
-				coffle=Coffle.new("#{dir}/source", "#{dir}/build", "#{dir}/target", "#{dir}/backup")
+				coffle=Coffle.new("#{dir}/source", "#{dir}/target")
 				entries=coffle.entries
 
 				# Extract the entries by name and make sure they are found
@@ -69,20 +69,23 @@ module Coffle
 				end
 
 				# The path names must have the correct values
-				assert_equal dir.join("source", "_foo").absolute, @foo.source
-				assert_equal dir.join("build" , "_foo").absolute, @foo.build
-				assert_equal dir.join("target", ".foo").absolute, @foo.target
-				assert_equal dir.join("backup", ".foo").absolute, @foo.backup
+				assert_equal dir.join("source"           , "_foo").absolute, @foo.source
+				assert_equal dir.join("source", ".build" , "_foo").absolute, @foo.build
+				assert_match /^#{dir.join("source", ".backups").absolute}\/\d\d\d\d-\d\d-\d\d_\d\d-\d\d-\d\d\/.foo$/,
+					                                                         @foo.backup.to_s
+				assert_equal dir.join("target"           , ".foo").absolute, @foo.target
 
-				assert_equal dir.join("source", "_bar").absolute, @bar.source
-				assert_equal dir.join("build" , "_bar").absolute, @bar.build
-				assert_equal dir.join("target", ".bar").absolute, @bar.target
-				assert_equal dir.join("backup", ".bar").absolute, @bar.backup
+				assert_equal dir.join("source"           , "_bar").absolute, @bar.source
+				assert_equal dir.join("source", ".build" , "_bar").absolute, @bar.build
+				assert_match /^#{dir.join("source", ".backups").absolute}\/\d\d\d\d-\d\d-\d\d_\d\d-\d\d-\d\d\/.bar$/,
+					                                                         @bar.backup.to_s
+				assert_equal dir.join("target"           , ".bar").absolute, @bar.target
 
-				assert_equal dir.join("source", "_bar", "baz").absolute, @baz.source
-				assert_equal dir.join("build" , "_bar", "baz").absolute, @baz.build
-				assert_equal dir.join("target", ".bar", "baz").absolute, @baz.target
-				assert_equal dir.join("backup", ".bar", "baz").absolute, @baz.backup
+				assert_equal dir.join("source"           , "_bar", "baz").absolute, @baz.source
+				assert_equal dir.join("source", ".build" , "_bar", "baz").absolute, @baz.build
+				assert_match /^#{dir.join("source", ".backups").absolute}\/\d\d\d\d-\d\d-\d\d_\d\d-\d\d-\d\d\/.bar\/baz$/,
+					                                                                @baz.backup.to_s
+				assert_equal dir.join("target"           , ".bar", "baz").absolute, @baz.target
 			end
 		end
 
@@ -99,9 +102,9 @@ module Coffle
 		def test_link_target
 			with_test_data do |dir, entries|
 				# link_target must return a relative link to the build path
-				assert_equal    "../build/_foo"    , @foo.link_target.to_s
-				assert_equal    "../build/_bar"    , @bar.link_target.to_s
-				assert_equal "../../build/_bar/baz", @baz.link_target.to_s
+				assert_equal    "../source/.build/_foo"    , @foo.link_target.to_s
+				assert_equal    "../source/.build/_bar"    , @bar.link_target.to_s
+				assert_equal "../../source/.build/_bar/baz", @baz.link_target.to_s
 			end
 		end
 
@@ -352,34 +355,35 @@ module Coffle
 
 		def test_full
 			with_testdir do |dir|
-				# source          in source/
-				# build           in actual/build
+				# source          in actual/source
 				# target          in actual/target
-				# expected build  in expected/build
+				# expected source in expected/source (containing .build)
 				# expected target in expected/target
 				expected=dir.join("expected").absolute
 				actual  =dir.join("actual"  ).absolute
 
-				# Create the source data
-				dir.join("source").mkdir
-				dir.join("source", "_foo").touch
-				dir.join("source", "_bar").mkdir
-				dir.join("source", "_bar", "baz").touch
+				# Create the source data (and expected source)
+				["actual", "expected"].each do |prefix|
+					dir.join(prefix, "source").mkpath
+					dir.join(prefix, "source", "_foo").touch
+					dir.join(prefix, "source", "_bar").mkdir
+					dir.join(prefix, "source", "_bar", "baz").touch
+				end
 
 				# Create the expected target data
 				expected.join("target").mkpath
-				expected.join("target", ".foo").make_symlink("../build/_foo")
+				expected.join("target", ".foo").make_symlink("../source/.build/_foo")
 				expected.join("target", ".bar").mkdir
-				expected.join("target", ".bar", "baz").make_symlink("../../build/_bar/baz")
+				expected.join("target", ".bar", "baz").make_symlink("../../source/.build/_bar/baz")
 
 				# Create the expected build data
-				expected.join("build").mkpath
-				expected.join("build", "_foo").touch
-				expected.join("build", "_bar").mkdir
-				expected.join("build", "_bar", "baz").touch
+				expected.join("source", ".build").mkpath
+				expected.join("source", ".build", "_foo").touch
+				expected.join("source", ".build", "_bar").mkdir
+				expected.join("source", ".build", "_bar", "baz").touch
 
 				# Create the coffle (also creates the build and target directories)
-				coffle=Coffle.new("#{dir}/source", "#{dir}/actual/build", "#{dir}/actual/target", "#{dir}/backup")
+				coffle=Coffle.new("#{dir}/actual/source", "#{dir}/actual/target")
 
 				coffle.entries.each do |entry|
 					entry.build!

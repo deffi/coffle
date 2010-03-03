@@ -1,5 +1,7 @@
 require 'erb'
 
+require 'coffle/template_methods'
+
 module Coffle
 	class Builder
 		# Include modules that should be available to the templates in

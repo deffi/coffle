@@ -123,6 +123,11 @@ au FileType tex nmap <f2> :w<cr>:!pdflatex %<cr>
 " Insert mode
 au FileType tex map! <f2> <esc>:w<cr>:!pdflated %<cr>
 
+" Command mode
+au FileType cpp nmap <f2> :w<cr>:!make run<cr>
+" Insert mode
+au FileType cpp map! <f2> <esc>:w<cr>:!make run<cr>
+
 
 set fileencodings=ucs-bom,utf-8,latin1
 

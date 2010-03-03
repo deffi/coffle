@@ -16,19 +16,18 @@ module Coffle
 
 		# Options:
 		# * :verbose: print messages; recommended for interactive applications
-		def initialize(source, build, target, backup, options={})
+		def initialize(source, target, options={})
 			@verbose = options.fetch :verbose, false
 
 			@source=source.dup
-			@build =build .dup
 			@target=target.dup
-			@backup=backup.dup
 
 			# Convert to Pathname
 			@source=Pathname.new(@source) unless @source.is_a?(Pathname)
-			@build =Pathname.new(@build ) unless @build .is_a?(Pathname)
 			@target=Pathname.new(@target) unless @target.is_a?(Pathname)
-			@backup=Pathname.new(@backup) unless @backup.is_a?(Pathname)
+
+			@build =@source.join(".build")
+			@backup=@source.join(".backups/#{Time.now.strftime("%Y-%m-%d_%H-%M-%S")}")
 
 			# Make sure the source directory exists
 			raise "Source directory #{@source} does not exist" if !@source.exist?
@@ -46,9 +45,9 @@ module Coffle
 			@backup=@backup.absolute
 
 			# Make sure they are directories
-			raise "Source #{source} is not a directory" if !@source.directory?
-			raise "Source #{build } is not a directory" if !@build .directory?
-			raise "Target #{target} is not a directory" if !@target.directory?
+			raise "Source location #{source} is not a directory" if !@source.directory?
+			raise "Build location #{ build } is not a directory" if !@build .directory?
+			raise "Target location #{target} is not a directory" if !@target.directory?
 			raise "Backup location #{backup} is not a directory" if @backup.exist? && !@backup.directory?
 		end
 

@@ -14,24 +14,25 @@ module Coffle
 
 				# If the source does not exist, an error must be raised
 				assert_raise RuntimeError do
-					Coffle.new("#{dir}/source", "#{dir}/build", "#{dir}/target", "#{dir}/backup")
+					Coffle.new("#{dir}/source", "#{dir}/target")
 				end
 
 				# Create the source directory
 				dir.join("source").mkdir
 
 				# Create the Coffle
-				coffle=Coffle.new("#{dir}/source", "#{dir}/build", "#{dir}/target", "#{dir}/backup")
+				coffle=Coffle.new("#{dir}/source", "#{dir}/target")
 
 				# The build and target directories must exist now
-				assert_directory dir.join("build")
+				assert_directory dir.join("source/.build")
 				assert_directory dir.join("target")
 
 				# Absolute paths
-				assert_equal "#{dir.absolute}/source", coffle.source.to_s
-				assert_equal "#{dir.absolute}/build" , coffle.build .to_s
-				assert_equal "#{dir.absolute}/target", coffle.target.to_s
-				assert_equal "#{dir.absolute}/backup", coffle.backup.to_s
+				assert_equal "#{dir.absolute}/source"        , coffle.source.to_s
+				assert_equal "#{dir.absolute}/source/.build" , coffle.build .to_s
+				assert_match /^#{dir.absolute}\/source\/.backups\/\d\d\d\d-\d\d-\d\d_\d\d-\d\d-\d\d$/,
+					                                           coffle.backup.to_s
+				assert_equal "#{dir.absolute}/target"        , coffle.target.to_s
 
 				# The backup direcory must not exist (only created when used)
 				assert_not_exist coffle.backup
@@ -48,7 +49,7 @@ module Coffle
 				dir.join("source", ".ignore").touch # Must be ignored
 
 				# Construct with relative paths and strings
-				coffle=Coffle.new("#{dir}/source", "#{dir}/build", "#{dir}/target", "#{dir}/backup")
+				coffle=Coffle.new("#{dir}/source", "#{dir}/target")
 				entries=coffle.entries.map { |entry| entry.path.to_s }
 
 				# The number of entries must be correct

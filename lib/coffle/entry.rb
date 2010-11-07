@@ -128,16 +128,19 @@ module Coffle
 				# The build file can be overwritten
 				if directory?
 					build.mkpath
+					org  .mkpath
 				else
 					# Create the directory if it does not exist
 					build.dirname.mkpath
+					org.dirname.mkpath
 
 					# TODO test dereferencing
 					Builder.build source.to_s, build.to_s
+					# FIXME proper org handling (including not rewriting if changed)
+					Builder.build source.to_s, org  .to_s
 				end
 			end
 		end
-
 
 		def create_description
 			if directory?

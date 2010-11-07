@@ -5,9 +5,10 @@ require 'optparse'
 module Coffle
 	class Coffle
 		# Absolute
-		attr_accessor :source, :build, :target, :backup
+		attr_reader :source, :build, :org, :target, :backup
 
-		def create_directory(path)
+		# TODO should be in Pathname, or use mkpath? (what about @verbose?)
+		def create_directory (path)
 			if !path.exist?
 				puts "Creating #{path}" if @verbose
 				path.mkpath
@@ -16,7 +17,7 @@ module Coffle
 
 		# Options:
 		# * :verbose: print messages; recommended for interactive applications
-		def initialize(source, target, options={})
+		def initialize (source, target, options={})
 			@verbose = options.fetch :verbose, false
 
 			@source=source.dup
@@ -26,14 +27,16 @@ module Coffle
 			@source=Pathname.new(@source) unless @source.is_a?(Pathname)
 			@target=Pathname.new(@target) unless @target.is_a?(Pathname)
 
-			@build =@source.join(".build")
 			@backup=@source.join(".backups/#{Time.now.strftime("%Y-%m-%d_%H-%M-%S")}")
+			@build =@source.join(".build")
+			@org   =@build .join(".org")
 
 			# Make sure the source directory exists
 			raise "Source directory #{@source} does not exist" if !@source.exist?
 
 			# Create the build and target directories if they don't exist
 			create_directory @build
+			create_directory @org
 			create_directory @target
 
 			# Convert to absolute (the backup path need not exist, it
@@ -41,14 +44,15 @@ module Coffle
 			# Not using realpath - backup need not exist
 			@source=@source.absolute
 			@build =@build .absolute
+			@org   =@org   .absolute
 			@target=@target.absolute
 			@backup=@backup.absolute
 
 			# Make sure they are directories
-			raise "Source location #{source} is not a directory" if !@source.directory?
-			raise "Build location #{ build } is not a directory" if !@build .directory?
-			raise "Target location #{target} is not a directory" if !@target.directory?
-			raise "Backup location #{backup} is not a directory" if @backup.exist? && !@backup.directory?
+			raise "Source location #{source} is not a directory" if !@source.directory?                   # Must exist
+			raise "Build location #{ build } is not a directory" if !@build .directory?                   # Has been created
+			raise "Target location #{target} is not a directory" if !@target.directory?                   # Has been created
+			raise "Backup location #{backup} is not a directory" if @backup.exist? && !@backup.directory? # Must not be a non-directory
 		end
 
 		def entries
@@ -94,14 +98,14 @@ module Coffle
 
 			action=ARGV[0]
 
-			case action
-			when /build/i: build! options
-			when /install/i: install! options
-			else puts opts
+			case action.downcase
+			when "build"  : build!   options
+			when "install": install! options
+			else puts opts # Output the options help message
 			end
 		end
 
-		def install!(options={})
+		def install! (options={})
 			overwrite=options[:overwrite]
 
 			puts "Installing to #{@target} (#{(overwrite)?"overwriting":"non-overwriting"})" if @verbose
@@ -109,7 +113,7 @@ module Coffle
 			entries.each { |entry| entry.install! overwrite }
 		end
 
-		def build!(options={})
+		def build! (options={})
 			rebuild=options[:rebuild]
 
 			puts "Building in #{@build} (#{(rebuild)?"rebuilding":"non-rebuilding"})" if @verbose

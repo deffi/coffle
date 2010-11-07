@@ -10,10 +10,11 @@ module Coffle
 		# The directory name will be passed to the block.
 		#
 		# Paths (relative to dir):
-		# * source: source/
-		# * build:  build/
-		# * target: target/
-		# * backup: backup/
+		# * source: .source/
+		# * build:  .build/
+		# * org:    .build/.org
+		# * target: .target/
+		# * backup: .backup/
 		#
 		# Test entries:
 		# * file      _foo
@@ -69,23 +70,26 @@ module Coffle
 				end
 
 				# The path names must have the correct values
-				assert_equal dir.join("source"           , "_foo").absolute, @foo.source
-				assert_equal dir.join("source", ".build" , "_foo").absolute, @foo.build
+				assert_equal dir.join("source"                    , "_foo").absolute, @foo.source
+				assert_equal dir.join("source", ".build"          , "_foo").absolute, @foo.build
+				assert_equal dir.join("source", ".build" , ".org" , "_foo").absolute, @foo.org
+				assert_equal dir.join("target"                    , ".foo").absolute, @foo.target
 				assert_match /^#{dir.join("source", ".backups").absolute}\/\d\d\d\d-\d\d-\d\d_\d\d-\d\d-\d\d\/.foo$/,
-					                                                         @foo.backup.to_s
-				assert_equal dir.join("target"           , ".foo").absolute, @foo.target
+					                                                                  @foo.backup.to_s
 
-				assert_equal dir.join("source"           , "_bar").absolute, @bar.source
-				assert_equal dir.join("source", ".build" , "_bar").absolute, @bar.build
+				assert_equal dir.join("source"                    , "_bar").absolute, @bar.source
+				assert_equal dir.join("source", ".build"          , "_bar").absolute, @bar.build
+				assert_equal dir.join("source", ".build", ".org"  , "_bar").absolute, @bar.org
+				assert_equal dir.join("target"                    , ".bar").absolute, @bar.target
 				assert_match /^#{dir.join("source", ".backups").absolute}\/\d\d\d\d-\d\d-\d\d_\d\d-\d\d-\d\d\/.bar$/,
-					                                                         @bar.backup.to_s
-				assert_equal dir.join("target"           , ".bar").absolute, @bar.target
+					                                                                  @bar.backup.to_s
 
-				assert_equal dir.join("source"           , "_bar", "baz").absolute, @baz.source
-				assert_equal dir.join("source", ".build" , "_bar", "baz").absolute, @baz.build
+				assert_equal dir.join("source"                    , "_bar", "baz").absolute, @baz.source
+				assert_equal dir.join("source", ".build"          , "_bar", "baz").absolute, @baz.build
+				assert_equal dir.join("source", ".build", ".org"  , "_bar", "baz").absolute, @baz.org
+				assert_equal dir.join("target"                    , ".bar", "baz").absolute, @baz.target
 				assert_match /^#{dir.join("source", ".backups").absolute}\/\d\d\d\d-\d\d-\d\d_\d\d-\d\d-\d\d\/.bar\/baz$/,
-					                                                                @baz.backup.to_s
-				assert_equal dir.join("target"           , ".bar", "baz").absolute, @baz.target
+					                                                                         @baz.backup.to_s
 			end
 		end
 
@@ -260,7 +264,7 @@ module Coffle
 				assert_exist @baz.backup
 
 				# The entry must not exist any more, the directory must still exist
-				assert_exist @bar.target
+				assert_exist     @bar.target
 				assert_not_exist @baz.target
 			end
 		end
@@ -303,15 +307,19 @@ module Coffle
 				entries.each do |entry|
 					# Before building, the build file may not exist
 					assert_not_exist entry.build
+					assert_not_exist entry.org
 					assert !entry.built?
 
 					# After building, the build file must exist
 					entry.build!
 					assert_exist entry.build
+					assert_exist entry.org
 					assert entry.built?
 
 					# For directory entries, the built file must be a directory
+					# TODO check for file if not a dir entry
 					assert_directory entry.build if entry.directory?
+					assert_directory entry.org   if entry.directory?
 				end
 			end
 		end
@@ -345,9 +353,12 @@ module Coffle
 			with_test_data do |dir, entries|
 				# Building a file in a non-existing directory
 				assert_not_exist @bar.build
+				assert_not_exist @bar.org
 				@baz.build!
 				assert_directory @bar.build
+				assert_directory @bar.org
 				assert_exist     @baz.build
+				assert_exist     @baz.org
 			end
 		end
 
@@ -381,6 +392,12 @@ module Coffle
 				expected.join("source", ".build", "_foo").touch
 				expected.join("source", ".build", "_bar").mkdir
 				expected.join("source", ".build", "_bar", "baz").touch
+
+				# Create the expected org data
+				expected.join("source", ".build", ".org").mkpath
+				expected.join("source", ".build", ".org", "_foo").touch
+				expected.join("source", ".build", ".org", "_bar").mkdir
+				expected.join("source", ".build", ".org", "_bar", "baz").touch
 
 				# Create the coffle (also creates the build and target directories)
 				coffle=Coffle.new("#{dir}/actual/source", "#{dir}/actual/target")

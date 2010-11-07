@@ -10,7 +10,7 @@ module Coffle
 		attr_reader :path
 
 		# Absolute paths to entries
-		attr_reader :source, :build, :target, :backup
+		attr_reader :source, :build, :org, :target, :backup
 
 		# Relative link target
 		attr_reader :link_target
@@ -23,14 +23,11 @@ module Coffle
 
 			@verbose = options.fetch :verbose, false
 
-			# The absolute path to the source (i. e. the template)
-			@source=@coffle.source.join @path
-			# The absolute path to the built file
-			@build=@coffle.build.join @path
-			# The absolute path to the target (i. e. the config file location)
-			@target=@coffle.target.join unescape_path(@path)
-			# The absolute path to the backup file
-			@backup=@coffle.backup.join unescape_path(@path)
+			@source=@coffle.source.join @path # The absolute path to the source (i. e. the template)
+			@build =@coffle.build .join @path # The absolute path to the built file
+			@org   =@coffle.org   .join @path # The absolute path to the original of the built file
+			@target=@coffle.target.join unescape_path(@path) # The absolute path to the target (i. e. the config file location)
+			@backup=@coffle.backup.join unescape_path(@path) # The absolute path to the backup file
 
 			# The target the link should point to
 			@link_target=build.relative_path_from(target.dirname)
@@ -67,6 +64,7 @@ module Coffle
 			build.exist?
 		end
 
+		# FIXME what about org
 		def build_current?
 			if directory?
 				built?

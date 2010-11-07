@@ -27,9 +27,9 @@ module Coffle
 				dir.join("source").mkdir
 
 				# Create some files/directories
-				dir.join("source", "_foo").touch
+				dir.join("source", "_foo").write("Foo")
 				dir.join("source", "_bar").mkdir
-				dir.join("source", "_bar", "baz").touch
+				dir.join("source", "_bar", "baz").write("Baz")
 
 				# Create the coffle (also creates the target directory)
 				coffle=Coffle.new("#{dir}/source", "#{dir}/target")
@@ -305,21 +305,31 @@ module Coffle
 		def test_build
 			with_test_data do |dir, entries|
 				entries.each do |entry|
-					# Before building, the build file may not exist
+					# Before building, the build and org items may not exist
 					assert_not_exist entry.build
 					assert_not_exist entry.org
 					assert !entry.built?
 
-					# After building, the build file must exist
+					# After building, the build and org items must exist and be identical
 					entry.build!
 					assert_exist entry.build
 					assert_exist entry.org
 					assert entry.built?
 
+					if entry.directory?
+						assert_tree_equal(entry.build, entry.org)
+					else
+						assert_file_equal(entry.build, entry.org)
+					end
+
 					# For directory entries, the built file must be a directory
-					# TODO check for file if not a dir entry
-					assert_directory entry.build if entry.directory?
-					assert_directory entry.org   if entry.directory?
+					if entry.directory?
+						assert_directory entry.build
+						assert_directory entry.org
+					else
+						assert_file entry.build
+						assert_file entry.org
+					end
 				end
 			end
 		end
@@ -364,6 +374,7 @@ module Coffle
 
 		# TODO test install!(overwrite)
 
+		# TODO also compare file contents
 		def test_full
 			with_testdir do |dir|
 				# source          in actual/source

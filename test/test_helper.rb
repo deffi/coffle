@@ -53,6 +53,15 @@ module Coffle
 			end
 		end
 
+		def assert_file(file, message = nil)
+			file=file.to_s unless file.is_a? String
+
+			message=build_message message, '<?> is not a directory.', file
+			assert_block message do
+				File.file? file
+			end
+		end
+
 		def assert_exist(path, message = nil)
 			path=path.to_s unless path.is_a? String
 
@@ -84,6 +93,16 @@ module Coffle
 			message=build_message message, 'The container does not contain <?>.', element
 			assert_block message do
 				container.include? element
+			end
+		end
+
+		def assert_file_equal(expected, actual, message = nil)
+			assert_file expected
+			assert_file actual
+
+			message=build_message message, "File #{actual} does not match #{expected}"
+			assert_block message do
+				File.read(actual.to_s)==File.read(expected.to_s)
 			end
 		end
 

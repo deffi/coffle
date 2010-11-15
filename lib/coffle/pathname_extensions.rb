@@ -8,6 +8,10 @@ class Pathname
 
 		open("w") { |file| file.write string }
 	end
+
+	def file_identical?(other)
+		self.file? and other.file? and self.read==other.read
+	end
 end
 
 

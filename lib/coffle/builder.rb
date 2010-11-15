@@ -22,14 +22,10 @@ module Coffle
 		end
 
 		def build(source, target)
-			#FileUtils.copy_file @source, @target, preserve=false, dereference=true
+			raise ArgumentError.new("source is not a Pathname") if !source.is_a? Pathname
+			raise ArgumentError.new("target is not a Pathname") if !target.is_a? Pathname
 
-			@source=source
-			@target=target
-
-			File.open(@target, "w") do |file|
-				file.print process(File.read(@source))
-			end
+			target.write process(source.read)
 		end
 	end
 end

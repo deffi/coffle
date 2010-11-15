@@ -359,6 +359,14 @@ module Coffle
 			end
 		end
 
+		def test_modified
+			with_test_data do |dir, entries|
+				entries.each do |entry|
+				end
+			end
+		end
+
+
 		def test_build_file_in_nonexistent_directory
 			with_test_data do |dir, entries|
 				# Building a file in a non-existing directory

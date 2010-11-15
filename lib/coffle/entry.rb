@@ -64,12 +64,22 @@ module Coffle
 			build.exist?
 		end
 
-		# FIXME what about org
 		def build_current?
 			if directory?
 				built?
 			else
 				built? and build.mtime >= source.mtime
+			end
+		end
+
+		def modified?
+			if directory?
+				# Modified check only applies to file entries
+				false
+			else
+				# A file entry is modified if its build is different from its
+				# org
+				!build.file_identical?(org)
 			end
 		end
 
@@ -135,9 +145,8 @@ module Coffle
 					org.dirname.mkpath
 
 					# TODO test dereferencing
-					Builder.build source.to_s, build.to_s
-					# FIXME proper org handling (including not rewriting if changed)
-					Builder.build source.to_s, org  .to_s
+					Builder.build source, build
+					build.copy_file org
 				end
 			end
 		end

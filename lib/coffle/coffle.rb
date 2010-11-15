@@ -1,7 +1,7 @@
 require 'pathname'
 require 'optparse'
 
-
+# FIXME proper org handling (including not rewriting if changed)
 module Coffle
 	class Coffle
 		# Absolute
@@ -96,7 +96,7 @@ module Coffle
 				puts ex.message
 			end
 
-			action=ARGV[0]
+			action=ARGV[0]||""
 
 			case action.downcase
 			when "build"  : build!   options

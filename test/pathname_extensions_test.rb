@@ -61,6 +61,20 @@ module Coffle
 
 			# TODO assert that they refer to the same target
 		end
+
+		def test_copy_file
+			with_testdir do |dir|
+				file1=dir.join("file1")
+				file2=dir.join("file2")
+				contents="foo\nbar"
+
+				file1.write contents
+				file1.copy_file file2
+
+				assert_exist file2
+				assert_file_equal file1, file2 
+			end
+		end
 	end
 end
 

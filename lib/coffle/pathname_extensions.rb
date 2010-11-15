@@ -1,3 +1,5 @@
+require 'fileutils'
+
 class Pathname
 	def absolute
 		Pathname.getwd.join self
@@ -12,6 +14,9 @@ class Pathname
 	def file_identical?(other)
 		self.file? and other.file? and self.read==other.read
 	end
-end
 
+	def copy_file(other, preserve=false, dereference=true)
+		FileUtils.copy_file self.to_s, other.to_s, preserve, dereference
+	end
+end
 

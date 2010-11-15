@@ -32,6 +32,17 @@ module Coffle
 			end
 		end
 
+		def test_append
+			with_testdir do |dir|
+				file=dir.join("append_test")
+
+				file.write("foo")
+				file.append("bar")
+
+				assert_equal "foobar", file.read
+			end
+		end
+
 		def test_identical
 			with_testdir do |dir|
 				file1=dir.join("file1")

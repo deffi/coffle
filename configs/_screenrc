@@ -1,7 +1,0 @@
-caption always
-caption string "%-Lw%{= BW}%50>%n%f* %t%{-}%+Lw%<"
-
-hardstatus string "%h[%t]"
-
-startup_message off
-nethack on

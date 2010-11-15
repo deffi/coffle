@@ -73,6 +73,8 @@ module Coffle
 		end
 
 		def modified?
+			return false if !built?
+
 			if directory?
 				# Modified check only applies to file entries
 				false

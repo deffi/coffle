@@ -362,6 +362,16 @@ module Coffle
 		def test_modified
 			with_test_data do |dir, entries|
 				entries.each do |entry|
+					entry.build!
+
+					if entry.directory?
+						assert_equal false, entry.modified?
+					else
+						assert_equal false, entry.modified?
+
+						entry.build.append "x"
+						assert_equal true, entry.modified?
+					end
 				end
 			end
 		end

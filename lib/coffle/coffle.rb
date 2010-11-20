@@ -7,7 +7,6 @@ module Coffle
 		# Absolute
 		attr_reader :source, :build, :org, :target, :backup
 
-		# TODO should be in Pathname, or use mkpath? (what about @verbose?)
 		def create_directory (path)
 			if !path.exist?
 				puts "Creating #{path}" if @verbose

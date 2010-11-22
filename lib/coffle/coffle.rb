@@ -100,6 +100,8 @@ module Coffle
 			case action.downcase
 			when "build"  : build!   options
 			when "install": install! options
+			when "status" : status!  options
+			when "info"   : info!    options
 			else puts opts # Output the options help message
 			end
 		end
@@ -118,6 +120,18 @@ module Coffle
 			puts "Building in #{@build} (#{(rebuild)?"rebuilding":"non-rebuilding"})" if @verbose
 
 			entries.each { |entry| entry.build! rebuild }
+		end
+
+		def info! (options={})
+			puts "Source: #{@source}"
+			puts "Target: #{@target}"
+			puts
+			puts "Build:  #{@build}"
+			puts "Org:    #{@org}"
+		end
+
+		def status! (options={})
+			entries.each { |entry| puts entry.status }
 		end
 	end
 end

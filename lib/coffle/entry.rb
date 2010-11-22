@@ -6,14 +6,23 @@ module Coffle
 	class Entry
 		include Filenames
 
+		################
+		## Attributes ##
+		################
+
 		# The relative path
 		attr_reader :path
 
 		# Absolute paths to entries
 		attr_reader :source, :build, :org, :target, :backup
 
-		# Relative link target
+		# Relative link target from target to build
 		attr_reader :link_target
+
+
+		##################
+		## Construction ##
+		##################
 
 		# Options:
 		# * :verbose: print messages; recommended for interactive applications
@@ -33,10 +42,36 @@ module Coffle
 			@link_target=build.relative_path_from(target.dirname)
 		end
 
+
+		################
+		## Properties ##
+		################
+
 		# Whether the entry represents a directory
 		def directory?
 			!source.symlink? && source.directory?
 		end
+
+		def create_description
+			if directory?
+				"(directory)"
+			else
+				"-> #{link_target}"
+			end
+		end
+
+		def type
+			if directory?
+				"Dir "
+			else
+				"File"
+			end
+		end
+
+
+		############
+		## Status ##
+		############
 
 		# Whether the target already exists (file, directory or symlink)
 		def target_exist?
@@ -84,6 +119,22 @@ module Coffle
 				!build.file_identical?(org)
 			end
 		end
+
+		def status
+			# FIXME DOING complete status
+			# Build status can be (depends on @source, @build, @org):
+			#   * ...
+			# Install status can be (depends on @target):
+			#   * Installed
+			#   * Not installed
+			#   * Blocked
+			"#{type}  #{unescape_path(path)}"
+		end
+
+
+		#############
+		## Actions ##
+		#############
 
 		# Remove the target path (and make a backup)
 		def remove!
@@ -153,14 +204,6 @@ module Coffle
 			end
 		end
 
-		def create_description
-			if directory?
-				"(directory)"
-			else
-				"-> #{link_target}"
-			end
-		end
-
 		# Install the entry
 		# * overwrite: If true, existing entries will be backed up and replaced.
 		#   If false, existing entries will not be touched.
@@ -188,7 +231,6 @@ module Coffle
 				create!
 			end
 		end
-
 	end
 end
 

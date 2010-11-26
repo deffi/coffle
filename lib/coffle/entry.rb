@@ -134,18 +134,30 @@ module Coffle
 
 		def build_status
 			# TODO test
+			# TODO skipped
 			# FIXME DOING implement
 			# Build status can be (depends on @source, @build, @org):
+			#   * Not built (@build does not exist)
+			#   * Built, but not current (@build older than @source)
+			#   * Built, modified (@build different from @org)
+			#   * Built, not current, modified
+			#   * Built, current, not modified
+			# Existance:
+			#   * @source: must exist
+			#   * @build and @org: built (may or may not be current or modified)
+			#   * @build nor @org: not built (current or modified does not apply)
+			#   * @build xor @org: error
+			# Currency (TODO priority):
+			#   * @build != @org: modified
+			#   * @build older @source: not current
 			#   * ...
 			"?"
 		end
 
 		def target_status
 			# TODO test
-			# Target status can be (depends on @target):
-			#   * Installed
-			#   * Not installed
-			#   * Blocked
+			# TODO skipped
+			# Target status depends on @target
 			if    installed?    ; "Installed"
 			elsif target_exist? ; "Blocked"
 			else                ; "Not installed"

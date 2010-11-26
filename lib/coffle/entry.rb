@@ -118,7 +118,7 @@ module Coffle
 		end
 
 		# Whether the target for the entry is a symlink to the correct location
-		def target_current?
+		def installed?
 			if directory?
 				# Directory entry: the target must be a directory
 				target_directory?
@@ -133,6 +133,7 @@ module Coffle
 		### Combined
 
 		def build_status
+			# TODO test
 			# FIXME DOING implement
 			# Build status can be (depends on @source, @build, @org):
 			#   * ...
@@ -140,12 +141,15 @@ module Coffle
 		end
 
 		def target_status
-			# FIXME DOING implement
+			# TODO test
 			# Target status can be (depends on @target):
 			#   * Installed
 			#   * Not installed
 			#   * Blocked
-			"?"
+			if    installed?    ; "Installed"
+			elsif target_exist? ; "Blocked"
+			else                ; "Not installed"
+			end
 		end
 
 		def status
@@ -235,7 +239,7 @@ module Coffle
 		def install!(overwrite)
 			build! if (!built? || !build_current?)
 
-			if target_current?
+			if installed?
 				# Nothing to do
 				puts "#{MCurrent} #{target}" if @verbose
 			elsif target_exist?

@@ -86,6 +86,51 @@ module Coffle
 				assert_file_equal file1, file2 
 			end
 		end
+
+		def test_different_time
+			with_testdir do |dir|
+				file1=dir.join("file1")
+				file2=dir.join("file2")
+
+				# TODO set artificial times
+				file1.touch
+				wait_next_second
+				file2.touch
+
+				assert_equal true , file2.newer?(file1)
+				assert_equal false, file1.newer?(file2)
+
+				assert_equal false, file2.older?(file1)
+				assert_equal true , file1.older?(file2)
+
+				assert_equal true , file2.current?(file1)
+				assert_equal false, file1.current?(file2)
+			end
+		end
+
+		def test_same_time
+			with_testdir do |dir|
+				file1=dir.join("file1")
+				file2=dir.join("file2")
+
+				# TODO set artificial times
+				# Note: in_same_second seems not to behave correctly when
+				# called with { sleep 0.9 }
+				in_same_second do |iteration|
+					file1.touch
+					file2.touch
+				end
+
+				assert_equal false, file2.newer?(file1)
+				assert_equal false, file1.newer?(file2)
+
+				assert_equal false, file2.older?(file1)
+				assert_equal false, file1.older?(file2)
+
+				assert_equal true, file2.current?(file1)
+				assert_equal true, file1.current?(file2)
+			end
+		end
 	end
 end
 

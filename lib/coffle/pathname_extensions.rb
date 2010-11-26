@@ -24,5 +24,17 @@ class Pathname
 	def copy_file(other, preserve=false, dereference=true)
 		FileUtils.copy_file self.to_s, other.to_s, preserve, dereference
 	end
+
+	def newer?(other)
+		self.mtime > other.mtime
+	end
+
+	def older?(other)
+		self.mtime < other.mtime
+	end
+
+	def current?(other)
+		not older?(other)
+	end
 end
 

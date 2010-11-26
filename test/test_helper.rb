@@ -171,6 +171,30 @@ module Coffle
 				FileUtils.rm_r Testdir
 			end
 		end
+
+		def wait_next_second(delta=0.1)
+			s=Time.new.sec
+			while Time.new.sec==s do
+				sleep delta
+			end
+		end
+
+		def in_same_second
+			iteration=0
+
+			begin
+				start_time=Time.new
+				#puts "before"
+				yield iteration
+				#puts "after"
+				end_time=Time.new
+
+				#puts "start #{start_time.sec}.#{start_time.usec}, end #{end_time.sec}.#{end_time.usec}"
+				iteration+=1
+			end while start_time.sec!=end_time.sec
+
+			iteration
+		end
 	end
 end
 

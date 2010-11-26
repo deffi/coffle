@@ -62,7 +62,7 @@ module Coffle
 
 		def type
 			if directory?
-				"Dir "
+				"Dir"
 			else
 				"File"
 			end
@@ -72,6 +72,40 @@ module Coffle
 		############
 		## Status ##
 		############
+
+		### Of the build
+
+		def built?
+			build.exist?
+		end
+
+		# The source has not been modified after it was last built, i. e. we do
+		# not have to rebuild it
+		def build_current?
+			if directory?
+				built?
+			else
+				built? and build.current?(source)
+			end
+		end
+
+		# The built file has been modified, i. e. we cannot rebuild it without
+		# overwriting the changes
+		def modified?
+			return false if !built?
+
+			if directory?
+				# Modified check only applies to file entries
+				false
+			else
+				# A file entry is modified if its build is different from its
+				# org
+				!build.file_identical?(org)
+			end
+		end
+
+
+		### Of the target
 
 		# Whether the target already exists (file, directory or symlink)
 		def target_exist?
@@ -95,40 +129,31 @@ module Coffle
 			end
 		end
 
-		def built?
-			build.exist?
-		end
 
-		def build_current?
-			if directory?
-				built?
-			else
-				built? and build.mtime >= source.mtime
-			end
-		end
+		### Combined
 
-		def modified?
-			return false if !built?
-
-			if directory?
-				# Modified check only applies to file entries
-				false
-			else
-				# A file entry is modified if its build is different from its
-				# org
-				!build.file_identical?(org)
-			end
-		end
-
-		def status
-			# FIXME DOING complete status
+		def build_status
+			# FIXME DOING implement
 			# Build status can be (depends on @source, @build, @org):
 			#   * ...
-			# Install status can be (depends on @target):
+			"?"
+		end
+
+		def target_status
+			# FIXME DOING implement
+			# Target status can be (depends on @target):
 			#   * Installed
 			#   * Not installed
 			#   * Blocked
-			"#{type}  #{unescape_path(path)}"
+			"?"
+		end
+
+		def status
+			[type, build_status, target_status, unescape_path(path)]
+		end
+
+		def simple_status
+			status.join(" ")
 		end
 
 

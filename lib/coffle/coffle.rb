@@ -71,7 +71,7 @@ module Coffle
 			options = {}
 			opts=OptionParser.new
 
-			opts.banner = "Usage: #{$0} [options] action\n    action is one of install, build"
+			opts.banner = "Usage: #{$0} [options] action\n    action is one of status, install, build"
 
 			opts.separator ""
 			opts.separator "install options:"
@@ -131,7 +131,8 @@ module Coffle
 		end
 
 		def status! (options={})
-			entries.each { |entry| puts entry.status }
+			table=entries.map { |entry| entry.status }
+			puts table.format_table("  ")
 		end
 	end
 end

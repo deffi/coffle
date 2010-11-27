@@ -79,28 +79,23 @@ module Coffle
 			build.exist?
 		end
 
-		# The source has not been modified after it was last built, i. e. we do
-		# not have to rebuild it
-		def build_current?
-			if directory?
-				built?
-			else
-				built? and build.current?(source)
+		# The source has to be rebuilt (because it has been modified after it
+		# was last built, or it doesn't exist)
+		def outdated?
+			# TODO skipped
+			if    !built?    ; true    # Need rebuild because it does not exist
+			elsif  directory?; false   # Existing directories are never outdated
+			else             ; !@build.current?(@source)
 			end
 		end
 
 		# The built file has been modified, i. e. we cannot rebuild it without
 		# overwriting the changes
 		def modified?
-			return false if !built?
-
-			if directory?
-				# Modified check only applies to file entries
-				false
-			else
-				# A file entry is modified if its build is different from its
-				# org
-				!build.file_identical?(org)
+			# TODO skipped
+			if    !built?     ; false # What has not been built cannot be modified
+			elsif  directory? ; false # Directories are never modified
+			else              ; !@build.file_identical?(@org)
 			end
 		end
 
@@ -135,23 +130,39 @@ module Coffle
 		def build_status
 			# TODO test
 			# TODO skipped
-			# FIXME DOING implement
-			# Build status can be (depends on @source, @build, @org):
-			#   * Not built (@build does not exist)
-			#   * Built, but not current (@build older than @source)
-			#   * Built, modified (@build different from @org)
-			#   * Built, not current, modified
-			#   * Built, current, not modified
-			# Existance:
-			#   * @source: must exist
-			#   * @build and @org: built (may or may not be current or modified)
-			#   * @build nor @org: not built (current or modified does not apply)
-			#   * @build xor @org: error
-			# Currency (TODO priority):
-			#   * @build != @org: modified
-			#   * @build older @source: not current
-			#   * ...
-			"?"
+			# The source file must exist, or the entry may not exist at all
+
+			# File existence truth table:
+			#
+			# source | build | org || meaning
+			# -------+-------+-----++---------------------------------------------------------
+			# no     | -     | -   || Internal error - the entry should not exist
+			# yes    | no    | -   || Not built (the org is irrelevant)
+			# yes    | yes   | no  || Error: org missing (don't know if the user made changes)
+			# yes    | yes   | yes || Built
+
+			if    !@source.exist? ; return "Error"
+			elsif !@build .exist? ; return "Not built"
+			elsif !@org   .exist? ; return "org missing"
+			# Otherwise: built. Check if current.
+			else                  ; return "Built" # FIXME go on, check currency
+			end
+
+			# File currency truth table:
+			#   * outdated: @build is older than @source
+			#   * modified: @build is different from @org
+			#
+			# outdated | modified || meaning
+			# ---------+----------++--------------------------
+			# no       | no       || Current
+			# no       | yes      || Modified (rebuild will overwrite) 
+			# yes      | no       || Outdated (needs rebuild)
+			# yes      | yes      || Modified (also outdated, but modified is more imporant to the user)
+
+			if    modified? ; "Modified"
+			elsif outdated? ; "Outdated"
+			else            ; "Current"
+			end
 		end
 
 		def target_status
@@ -225,7 +236,7 @@ module Coffle
 		MBuild     = "Building  "
 
 		def build!(rebuild=false)
-			if build_current? && !rebuild
+			if !outdated? && !rebuild
 				puts "#{MCurrent} #{build}" if @verbose
 			else
 				puts "#{MBuild} #{build}" if @verbose
@@ -249,7 +260,7 @@ module Coffle
 		# * overwrite: If true, existing entries will be backed up and replaced.
 		#   If false, existing entries will not be touched.
 		def install!(overwrite)
-			build! if (!built? || !build_current?)
+			build! if (!built? || outdated?)
 
 			if installed?
 				# Nothing to do

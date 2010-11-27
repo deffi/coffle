@@ -334,27 +334,27 @@ module Coffle
 			end
 		end
 
-		def test_build_current
+		def test_outdated
 			with_test_data do |dir, entries|
 				entries.each do |entry|
-					# Before building, the build must not be current (it does
+					# Before building, the build must be outdated (it does
 					# not exist)
-					assert !entry.build_current?
+					assert entry.outdated?
 
-					# After building, the build must be current
+					# After building, the build must not be outdated
 					entry.build!
-					assert entry.build_current?
+					assert !entry.outdated?
 
 					# If the build file is older than the source file,
-					# build_current? must return false, except for directores,
-					# which are always current if they exist
+					# outdated? must return true, except for directores,
+					# which are never outdated
 					entry.build.utime(entry.source.mtime-1, entry.source.mtime-1)
-					assert !entry.build_current?                                          if !entry.directory?
-					assert  entry.build_current?, "An existing directory must be current" if  entry.directory?
+					assert  entry.outdated?                                     if !entry.directory?
+					assert !entry.outdated?, "A directory must not be outdated" if  entry.directory?
 
-					# After building, build_current? must return true again
+					# After building, outdated? must return false again
 					entry.build!
-					assert entry.build_current?
+					assert !entry.outdated?
 				end
 			end
 		end

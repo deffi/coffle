@@ -1,6 +1,6 @@
 == Next
 
-== High importance
+== High priority
 
 * Template processing
   * skipping files
@@ -21,7 +21,7 @@
 
 
 
-== Low importance
+== Low priority
 
 * Special files, like ssh authorized keys: define keys, then invoke keys in
   host blocks:

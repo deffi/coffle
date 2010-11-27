@@ -71,7 +71,7 @@ module Coffle
 			options = {}
 			opts=OptionParser.new
 
-			opts.banner = "Usage: #{$0} [options] action\n    action is one of status, install, build"
+			opts.banner = "Usage: #{$0} [options] action\n    action is one of info, status, build, install"
 
 			opts.separator ""
 			opts.separator "install options:"
@@ -97,6 +97,8 @@ module Coffle
 
 			action=ARGV[0]||""
 
+			# FIXME add diff (for modified entries)
+			# FIXME allow individual files to be specified
 			case action.downcase
 			when "build"  : build!   options
 			when "install": install! options
@@ -128,6 +130,7 @@ module Coffle
 			puts
 			puts "Build:  #{@build}"
 			puts "Org:    #{@org}"
+			#puts "Backup: #{@backup}"
 		end
 
 		def status! (options={})

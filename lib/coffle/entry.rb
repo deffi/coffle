@@ -145,7 +145,7 @@ module Coffle
 			elsif !@build .exist? ; return "Not built"
 			elsif !@org   .exist? ; return "org missing"
 			# Otherwise: built. Check if current.
-			else                  ; return "Built" # FIXME go on, check currency
+			# TODO: different message for directories?
 			end
 
 			# File currency truth table:
@@ -162,6 +162,7 @@ module Coffle
 			if    modified? ; "Modified"
 			elsif outdated? ; "Outdated"
 			else            ; "Current"
+			# TODO: different message for directories?
 			end
 		end
 
@@ -234,11 +235,17 @@ module Coffle
 		MCurrent   = "Current   "
 		MOverwrite = "Overwrite "
 		MBuild     = "Building  "
+		MModified  = "Modified  "
 
 		def build!(rebuild=false)
-			if !outdated? && !rebuild
-				puts "#{MCurrent} #{build}" if @verbose
-			else
+			# TODO update test - modified status was not handled
+
+			if modified?
+				# FIXME add overwrite option
+				# Modified, do not overwrite
+				puts "#{MModified} #{build}" if @verbose
+			elsif outdated? || rebuild
+				# Rebuild
 				puts "#{MBuild} #{build}" if @verbose
 				# The build file can be overwritten
 				if directory?
@@ -253,6 +260,9 @@ module Coffle
 					Builder.build source, build
 					build.copy_file org
 				end
+			else
+				# Current
+				puts "#{MCurrent} #{build}" if @verbose
 			end
 		end
 

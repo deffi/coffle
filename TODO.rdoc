@@ -1,18 +1,15 @@
 == Next
 
-* "coffle diff" (like svn diff)
-
-== Basic
+== High importance
 
 * Template processing
   * skipping files
     * how to mark a file as "generated, but skipped"?
 * Uninstall (restore latest (?) backup)
-* Message if file is not installed on build
-* command clean, which cleans source/.build etc., --all also backups, and print
-  a warning that the symlinks are now broken
 * mark directory as coffle directory? version number?
-* rename org to base, to keep option of using .org for the original sources
+* rename org to base, to keep option of using .org for the original sources?
+* colored messages (rainbow gem)
+* fix automessage
 
 
 == Documentation
@@ -24,7 +21,7 @@
 
 
 
-== Advanced
+== Low importance
 
 * Special files, like ssh authorized keys: define keys, then invoke keys in
   host blocks:
@@ -38,11 +35,19 @@
     <%= ssh_keys "martin@magrathea", "martin@damogran" %>
   <% end %>
   }}}
-* distinguish proprocessor by file extension
+* distinguish preprocessor by file extension
+  * additional file name escaping required
   * Pro: different pp possible
   * Con: collision possible
-* Allow unprocessed files. symlink directly (target->source instead of ->build)?
-  * Pro: changes to file possible
-  * Con: 
+* Allow unprocessed files.
+  * special case of different preprocessor (pro/con see there)
+  * symlink directly (target->source instead of ->build)?
+    * Pro: changes to file possible
+    * Con: 
 * Conditionals: host classes, user names
+* Specify individual files on the command line
+* Message if file is not installed on build
+* command clean, which cleans source/.build etc.
+  * only if nothing is installed, override with --force
+  * print a warning that the symlinks are now broken
 

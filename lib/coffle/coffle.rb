@@ -1,8 +1,12 @@
 require 'pathname'
 require 'optparse'
 
+require 'coffle/filenames'
+
 module Coffle
 	class Coffle
+		include Filenames
+
 		# Absolute
 		attr_reader :source, :build, :org, :target, :backup
 
@@ -70,7 +74,7 @@ module Coffle
 			options = {}
 			opts=OptionParser.new
 
-			opts.banner = "Usage: #{$0} [options] action\n    action is one of info, status, build, install"
+			opts.banner = "Usage: #{$0} [options] action\n    action is one of build, install, info, status, diff"
 
 			opts.separator ""
 			opts.separator "install options:"
@@ -96,23 +100,14 @@ module Coffle
 
 			action=ARGV[0]||""
 
-			# FIXME add diff (for modified entries)
-			# FIXME allow individual files to be specified
 			case action.downcase
 			when "build"  : build!   options
 			when "install": install! options
-			when "status" : status!  options
 			when "info"   : info!    options
+			when "status" : status!  options
+			when "diff"   : diff!    options
 			else puts opts # Output the options help message
 			end
-		end
-
-		def install! (options={})
-			overwrite=options[:overwrite]
-
-			puts "Installing to #{@target} (#{(overwrite)?"overwriting":"non-overwriting"})" if @verbose
-
-			entries.each { |entry| entry.install! overwrite }
 		end
 
 		def build! (options={})
@@ -127,6 +122,14 @@ module Coffle
 			entries.each { |entry| entry.build! rebuild, overwrite }
 		end
 
+		def install! (options={})
+			overwrite=options[:overwrite]
+
+			puts "Installing to #{@target} (#{(overwrite)?"overwriting":"non-overwriting"})" if @verbose
+
+			entries.each { |entry| entry.install! overwrite }
+		end
+
 		def info! (options={})
 			puts "Source: #{@source}"
 			puts "Target: #{@target}"
@@ -139,6 +142,20 @@ module Coffle
 		def status! (options={})
 			table=entries.map { |entry| entry.status }
 			puts table.format_table("  ")
+		end
+
+		def diff! (options={})
+			entries.each { |entry|
+				if entry.modified?
+					puts "="*80
+					puts "== #{unescape_path(entry.path)} (#{entry.path})"
+					puts "="*80
+					org_label  ="original"
+					build_label="modified"
+
+					system "diff -u --label #{org_label} #{entry.org} --label #{build_label} #{entry.build}"
+				end
+			}
 		end
 	end
 end

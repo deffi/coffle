@@ -36,5 +36,23 @@ class Pathname
 	def current?(other)
 		not older?(other)
 	end
+
+	def touch
+		open('a') {}
+		t=Time.now
+		utime t, t
+	end
+
+	def set_same_time(other)
+		self.utime other.atime, other.mtime
+	end
+
+	def set_older(other, seconds=1)
+		self.utime other.atime-seconds, other.mtime-seconds
+	end
+
+	def set_newer(other, seconds=1)
+		self.utime other.atime+seconds, other.mtime+seconds
+	end
 end
 

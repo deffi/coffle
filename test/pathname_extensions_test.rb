@@ -87,15 +87,31 @@ module Coffle
 			end
 		end
 
+		def test_set_time
+			with_testdir do |dir|
+				file1=dir.join("file1"); file1.touch
+				file2=dir.join("file2"); file2.touch
+
+				file2.set_older(file1)
+				assert_equal true, (file2.mtime<file1.mtime)
+				assert_equal true, (file2.atime<file1.atime)
+
+				file2.set_newer(file1)
+				assert_equal true, (file2.mtime>file1.mtime)
+				assert_equal true, (file2.atime>file1.atime)
+
+				file2.set_same_time(file1)
+				assert_equal true, (file2.mtime==file1.mtime)
+				assert_equal true, (file2.atime==file1.atime)
+			end
+		end
+
 		def test_different_time
 			with_testdir do |dir|
-				file1=dir.join("file1")
-				file2=dir.join("file2")
+				file1=dir.join("file1"); file1.touch
+				file2=dir.join("file2"); file2.touch
 
-				# TODO set artificial times
-				file1.touch
-				wait_next_second
-				file2.touch
+				file2.set_newer(file1)
 
 				assert_equal true , file2.newer?(file1)
 				assert_equal false, file1.newer?(file2)
@@ -110,16 +126,10 @@ module Coffle
 
 		def test_same_time
 			with_testdir do |dir|
-				file1=dir.join("file1")
-				file2=dir.join("file2")
+				file1=dir.join("file1"); file1.touch
+				file2=dir.join("file2"); file2.touch
 
-				# TODO set artificial times
-				# Note: in_same_second seems not to behave correctly when
-				# called with { sleep 0.9 }
-				in_same_second do |iteration|
-					file1.touch
-					file2.touch
-				end
+				file2.set_same_time(file1)
 
 				assert_equal false, file2.newer?(file1)
 				assert_equal false, file1.newer?(file2)
@@ -129,6 +139,18 @@ module Coffle
 
 				assert_equal true, file2.current?(file1)
 				assert_equal true, file1.current?(file2)
+			end
+		end
+
+		def test_touch
+			with_testdir do |dir|
+				file=dir.join("file")
+
+				assert_not_exist file
+				file.touch
+				assert_exist file
+				file.touch
+				assert_exist file
 			end
 		end
 	end

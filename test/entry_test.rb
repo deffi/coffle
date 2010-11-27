@@ -334,6 +334,57 @@ module Coffle
 			end
 		end
 
+		def test_build_outdated
+			with_test_data do |dir, entries|
+				# Test rebuilding of outdated entries, this only applies to
+				# file entries
+				entries.each do |entry|
+					if !entry.directory?
+						# Build - must be current
+						entry.build!
+						assert !entry.outdated?
+
+						# Outdate - must be outdated
+						entry.build.set_older(entry.source)
+						assert entry.outdated?
+
+						# Rebuild - must be current
+						entry.build!
+						assert !entry.outdated?
+					end
+				end
+			end
+		end
+
+		def test_build_modified
+			with_test_data do |dir, entries|
+				# Test rebuilding of outdated entries, this only applies to
+				# file entries
+				entries.each do |entry|
+					if !entry.directory?
+						# Build - must be current
+						entry.build!
+						assert !entry.outdated?
+
+						# Outdate and modify - must be outdated
+						entry.build.append "x"
+						entry.build.set_older(entry.source)
+						assert entry.outdated?
+						assert entry.modified?
+
+						# Rebuild - must still be outdated because modified
+						# entries are not overwritten
+						entry.build!
+						assert entry.outdated?
+
+						# Rebuild with overwrite - must be current
+						entry.build!(false, true)
+						assert !entry.outdated?
+					end
+				end
+			end
+		end
+
 		def test_outdated
 			with_test_data do |dir, entries|
 				entries.each do |entry|
@@ -348,7 +399,7 @@ module Coffle
 					# If the build file is older than the source file,
 					# outdated? must return true, except for directores,
 					# which are never outdated
-					entry.build.utime(entry.source.mtime-1, entry.source.mtime-1)
+					entry.build.set_older(entry.source)
 					assert  entry.outdated?                                     if !entry.directory?
 					assert !entry.outdated?, "A directory must not be outdated" if  entry.directory?
 

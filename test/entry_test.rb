@@ -380,6 +380,18 @@ module Coffle
 						# Rebuild with overwrite - must be current
 						entry.build!(false, true)
 						assert !entry.outdated?
+
+						# Modify only
+						entry.build.append "x"
+						assert !entry.outdated?
+						assert entry.modified?
+
+						# Rebuild with overwrite - must no longer be modified,
+						# even though it was current before
+						assert !entry.outdated?
+						entry.build!(false, true)
+						assert !entry.outdated?
+						assert !entry.modified?
 					end
 				end
 			end

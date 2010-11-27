@@ -213,7 +213,7 @@ module Coffle
 		end
 
 
-		# Create the target (which may not exist)
+		# Create the target (which must not exist)
 		def create!
 			raise "Target exists" if target_exist?
 
@@ -237,6 +237,8 @@ module Coffle
 
 		# Unconditionally build it
 		def do_build!
+			puts "#{MBuild} #{build}" if @verbose
+
 			if directory?
 				build.mkpath
 				org  .mkpath
@@ -252,13 +254,20 @@ module Coffle
 		end
 
 		def build!(rebuild=false, overwrite=false)
-			if modified? && !overwrite
-				# Modified, do not overwrite
-				puts "#{MModified} #{build}" if @verbose
+			# Note that if the entry is modified and overwrite is true, it
+			# is rebuilt even if it is current.
+
+			if modified?
+				# Build modified by the user
+				if overwrite
+					# Overwrite the modifications
+					do_build!
+				else
+					# Do not overwrite
+					puts "#{MModified} #{build}" if @verbose
+				end
 			elsif outdated? || rebuild
-				# Rebuild
-				puts "#{MBuild} #{build}" if @verbose
-				# The build file can be overwritten
+				# Outdated (source changed)
 				do_build!
 			else
 				# Current

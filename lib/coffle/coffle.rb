@@ -1,7 +1,6 @@
 require 'pathname'
 require 'optparse'
 
-# FIXME proper org handling (including not rewriting if changed)
 module Coffle
 	class Coffle
 		# Absolute
@@ -117,11 +116,15 @@ module Coffle
 		end
 
 		def build! (options={})
-			rebuild=options[:rebuild]
+			rebuild  =options[:rebuild  ]
+			overwrite=options[:overwrite]
 
-			puts "Building in #{@build} (#{(rebuild)?"rebuilding":"non-rebuilding"})" if @verbose
+			rebuilding =(rebuild  )?"rebuilding" :"non-rebuilding"
+			overwriting=(overwrite)?"overwriting":"non-overwriting"
 
-			entries.each { |entry| entry.build! rebuild }
+			puts "Building in #{@build} (#{rebuilding}, #{overwriting})" if @verbose
+
+			entries.each { |entry| entry.build! rebuild, overwrite }
 		end
 
 		def info! (options={})

@@ -4,6 +4,10 @@ require 'optparse'
 require 'coffle/filenames'
 
 module Coffle
+	module Exceptions
+		class DirectoryIsNoCoffleSource < Exception; end
+	end
+
 	class Coffle
 		include Filenames
 
@@ -14,6 +18,18 @@ module Coffle
 			if !path.exist?
 				puts "Creating #{path}" if @verbose
 				path.mkpath
+			end
+		end
+
+		def coffle_source_directory?(dir)
+			coffle_dir=dir.join(".coffle")
+			coffle_dir.exist? and coffle_dir.directory?
+		end
+
+		def assert_source_directory(dir, msg=nil)
+			if !coffle_source_directory?(dir)
+				msg ||= "#{dir} is not a coffle source directory"
+				raise Exceptions::DirectoryIsNoCoffleSource, msg
 			end
 		end
 
@@ -28,6 +44,8 @@ module Coffle
 			# Convert to Pathname
 			@source=Pathname.new(@source) unless @source.is_a?(Pathname)
 			@target=Pathname.new(@target) unless @target.is_a?(Pathname)
+
+			assert_source_directory @source
 
 			@backup=@source.join(".backups/#{Time.now.strftime("%Y-%m-%d_%H-%M-%S")}")
 			@build =@source.join(".build")
@@ -68,6 +86,15 @@ module Coffle
 				# Create an entry with the (relative) pathname
 				Entry.new(self, Pathname.new(dir), :verbose=>@verbose)
 			}
+		end
+
+		def self.run(source, target, options)
+			begin
+				Coffle.new(source, target, options).run
+			rescue Exceptions::DirectoryIsNoCoffleSource => ex
+				puts "#{source} is not a coffle source directory."
+				puts "coffle source directories must contain a .coffle directory."
+			end
 		end
 
 		def run

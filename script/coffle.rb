@@ -5,6 +5,5 @@ require File.dirname(__FILE__) + '/../lib/coffle'
 source = "."
 target = ENV['HOME']
 
-coffle=Coffle::Coffle.new(source, target, :verbose=>true)
-coffle.run
+Coffle::Coffle.run(source, target, :verbose=>true)
 

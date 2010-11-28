@@ -9,8 +9,8 @@
 
 == Documentation
 
-* Not copying directly to target: because it is unclear when target files can
-  be overwritten; files in .build/ always can.
+* Not copying directly to target: because it is unclear whether the file was
+  installed by coffle
 * not .build/.install: because the install operation is something else
 * no unescaped names in processing directories: so we can use dotfiles for bookkeeping
 

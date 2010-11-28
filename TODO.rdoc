@@ -7,9 +7,7 @@
     * how to mark a file as "generated, but skipped"?
 * Uninstall (restore latest (?) backup)
 * mark directory as coffle directory? version number?
-* rename org to base, to keep option of using .org for the original sources?
 * colored messages (rainbow gem)
-* fix automessage
 
 
 == Documentation
@@ -46,6 +44,7 @@
     * Con: 
 * Conditionals: host classes, user names
 * Specify individual files on the command line
+  * Update automessage command to rebuild only this file
 * Message if file is not installed on build
 * command clean, which cleans source/.build etc.
   * only if nothing is installed, override with --force

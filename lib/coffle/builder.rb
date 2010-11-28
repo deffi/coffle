@@ -4,6 +4,8 @@ require 'coffle/template_methods'
 
 module Coffle
 	class Builder
+		attr_reader :source, :target
+
 		# Include modules that should be available to the templates in
 		# TemplateMethods
 		include TemplateMethods
@@ -22,6 +24,9 @@ module Coffle
 		end
 
 		def build(source, target)
+			@source=source
+			@target=target
+
 			raise ArgumentError.new("source is not a Pathname") if !source.is_a? Pathname
 			raise ArgumentError.new("target is not a Pathname") if !target.is_a? Pathname
 

@@ -5,6 +5,7 @@ require 'coffle/template_methods'
 module Coffle
 	class Builder
 		attr_reader :source, :target
+		attr_reader :skipped
 
 		# Include modules that should be available to the templates in
 		# TemplateMethods
@@ -30,7 +31,16 @@ module Coffle
 			raise ArgumentError.new("source is not a Pathname") if !source.is_a? Pathname
 			raise ArgumentError.new("target is not a Pathname") if !target.is_a? Pathname
 
-			target.write process(source.read)
+			processed=process(source.read)
+
+			# FIXME DOING if skipped:
+			#   - remove the targe file (what about the installed file?)
+			#   - "Skipped" message
+			if !@skipped
+				target.write processed
+			end
+
+			!@skipped
 		end
 	end
 end

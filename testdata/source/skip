@@ -1,0 +1,6 @@
+<%= automessage '-- ' %>
+
+Here's a fill which will be...
+<% skip %>
+...skipped.
+

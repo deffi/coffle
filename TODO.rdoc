@@ -2,9 +2,12 @@
 
 == High priority
 
+* Uninstall (restore latest (?) backup)
 * skipping files
   * how to mark a file as skipped?
-* Uninstall (restore latest (?) backup)
+  * skipped means "not under coffle control on this machine"
+  * skipped files are not installed
+  * if already installed, uninstall?
 
 
 == Documentation
@@ -35,11 +38,11 @@
   * additional file name escaping required
   * Pro: different pp possible
   * Con: collision possible
-* Allow unprocessed files.
-  * special case of different preprocessor (pro/con see there)
-  * symlink directly (target->source instead of ->build)?
-    * Pro: changes to file possible
-    * Con: 
+  * Allow unprocessed files.
+    * special case of different preprocessor (pro/con see there)
+    * symlink directly (target->source instead of ->build)?
+      * Pro: changes to file possible
+      * Con: 
 * Conditionals: host classes, user names
 * Specify individual files on the command line
   * Update automessage command to rebuild only this file

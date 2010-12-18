@@ -18,6 +18,44 @@
 * no unescaped names in processing directories: so we can use dotfiles for bookkeeping
 
 
+=== Backups ===
+
+Goals:
+* install (even with --overwrite) followed by uninstall => same as before
+
+Conclusions:
+* If on "install" the backup is present and the target is "none" or "other", we
+  may not keep the backup because after "uninstall", we would have restored an
+  old backup. We also do not want to silently drop the backup after the user
+  deletes the coffle link.
+
+Install
+=======
+target    |backup  ||condition          |backup action |target action |comments
+----------+--------++-------------------+--------------+--------------+-------------------
+installed |-       ||-                  |-             |-             |already current
+----------+--------++-------------------+--------------+--------------+-------------------
+none      |none    ||-                  |-             |install       |regular install
+other     |none    ||--overwrite        |make          |install       |overwriting install
+----------+--------++-------------------+--------------+--------------+-------------------
+none      |present ||refuse                                           |target was removed
+other     |present ||refuse                                           |target was replaced
+
+
+Uninstall
+=========
+target    |backup  ||target action |backup action |comments
+----------+--------++--------------+--------------+-------------------------------------
+installed |present ||restore       |remove        |restore original file
+installed |none    ||remove        |-             |restore (file was not present before)
+----------+--------++--------------+--------------+-------------------------------------
+none      |none    ||-             |-             |not installed (or: removed and not present before)
+other     |none    ||-             |-             |not installed (or: replaced and not present before)
+----------+--------++--------------+--------------+-------------------------------------
+none      |present ||refuse                       |target was removed
+other     |present ||refuse                       |target was replaced
+
+
 
 == Low priority
 
@@ -33,7 +71,7 @@
     <%= ssh_keys "martin@magrathea", "martin@damogran" %>
   <% end %>
   }}}
-* colored messages (rainbow gem)
+* colored messages (rainbow gem) (?) (no gem requirements!)
 * distinguish preprocessor by file extension
   * additional file name escaping required
   * Pro: different pp possible
@@ -54,4 +92,9 @@
   * move all coffle directories (.build, .install) to coffle?
 * coffle init
 * allow help message/coffle init even in non-source-directory
+* add .coffle_target/ to the target, so we can do coffle commands from there
+* better solution for installing a removed or replaced target:
+  * switches to drop the old back or the target
+  * operation drop_backup
+* similarly, allow uninstalling of removed or replaced target with a switch
 

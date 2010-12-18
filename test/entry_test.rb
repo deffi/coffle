@@ -68,9 +68,17 @@ module Coffle
 		end
 
 		# Like with_test_data, but only passes each of the entries
-		def with_test_entries
+		def with_test_entries(selection=:all)
 			with_test_data do |dir, entries|
-				entries.each do |entry|
+				active_entries=
+					case selection
+					when :all         then entries
+					when :files       then entries.select { |e| e.file? }
+					when :directories then entries.select { |e| e.directory? }
+					else raise ArgumentError, "Invalid selection #{selection.inspect}"
+					end
+
+				active_entries.each do |entry|
 					yield entry
 				end
 			end
@@ -110,6 +118,20 @@ module Coffle
 			end
 		end
 
+		def test_with_test_entries
+			# Make sure the with_test_entries selection works properly
+
+			with_test_entries(:directories) do |entry|
+				assert_equal true , entry.directory?
+				assert_equal false, entry.file?
+			end
+
+			with_test_entries(:files) do |entry|
+				assert_equal true , entry.file?
+				assert_equal false, entry.directory?
+			end
+		end
+
 		def test_directory
 			with_test_data do |dir, entries|
 				# directory? must return true for directory entries, false for
@@ -117,6 +139,16 @@ module Coffle
 				assert_equal false, @foo.directory?
 				assert_equal true , @bar.directory?
 				assert_equal false, @baz.directory?
+			end
+		end
+
+		def test_file
+			with_test_data do |dir, entries|
+				# file? must return false for directory entries, true for
+				# file entries
+				assert_equal true , @foo.file?
+				assert_equal false, @bar.file?
+				assert_equal true , @baz.file?
 			end
 		end
 
@@ -346,59 +378,55 @@ module Coffle
 		def test_build_outdated
 			# Test rebuilding of outdated entries, this only applies to
 			# file entries
-			with_test_entries do |entry|
-				if !entry.directory?
-					# Build - must be current
-					entry.build!
-					assert !entry.outdated?
+			with_test_entries(:files) do |entry|
+				# Build - must be current
+				entry.build!
+				assert !entry.outdated?
 
-					# Outdate - must be outdated
-					entry.build.set_older(entry.source)
-					assert entry.outdated?
+				# Outdate - must be outdated
+				entry.build.set_older(entry.source)
+				assert entry.outdated?
 
-					# Rebuild - must be current
-					entry.build!
-					assert !entry.outdated?
-				end
+				# Rebuild - must be current
+				entry.build!
+				assert !entry.outdated?
 			end
 		end
 
 		def test_build_modified
 			# Test rebuilding of outdated entries, this only applies to
 			# file entries
-			with_test_entries do |entry|
-				if !entry.directory?
-					# Build - must be current
-					entry.build!
-					assert !entry.outdated?
+			with_test_entries(:files) do |entry|
+				# Build - must be current
+				entry.build!
+				assert !entry.outdated?
 
-					# Outdate and modify - must be outdated
-					entry.build.append "x"
-					entry.build.set_older(entry.source)
-					assert entry.outdated?
-					assert entry.modified?
+				# Outdate and modify - must be outdated
+				entry.build.append "x"
+				entry.build.set_older(entry.source)
+				assert entry.outdated?
+				assert entry.modified?
 
-					# Rebuild - must still be outdated because modified
-					# entries are not overwritten
-					entry.build!
-					assert entry.outdated?
+				# Rebuild - must still be outdated because modified
+				# entries are not overwritten
+				entry.build!
+				assert entry.outdated?
 
-					# Rebuild with overwrite - must be current
-					entry.build!(false, true)
-					assert !entry.outdated?
+				# Rebuild with overwrite - must be current
+				entry.build!(false, true)
+				assert !entry.outdated?
 
-					# Modify only
-					entry.build.append "x"
-					assert !entry.outdated?
-					assert entry.modified?
+				# Modify only
+				entry.build.append "x"
+				assert !entry.outdated?
+				assert entry.modified?
 
-					# Rebuild with overwrite - must no longer be modified,
-					# even though it was current before
-					assert !entry.outdated?
-					entry.build!(false, true)
-					assert !entry.outdated?
-					assert !entry.modified?
-				end
+				# Rebuild with overwrite - must no longer be modified,
+				# even though it was current before
+				assert !entry.outdated?
+				entry.build!(false, true)
+				assert !entry.outdated?
+				assert !entry.modified?
 			end
 		end
 

@@ -52,6 +52,10 @@ module Coffle
 			!source.symlink? && source.directory?
 		end
 
+		def file?
+			!directory?
+		end
+
 		def create_description
 			if directory?
 				"(directory)"

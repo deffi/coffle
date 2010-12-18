@@ -4,6 +4,7 @@
 
 * Uninstall (restore latest (?) backup)
 * skipping files
+  * do we need to distinguish "none" and "don't touch"?
   * how to mark a file as skipped?
   * skipped means "not under coffle control on this machine"
   * skipped files are not installed
@@ -98,5 +99,6 @@ other     |present ||refuse                       |target was replaced
   * switches to drop the old back or the target
   * operation drop_backup
 * similarly, allow uninstalling of removed or replaced target with a switch
+* implementation: there should be a DirectoryClass and a FileClass
 
 

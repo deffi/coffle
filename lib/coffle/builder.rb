@@ -33,8 +33,8 @@ module Coffle
 
 			processed=process(source.read)
 
-			# FIXME DOING if skipped:
-			#   - remove the targe file (what about the installed file?)
+			# FIXME if skipped:
+			#   - uninstall the entry
 			#   - "Skipped" message
 			if !@skipped
 				target.write processed

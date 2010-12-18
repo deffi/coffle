@@ -457,7 +457,32 @@ module Coffle
 			end
 		end
 
-		# TODO test install!(overwrite)
+		# FIXME DOING
+		# Test install (check target and backup):
+		#   * target is none
+		#   * target is file, with and without overwrite
+		#   * target is directory, with and without overwrite
+		#   * target is already installed
+		#   * target was removed
+		#   * target was replaced
+		#
+		# Test uninstall:
+		#   * target installed, with/without backup
+		#   * backup not present, target is none/file/dir (nothing done)
+		#   * target was removed
+		#   * target was replaced
+		#
+		# Test install/uninstall:
+		#   * none before
+		#   * file/directory before (with and without overwrite)
+
+		def test_install
+			# TODO with_test_entries if you don't need the dir and the entries array
+			with_test_data do |dir, entries|
+				entries.each do |entry|
+				end
+			end
+		end
 
 		# TODO also compare file contents
 		def test_full

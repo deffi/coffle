@@ -21,16 +21,24 @@ module Coffle
 			end
 		end
 
-		def coffle_source_directory?(dir)
-			coffle_dir=dir.join(".coffle")
+		def self.coffle_directory(directory)
+			directory.join(".coffle")
+		end
+
+		def self.coffle_source_directory?(directory)
+			coffle_dir=coffle_directory(directory)
 			coffle_dir.exist? and coffle_dir.directory?
 		end
 
-		def assert_source_directory(dir, msg=nil)
-			if !coffle_source_directory?(dir)
-				msg ||= "#{dir} is not a coffle source directory"
+		def self.assert_source_directory(directory, msg=nil)
+			if !coffle_source_directory?(directory)
+				msg ||= "#{directory} is not a coffle source directory"
 				raise Exceptions::DirectoryIsNoCoffleSource, msg
 			end
+		end
+
+		def self.initialize_source_directory(directory)
+			coffle_directory(directory).mkpath
 		end
 
 		# Options:
@@ -45,7 +53,7 @@ module Coffle
 			@source=Pathname.new(@source) unless @source.is_a?(Pathname)
 			@target=Pathname.new(@target) unless @target.is_a?(Pathname)
 
-			assert_source_directory @source
+			self.class.assert_source_directory @source
 
 			@backup=@source.join(".backups/#{Time.now.strftime("%Y-%m-%d_%H-%M-%S")}")
 			@build =@source.join(".build")

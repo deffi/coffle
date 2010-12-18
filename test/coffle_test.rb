@@ -8,17 +8,38 @@ module Coffle
 	class CoffleTest <Test::Unit::TestCase
 		include TestHelper
 
+		def test_coffle_directory
+			with_testdir do |dir|
+				source_dir=dir.join("source")
+				target_dir=dir.join("target")
+
+				# It does not exist
+				assert_equal false, Coffle.coffle_source_directory?(source_dir)
+				assert_raise(Exceptions::DirectoryIsNoCoffleSource) { Coffle.assert_source_directory(source_dir) }
+				assert_raise(Exceptions::DirectoryIsNoCoffleSource) { Coffle.new(source_dir, target_dir) }
+
+				# It's not a coffle source directory
+				assert_equal false, Coffle.coffle_source_directory?(source_dir)
+				assert_raise(Exceptions::DirectoryIsNoCoffleSource) { Coffle.assert_source_directory(source_dir) }
+				assert_raise(Exceptions::DirectoryIsNoCoffleSource) { Coffle.new(source_dir, target_dir) }
+
+				# Make it a coffle source directory
+				Coffle.initialize_source_directory(source_dir)
+
+				assert_equal true, Coffle.coffle_source_directory?(source_dir)
+				assert_nothing_raised { Coffle.assert_source_directory(source_dir) }
+				assert_nothing_raised { Coffle.new(source_dir, target_dir) }
+			end
+		end
+
 		def test_paths
 			with_testdir do |dir|
 				assert dir.relative?
 
-				# If the source does not exist, an error must be raised
-				assert_raise RuntimeError do
-					Coffle.new("#{dir}/source", "#{dir}/target")
-				end
-
-				# Create the source directory
-				dir.join("source").mkdir
+				# Create and initialize the source directory
+				source_dir=dir.join("source")
+				source_dir.mkdir
+				Coffle.initialize_source_directory(source_dir)
 
 				# Create the Coffle
 				coffle=Coffle.new("#{dir}/source", "#{dir}/target")
@@ -43,12 +64,15 @@ module Coffle
 
 		def test_entries
 			with_testdir do |dir|
-				dir.join("source").mkdir
+				source_dir=dir.join("source")
 
-				dir.join("source", "_foo").touch
-				dir.join("source", "_bar").mkdir
-				dir.join("source", "_bar", "baz").touch
-				dir.join("source", ".ignore").touch # Must be ignored
+				source_dir.mkdir
+				Coffle.initialize_source_directory(source_dir)
+
+				source_dir.join("_foo").touch
+				source_dir.join("_bar").mkdir
+				source_dir.join("_bar", "baz").touch
+				source_dir.join(".ignore").touch # Must be ignored
 
 				# Construct with relative paths and strings
 				coffle=Coffle.new("#{dir}/source", "#{dir}/target")

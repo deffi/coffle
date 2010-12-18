@@ -23,16 +23,20 @@ module Coffle
 		#
 		def with_test_data
 			with_testdir do |dir|
-				# Create the source directory
-				dir.join("source").mkdir
+				source_dir=dir.join("source")
+				target_dir=dir.join("target")
+
+				# Create and initialize the source directory
+				source_dir.mkdir
+				Coffle.initialize_source_directory(source_dir)
 
 				# Create some files/directories
-				dir.join("source", "_foo").write("Foo")
-				dir.join("source", "_bar").mkdir
-				dir.join("source", "_bar", "baz").write("Baz")
+				source_dir.join("_foo").write("Foo")
+				source_dir.join("_bar").mkdir
+				source_dir.join("_bar", "baz").write("Baz")
 
 				# Create the coffle (also creates the target directory)
-				coffle=Coffle.new("#{dir}/source", "#{dir}/target")
+				coffle=Coffle.new(source_dir, target_dir)
 				entries=coffle.entries
 
 				# Extract the entries by name and make sure they are found
@@ -467,6 +471,8 @@ module Coffle
 
 				# Create the source data (and expected source)
 				["actual", "expected"].each do |prefix|
+					dir.join(prefix, "source", ".coffle").mkpath
+
 					dir.join(prefix, "source").mkpath
 					dir.join(prefix, "source", "_foo").touch
 					dir.join(prefix, "source", "_bar").mkdir

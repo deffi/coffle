@@ -21,6 +21,10 @@ module Coffle
 		# * directory _bar
 		# * file      _bar/baz
 		#
+		# Also sets @foo, @bar, @baz (TODO pass a hash instead)
+		#
+		# Use with_test_entries instead if you do not need the dir or
+		# the entries array
 		def with_test_data
 			with_testdir do |dir|
 				source_dir=dir.join("source")
@@ -60,6 +64,15 @@ module Coffle
 
 				# TODO test for individual entries (yield dir, [@baz]), but
 				# have to restore state first
+			end
+		end
+
+		# Like with_test_data, but only passes each of the entries
+		def with_test_entries
+			with_test_data do |dir, entries|
+				entries.each do |entry|
+					yield entry
+				end
 			end
 		end
 
@@ -117,112 +130,106 @@ module Coffle
 		end
 
 		def test_target_checks
-			with_test_data do |dir, entries|
-				entries.each do |entry|
-					# The target may not exist (not created yet)
-					assert_not_exist entry.target
+			with_test_entries do |entry|
+				# The target may not exist (not created yet)
+				assert_not_exist entry.target
 
-					# If the target does not exist, target_exist?,
-					# target_directory? and installed? must return false
-					assert_equal false, entry.target_exist?
-					assert_equal false, entry.target_directory?
-					assert_equal false, entry.installed?
+				# If the target does not exist, target_exist?,
+				# target_directory? and installed? must return false
+				assert_equal false, entry.target_exist?
+				assert_equal false, entry.target_directory?
+				assert_equal false, entry.installed?
 
-					# If the target is a file, target_exist? must return true,
-					# target_directory? and installed? must return false
-					entry.target.dirname.mkpath
-					entry.target.touch
-					assert_equal true , entry.target_exist?
-					assert_equal false, entry.target_directory?
-					assert_equal false, entry.installed?
-					entry.target.delete
+				# If the target is a file, target_exist? must return true,
+				# target_directory? and installed? must return false
+				entry.target.dirname.mkpath
+				entry.target.touch
+				assert_equal true , entry.target_exist?
+				assert_equal false, entry.target_directory?
+				assert_equal false, entry.installed?
+				entry.target.delete
 
-					# If the target is a directory, target_exist? and
-					# target_directory? must return true, installed? must
-					# return true exactly for directory entries
-					entry.target.mkdir
-					assert_equal true            , entry.target_exist?
-					assert_equal true            , entry.target_directory?
-					assert_equal entry.directory?, entry.installed?
-					entry.target.delete
+				# If the target is a directory, target_exist? and
+				# target_directory? must return true, installed? must
+				# return true exactly for directory entries
+				entry.target.mkdir
+				assert_equal true            , entry.target_exist?
+				assert_equal true            , entry.target_directory?
+				assert_equal entry.directory?, entry.installed?
+				entry.target.delete
 
-					# If the target is a symlink to a non-existing file,
-					# target_exist? must return true, target_directory?
-					# and installed? must return false
-					entry.target.make_symlink "bull"
-					assert_equal true , entry.target_exist?
-					assert_equal false, entry.target_directory?
-					assert_equal false, entry.installed?
-					entry.target.delete
+				# If the target is a symlink to a non-existing file,
+				# target_exist? must return true, target_directory?
+				# and installed? must return false
+				entry.target.make_symlink "bull"
+				assert_equal true , entry.target_exist?
+				assert_equal false, entry.target_directory?
+				assert_equal false, entry.installed?
+				entry.target.delete
 
-					# If the target is a symlink to a file (except the correct
-					# link target), target_exist? must return true,
-					# target_directory? and installed? must return false
-					entry.target.dirname.join("dummy").touch
-					entry.target.make_symlink "dummy"
-					assert_equal true , entry.target_exist?
-					assert_equal false, entry.target_directory?
-					assert_equal false, entry.installed?
-					entry.target.delete
-					entry.target.dirname.join("dummy").delete
+				# If the target is a symlink to a file (except the correct
+				# link target), target_exist? must return true,
+				# target_directory? and installed? must return false
+				entry.target.dirname.join("dummy").touch
+				entry.target.make_symlink "dummy"
+				assert_equal true , entry.target_exist?
+				assert_equal false, entry.target_directory?
+				assert_equal false, entry.installed?
+				entry.target.delete
+				entry.target.dirname.join("dummy").delete
 
-					# If the target is a symlink to a directory, target_exist?
-					# must return true, target_directory? and installed?
-					# must return false.
-					entry.target.make_symlink "."
-					assert_equal true , entry.target_exist?
-					assert_equal false, entry.target_directory?
-					assert_equal false, entry.installed?
-					entry.target.delete
-				end
+				# If the target is a symlink to a directory, target_exist?
+				# must return true, target_directory? and installed?
+				# must return false.
+				entry.target.make_symlink "."
+				assert_equal true , entry.target_exist?
+				assert_equal false, entry.target_directory?
+				assert_equal false, entry.installed?
+				entry.target.delete
 			end
 		end
 
 		def test_create
-			with_test_data do |dir, entries|
-				entries.each do |entry|
-					# If the target already exists and is a directory, create! must
-					# raise an exception
-					entry.target.mkpath
-					assert_raise(RuntimeError) { entry.create! }
-					entry.target.rmdir
+			with_test_entries do |entry|
+				# If the target already exists and is a directory, create! must
+				# raise an exception
+				entry.target.mkpath
+				assert_raise(RuntimeError) { entry.create! }
+				entry.target.rmdir
 
-					# If the target already exists and is a file, create! must
-					# raise an exception
-					entry.target.dirname.mkpath
-					entry.target.touch
-					assert_raise(RuntimeError) { entry.create! }
-					entry.target.delete
+				# If the target already exists and is a file, create! must
+				# raise an exception
+				entry.target.dirname.mkpath
+				entry.target.touch
+				assert_raise(RuntimeError) { entry.create! }
+				entry.target.delete
 
-					# If the target does not exist, create! must succeed, the
-					# target must exist and be current, and be a directory exactly
-					# for directory entries
-					assert_nothing_raised { entry.create! }
-					assert_exist entry.target
-					assert       entry.target_exist?
-					assert       entry.installed?
-					assert_equal entry.directory?, entry.target_directory?
-				end
+				# If the target does not exist, create! must succeed, the
+				# target must exist and be current, and be a directory exactly
+				# for directory entries
+				assert_nothing_raised { entry.create! }
+				assert_exist entry.target
+				assert       entry.target_exist?
+				assert       entry.installed?
+				assert_equal entry.directory?, entry.target_directory?
 			end
 		end
 
 		def test_remove
-			with_test_data do |dir, entries|
-				entries.each do |entry|
-					# Create the entry
-					entry.create!
+			with_test_entries do |entry|
+				# Create the entry
+				entry.create!
 
-					# The target must exist, the backup may not exist
-					assert_exist     entry.target
-					assert_not_exist entry.backup
+				# The target must exist, the backup may not exist
+				assert_exist     entry.target
+				assert_not_exist entry.backup
 
-					# Remove the entry (creates a backup)
-					entry.remove!
-					
-					# The target may not exist, the backup must exist
-					assert_not_exist entry.target
-					assert_exist     entry.backup
-				end
+				# Remove the entry (creates a backup)
+				entry.remove!
+				
+				# The target may not exist, the backup must exist
+				assert_not_exist entry.target
+				assert_exist     entry.backup
 			end
 		end
 
@@ -307,138 +314,128 @@ module Coffle
 		end
 
 		def test_build
-			with_test_data do |dir, entries|
-				entries.each do |entry|
-					# Before building, the build and org items may not exist
-					assert_not_exist entry.build
-					assert_not_exist entry.org
-					assert !entry.built?
+			with_test_entries do |entry|
+				# Before building, the build and org items may not exist
+				assert_not_exist entry.build
+				assert_not_exist entry.org
+				assert !entry.built?
 
-					# After building, the build and org items must exist and be identical
-					entry.build!
-					assert_exist entry.build
-					assert_exist entry.org
-					assert entry.built?
+				# After building, the build and org items must exist and be identical
+				entry.build!
+				assert_exist entry.build
+				assert_exist entry.org
+				assert entry.built?
 
-					if entry.directory?
-						assert_tree_equal(entry.build, entry.org)
-					else
-						assert_file_equal(entry.build, entry.org)
-					end
+				if entry.directory?
+					assert_tree_equal(entry.build, entry.org)
+				else
+					assert_file_equal(entry.build, entry.org)
+				end
 
-					# For directory entries, the built file must be a directory
-					if entry.directory?
-						assert_directory entry.build
-						assert_directory entry.org
-					else
-						assert_file entry.build
-						assert_file entry.org
-					end
+				# For directory entries, the built file must be a directory
+				if entry.directory?
+					assert_directory entry.build
+					assert_directory entry.org
+				else
+					assert_file entry.build
+					assert_file entry.org
 				end
 			end
 		end
 
 		def test_build_outdated
-			with_test_data do |dir, entries|
-				# Test rebuilding of outdated entries, this only applies to
-				# file entries
-				entries.each do |entry|
-					if !entry.directory?
-						# Build - must be current
-						entry.build!
-						assert !entry.outdated?
+			# Test rebuilding of outdated entries, this only applies to
+			# file entries
+			with_test_entries do |entry|
+				if !entry.directory?
+					# Build - must be current
+					entry.build!
+					assert !entry.outdated?
 
-						# Outdate - must be outdated
-						entry.build.set_older(entry.source)
-						assert entry.outdated?
+					# Outdate - must be outdated
+					entry.build.set_older(entry.source)
+					assert entry.outdated?
 
-						# Rebuild - must be current
-						entry.build!
-						assert !entry.outdated?
-					end
+					# Rebuild - must be current
+					entry.build!
+					assert !entry.outdated?
 				end
 			end
 		end
 
 		def test_build_modified
-			with_test_data do |dir, entries|
-				# Test rebuilding of outdated entries, this only applies to
-				# file entries
-				entries.each do |entry|
-					if !entry.directory?
-						# Build - must be current
-						entry.build!
-						assert !entry.outdated?
+			# Test rebuilding of outdated entries, this only applies to
+			# file entries
+			with_test_entries do |entry|
+				if !entry.directory?
+					# Build - must be current
+					entry.build!
+					assert !entry.outdated?
 
-						# Outdate and modify - must be outdated
-						entry.build.append "x"
-						entry.build.set_older(entry.source)
-						assert entry.outdated?
-						assert entry.modified?
+					# Outdate and modify - must be outdated
+					entry.build.append "x"
+					entry.build.set_older(entry.source)
+					assert entry.outdated?
+					assert entry.modified?
 
-						# Rebuild - must still be outdated because modified
-						# entries are not overwritten
-						entry.build!
-						assert entry.outdated?
+					# Rebuild - must still be outdated because modified
+					# entries are not overwritten
+					entry.build!
+					assert entry.outdated?
 
-						# Rebuild with overwrite - must be current
-						entry.build!(false, true)
-						assert !entry.outdated?
+					# Rebuild with overwrite - must be current
+					entry.build!(false, true)
+					assert !entry.outdated?
 
-						# Modify only
-						entry.build.append "x"
-						assert !entry.outdated?
-						assert entry.modified?
+					# Modify only
+					entry.build.append "x"
+					assert !entry.outdated?
+					assert entry.modified?
 
-						# Rebuild with overwrite - must no longer be modified,
-						# even though it was current before
-						assert !entry.outdated?
-						entry.build!(false, true)
-						assert !entry.outdated?
-						assert !entry.modified?
-					end
+					# Rebuild with overwrite - must no longer be modified,
+					# even though it was current before
+					assert !entry.outdated?
+					entry.build!(false, true)
+					assert !entry.outdated?
+					assert !entry.modified?
 				end
 			end
 		end
 
 		def test_outdated
-			with_test_data do |dir, entries|
-				entries.each do |entry|
-					# Before building, the build must be outdated (it does
-					# not exist)
-					assert entry.outdated?
+			with_test_entries do |entry|
+				# Before building, the build must be outdated (it does
+				# not exist)
+				assert entry.outdated?
 
-					# After building, the build must not be outdated
-					entry.build!
-					assert !entry.outdated?
+				# After building, the build must not be outdated
+				entry.build!
+				assert !entry.outdated?
 
-					# If the build file is older than the source file,
-					# outdated? must return true, except for directores,
-					# which are never outdated
-					entry.build.set_older(entry.source)
-					assert  entry.outdated?                                     if !entry.directory?
-					assert !entry.outdated?, "A directory must not be outdated" if  entry.directory?
+				# If the build file is older than the source file,
+				# outdated? must return true, except for directores,
+				# which are never outdated
+				entry.build.set_older(entry.source)
+				assert  entry.outdated?                                     if !entry.directory?
+				assert !entry.outdated?, "A directory must not be outdated" if  entry.directory?
 
-					# After building, outdated? must return false again
-					entry.build!
-					assert !entry.outdated?
-				end
+				# After building, outdated? must return false again
+				entry.build!
+				assert !entry.outdated?
 			end
 		end
 
 		def test_modified
-			with_test_data do |dir, entries|
-				entries.each do |entry|
-					entry.build!
+			with_test_entries do |entry|
+				entry.build!
 
-					if entry.directory?
-						assert_equal false, entry.modified?
-					else
-						assert_equal false, entry.modified?
+				if entry.directory?
+					assert_equal false, entry.modified?
+				else
+					assert_equal false, entry.modified?
 
-						entry.build.append "x"
-						assert_equal true, entry.modified?
-					end
+					entry.build.append "x"
+					assert_equal true, entry.modified?
 				end
 			end
 		end
@@ -478,9 +475,7 @@ module Coffle
 
 		def test_install
 			# TODO with_test_entries if you don't need the dir and the entries array
-			with_test_data do |dir, entries|
-				entries.each do |entry|
-				end
+			with_test_entries do |entry|
 			end
 		end
 

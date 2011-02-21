@@ -2,6 +2,9 @@
 
 require File.dirname(__FILE__) + '/test_helper.rb'
 
+# TODO with_test_entries (instead of with_test_data) if you don't need the dir
+# and the entries array
+
 module Coffle
 	class FilenameTest <Test::Unit::TestCase
 		include TestHelper
@@ -482,30 +485,84 @@ module Coffle
 			end
 		end
 
-		# FIXME DOING
-		# Test install (check target and backup):
-		#   * target is none
-		#   * target is file, with and without overwrite
-		#   * target is directory, with and without overwrite
-		#   * target is already installed
-		#   * target was removed
-		#   * target was replaced
-		#
-		# Test uninstall:
-		#   * target installed, with/without backup
-		#   * backup not present, target is none/file/dir (nothing done)
-		#   * target was removed
-		#   * target was replaced
-		#
-		# Test install/uninstall:
-		#   * none before
-		#   * file/directory before (with and without overwrite)
 
 		def test_install
-			# TODO with_test_entries if you don't need the dir and the entries array
+			# Target does not exist before
+			with_test_entries do |entry|
+				entry.install!(false)
+				assert_not_exist entry.backup
+				assert_equal true, entry.installed?
+				assert_not_exist entry.backup
+			end
+
+			# Target is a file before
+			with_test_entries do |entry|
+				entry.target.touch!
+				assert_equal false, entry.installed?
+
+				# Install without overwriting
+				entry.install!(false)
+				assert_equal false, entry.installed?
+				assert_not_exist entry.backup
+
+				# Install with overwriting
+				entry.install!(true)
+				assert_equal true, entry.installed?
+				assert_exist entry.backup
+
+				# We need to delete the backup, because otherwise a backup
+				# file (a) (e. g. .bar) might block a backup dir (b) (e. g.
+				# for .bar/baz).
+				# This cannot happen in practice because (a) is only possible
+				# if .bar was a file before, and (b) is only possible if .bar
+				# was a directory before. TODO: really true?
+				entry.backup.delete
+			end
+
+			# Target is a directory before. In this case, it will also count
+			# as "installed" because directories are created, not symlinked
+			with_test_entries do |entry|
+				entry.target.mkpath
+				assert_equal false, entry.installed? unless entry.directory?
+
+				# Install without overwriting
+				entry.install!(false)
+				assert_equal false, entry.installed? unless entry.directory?
+				assert_not_exist entry.backup
+
+				# Install with overwriting
+				entry.install!(true)
+				assert_equal true, entry.installed?
+				assert_exist entry.backup unless entry.directory?
+
+				# See above
+				entry.backup.delete unless entry.directory?
+			end
+
+			# FIXME DOING, see also table in TODO.rdoc
+			# Test install (check target and backup):
+			#   * target is already installed
+			#   * target was removed
+			#   * target was replaced
+			#   * the directory where the backup would go is blocked by a file
+
+		end
+
+		def test_uninstall
+			# FIXME, see also table in TODO.rdoc
+			# Test uninstall:
+			#   * target installed, with/without backup
+			#   * backup not present, target is none/file/dir (nothing done)
+			#   * target was removed
+			#   * target was replaced
 			with_test_entries do |entry|
 			end
 		end
+
+		# FIXME
+		# Test install/uninstall:
+		#   * none before
+		#   * file/directory before (with and without overwrite)
 
 		# TODO also compare file contents
 		def test_full

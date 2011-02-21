@@ -9,6 +9,8 @@
   * skipped means "not under coffle control on this machine"
   * skipped files are not installed
   * if already installed, uninstall?
+* only one backup (instead of timestamped)?
+* "full" test for backups
 
 
 == Documentation
@@ -28,13 +30,14 @@ Conclusions:
 * If on "install" the backup is present and the target is "none" or "other", we
   may not keep the backup because after "uninstall", we would have restored an
   old backup. We also do not want to silently drop the backup after the user
-  deletes the coffle link.
+  deletes the coffle link. Thus, we have to refuse (FIXME: refusing should be
+  an exception).
 
 Install
 =======
 target    |backup  ||condition          |backup action |target action |comments
 ----------+--------++-------------------+--------------+--------------+-------------------
-installed |-       ||-                  |-             |-             |already current
+installed |*       ||-                  |-             |-             |already current
 ----------+--------++-------------------+--------------+--------------+-------------------
 none      |none    ||-                  |-             |install       |regular install
 other     |none    ||--overwrite        |make          |install       |overwriting install

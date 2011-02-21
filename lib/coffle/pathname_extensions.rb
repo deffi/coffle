@@ -43,6 +43,15 @@ class Pathname
 		utime t, t
 	end
 
+	def touch!
+		make_container
+		touch
+	end
+
+	def make_container
+		dirname.mkpath
+	end
+
 	def set_same_time(other)
 		self.utime other.atime, other.mtime
 	end

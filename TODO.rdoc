@@ -2,21 +2,29 @@
 
 == High priority
 
-* only one backup (instead of timestamped)?
 * Cannot be distinguished: single file backup in directory, or directory backup
   with file?
-* Uninstall (restore latest (?) backup)
+  => maybe we cannot have directory entries?
+  => would be bad, because we could not have empty directories
+  => also, would not help, because we still may have a directory where we want
+     to install a file entry
+* Uninstall (restore backup)
   * What about directories with non-coffle files?
 * skipping files
   * do we need to distinguish "none" and "don't touch"?
     => for now, "act as if it never happened" should be enough
   * how to mark a file as skipped?
 	=> status file - yaml may be undesirable if gems cannot be installed
-  * skipped means "not under coffle control on this machine"
+  * skipped means "not under coffle control on this machine", "act is if it did
+    not exist"
   * skipped files are not installed
-  * if already installed, uninstall?
+  * if already installed, uninstall
 * "full" test for backups
 * Should backup filenames be unescaped?
+* Should there be a single .coffle directory in source?
+  => probably yes, so we can freely add things later
+* Need a directory specification version, so we can add migrations
+  => don't resort to "no spec => version 0" so we can recognize a missing spec
 
 
 == Documentation
@@ -39,8 +47,7 @@ Conclusions:
 * If on "install" the backup is present and the target is "none" or "other", we
   may not keep the backup because after "uninstall", we would have restored an
   old backup. We also do not want to silently drop the backup after the user
-  deletes the coffle link. Thus, we have to refuse (FIXME: refusing should be
-  an exception).
+  deletes the coffle link. Thus, we have to refuse.
 
 Install
 =======

@@ -284,7 +284,7 @@ module Coffle
 		# * overwrite: If true, existing entries will be backed up and replaced.
 		#   If false, existing entries will not be touched.
 		# Returns true if the operation succeeded (even if nothing had to be
-		# done) (FIXME: return false if refused)
+		# done)
 		def install!(overwrite)
 			build! if (!built? || outdated?)
 

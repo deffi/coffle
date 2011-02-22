@@ -141,6 +141,15 @@ module Coffle
 				end
 			}
 		end
+
+		def assert_file_type(file_type, target)
+			case file_type
+			when :none      then assert_not_exist target
+			when :file      then assert_file      target
+			when :directory then assert_directory target
+			else raise "Unhandled file_type #{file_type.inspect}"
+			end
+		end
 	end
 
 	module TestHelper
@@ -163,6 +172,17 @@ module Coffle
 				yield dir
 			ensure
 				FileUtils.rm_r Testdir
+			end
+		end
+
+		def replace_with(replace_option, target)
+			target.delete
+
+			case replace_option
+			when :none      then # Nothing
+			when :file      then target.touch
+			when :directory then target.mkpath
+			else raise "Unhandled replace_option"
 			end
 		end
 	end

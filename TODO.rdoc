@@ -2,14 +2,18 @@
 
 == High priority
 
+* only one backup (instead of timestamped)?
+* Cannot be distinguished: single file backup in directory, or directory backup
+  with file?
 * Uninstall (restore latest (?) backup)
 * skipping files
   * do we need to distinguish "none" and "don't touch"?
+    => for now, "act as if it never happened" should be enough
   * how to mark a file as skipped?
+	=> status file - yaml may be undesirable if gems cannot be installed
   * skipped means "not under coffle control on this machine"
   * skipped files are not installed
   * if already installed, uninstall?
-* only one backup (instead of timestamped)?
 * "full" test for backups
 
 
@@ -103,5 +107,9 @@ other     |present ||refuse                       |target was replaced
   * operation drop_backup
 * similarly, allow uninstalling of removed or replaced target with a switch
 * implementation: there should be a DirectoryClass and a FileClass
+* Handle error condition: backup directory is blocked by a file
+* Handle error condition: when a directory was refused, all other entries in
+  this directory must also be skipped (if the directory does not exist, we can
+  probably assume that it was refused and skip its contents)
 
 

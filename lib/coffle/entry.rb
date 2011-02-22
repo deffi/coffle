@@ -231,13 +231,14 @@ module Coffle
 			end
 		end
 
-		MDir       = "Directory "
-		MCreate    = "Creating  "
-		MExist     = "Exists    "
-		MCurrent   = "Current   "
-		MOverwrite = "Overwrite "
-		MBuild     = "Building  "
-		MModified  = "Modified  "
+		MDir          = "Directory      "
+		MCreate       = "Creating       "
+		MExist        = "Exists         "
+		MCurrent      = "Current        "
+		MOverwrite    = "Overwrite      "
+		MBuild        = "Building       "
+		MModified     = "Modified       "
+		MBackupExists = "Backup exists  "
 
 		# Unconditionally build it
 		def do_build!
@@ -282,12 +283,20 @@ module Coffle
 		# Install the entry
 		# * overwrite: If true, existing entries will be backed up and replaced.
 		#   If false, existing entries will not be touched.
+		# Returns true if the operation succeeded (even if nothing had to be
+		# done) (FIXME: return false if refused)
 		def install!(overwrite)
 			build! if (!built? || outdated?)
 
 			if installed?
 				# Nothing to do
 				puts "#{MCurrent} #{target}" if @verbose
+				true
+			elsif backup.exist?
+				# The entry is not installed, but the backup exists. This
+				# should not happen - the user messed it up. Refuse.
+				puts "#{MBackupExists} #{target}" if @verbose
+				false
 			elsif target_exist?
 				# Target already exists and is not current (i. e. for
 				# directory entries, the target is not a directory,
@@ -297,13 +306,16 @@ module Coffle
 					puts "#{MOverwrite} #{target} #{create_description} (backup in #{backup})" if @verbose
 					remove!
 					create!
+					true
 				else
 					puts "#{MExist} #{target} (not overwriting)" if @verbose
+					false
 				end
 			else
 				# Target does not exist - create it
 				puts "#{MCreate} #{target} #{create_description}" if @verbose
 				create!
+				true
 			end
 		end
 	end

@@ -487,65 +487,116 @@ module Coffle
 
 
 		def test_install
-			# Target does not exist before
 			with_test_entries do |entry|
-				entry.install!(false)
-				assert_not_exist entry.backup
-				assert_equal true, entry.installed?
-				assert_not_exist entry.backup
+				# Target does not exist before - must be installed, no backup
+				# made
+				result=entry.install!(false)
+				assert_equal true, result           # Operation succeeded
+				assert_equal true, entry.installed? # Entry is installed
+				assert_not_exist entry.backup       # Backup was not made
+
+				# Target is already installed - no backup made
+				assert_equal true, result           # Operation succeeded
+				assert_equal true, entry.installed? # Entry is installed
+				assert_not_exist entry.backup       # Backup was not made
 			end
 
-			# Target is a file before
+			# Target already exists (file)
 			with_test_entries do |entry|
 				entry.target.touch!
-				assert_equal false, entry.installed?
+				assert_equal false, entry.installed? # Not installed
 
 				# Install without overwriting
-				entry.install!(false)
-				assert_equal false, entry.installed?
-				assert_not_exist entry.backup
+				result=entry.install!(false)
+				assert_equal false, result           # Operation did not succeed
+				assert_equal false, entry.installed? # Entry is not installed
+				assert_not_exist entry.backup        # Backup was not made
 
 				# Install with overwriting
-				entry.install!(true)
-				assert_equal true, entry.installed?
-				assert_exist entry.backup
+				result=entry.install!(true)
+				assert_equal true, result           # Operation succeeded
+				assert_equal true, entry.installed? # Entry is installed
+				assert_exist entry.backup           # Backup was made
+				assert_file entry.backup            # The backup is a file
 
-				# We need to delete the backup, because otherwise a backup
-				# file (a) (e. g. .bar) might block a backup dir (b) (e. g.
-				# for .bar/baz).
-				# This cannot happen in practice because (a) is only possible
-				# if .bar was a file before, and (b) is only possible if .bar
-				# was a directory before. TODO: really true?
+				# We need to delete the backup, because otherwise, there might
+				# be a file in the backup directory (a) where we want to create
+				# a directory to backup another file.
+				# This cannot happen in reality, because (a) can only happen if
+				# the corresponding entry is a file, and (b) can only happen if
+				# it is a directory.
 				entry.backup.delete
 			end
 
-			# Target is a directory before. In this case, it will also count
-			# as "installed" because directories are created, not symlinked
+			# Target already exists (directory)
 			with_test_entries do |entry|
 				entry.target.mkpath
-				assert_equal false, entry.installed? unless entry.directory?
 
-				# Install without overwriting
-				entry.install!(false)
-				assert_equal false, entry.installed? unless entry.directory?
-				assert_not_exist entry.backup
+				if entry.directory?
+					# Directory entries are simply created, so if they already
+					# exist, they count as installed.
+					assert_equal true, entry.installed? # Installed
+				else
+					assert_equal false, entry.installed? # Not installed
 
-				# Install with overwriting
-				entry.install!(true)
-				assert_equal true, entry.installed?
-				assert_exist entry.backup unless entry.directory?
+					# Install without overwriting
+					result=entry.install!(false)
+					assert_equal false, result           # Operation did not succeed
+					assert_equal false, entry.installed? # Entry is not installed
+					assert_not_exist entry.backup        # Backup was not made
 
-				# See above
-				entry.backup.delete unless entry.directory?
+					# Install with overwriting
+					result=entry.install!(true)
+					assert_equal true, result           # Operation succeeded
+					assert_equal true, entry.installed? # Entry is installed
+					assert_exist entry.backup           # Backup was made
+					assert_directory entry.backup       # Backup is a directory
+
+					# We need to delete the backup, see above
+					entry.backup.delete
+				end
 			end
 
-			# FIXME DOING, see also table in TODO.rdoc
-			# Test install (check target and backup):
-			#   * target is already installed
-			#   * target was removed
-			#   * target was replaced
-			#   * the directory where the backup would go is blocked by a file
+			# Target was removed or replaced
+			[:none, :file, :directory].each do |replace_option|
+				with_test_entries do |entry|
+					# Make the target already exist
+					#entry.target.dirname.mkpath
+					entry.target.touch
+					assert_equal false, entry.installed? # Not installed
 
+					# Install, overwriting the target
+					entry.install!(true)
+					assert_equal true, entry.installed? # Installed
+
+					# Remove or replace the target (bad user!)
+					replace_with replace_option, entry.target
+
+					# If the entry is a directory entry and the target was
+					# replaced with a directory - and only in this case - the
+					# target will be current and the installation will succeed.
+					expected_success=(entry.directory? && replace_option==:directory)
+
+					# Try to install (without overwriting)
+					result=entry.install!(false)
+					assert_equal expected_success, result           # Operation did/did not succeed
+					assert_equal expected_success, entry.installed? # Entry is/is not installed
+					assert_file_type replace_option, entry.target   # Target still has the correct type
+
+					# Try to install (with overwriting)
+					result=entry.install!(true)
+					assert_equal expected_success, result           # Operation did/did not succeed
+					assert_equal expected_success, entry.installed? # Entry is/is not installed
+					assert_file_type replace_option, entry.target   # Target still has the correct type
+
+					# Remove the backup and install the entry, so subsequent
+					# entries will work correctly
+					entry.backup.delete
+					entry.target.delete if entry.target.exist?
+					entry.install!(false)
+					assert_equal true, entry.installed? # Entry is installed
+				end
+			end
 		end
 
 		def test_uninstall
@@ -558,11 +609,6 @@ module Coffle
 			with_test_entries do |entry|
 			end
 		end
-
-		# FIXME
-		# Test install/uninstall:
-		#   * none before
-		#   * file/directory before (with and without overwrite)
 
 		# TODO also compare file contents
 		def test_full

@@ -500,6 +500,10 @@ module Coffle
 				assert_equal true, entry.installed? # Entry is installed
 				assert_not_exist entry.backup       # Backup was not made
 			end
+		end
+
+		def test_install_with_backup
+			# Target already exists - backup must be made
 
 			# Target already exists (file)
 			with_test_entries do |entry|
@@ -556,8 +560,10 @@ module Coffle
 					entry.backup.delete
 				end
 			end
+		end
 
-			# Target was removed or replaced
+		def test_install_refused
+			# Target was removed or replaced - install must be refused
 			[:none, :file, :directory].each do |replace_option|
 				with_test_entries do |entry|
 					# Make the target already exist

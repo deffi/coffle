@@ -53,9 +53,10 @@ module Coffle
 				assert_equal "#{dir.absolute}/source"             , coffle.source.to_s
 				assert_equal "#{dir.absolute}/source/.build"      , coffle.build .to_s
 				assert_equal "#{dir.absolute}/source/.build/.org" , coffle.org   .to_s
+				assert_equal "#{dir.absolute}/source/.backup"     , coffle.backup.to_s
 				assert_equal "#{dir.absolute}/target"             , coffle.target.to_s
-				assert_match /^#{dir.absolute}\/source\/.backups\/\d\d\d\d-\d\d-\d\d_\d\d-\d\d-\d\d$/,
-					                                                coffle.backup.to_s
+				#assert_match /^#{dir.absolute}\/source\/.backups\/\d\d\d\d-\d\d-\d\d_\d\d-\d\d-\d\d$/,
+				#	                                                coffle.backup.to_s
 
 				# The backup direcory must not exist (only created when used)
 				assert_not_exist coffle.backup

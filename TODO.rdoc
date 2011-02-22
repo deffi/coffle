@@ -6,6 +6,7 @@
 * Cannot be distinguished: single file backup in directory, or directory backup
   with file?
 * Uninstall (restore latest (?) backup)
+  * What about directories with non-coffle files?
 * skipping files
   * do we need to distinguish "none" and "don't touch"?
     => for now, "act as if it never happened" should be enough
@@ -15,6 +16,7 @@
   * skipped files are not installed
   * if already installed, uninstall?
 * "full" test for backups
+* Should backup filenames be unescaped?
 
 
 == Documentation
@@ -31,6 +33,9 @@ Goals:
 * install (even with --overwrite) followed by uninstall => same as before
 
 Conclusions:
+* The only reason where we could possibly use multiple backups is to handle the
+  case where the user replaced an installed entry, and we don't want to allow
+  that. Therefore, a single backup is sufficient.
 * If on "install" the backup is present and the target is "none" or "other", we
   may not keep the backup because after "uninstall", we would have restored an
   old backup. We also do not want to silently drop the backup after the user
@@ -111,5 +116,6 @@ other     |present ||refuse                       |target was replaced
 * Handle error condition: when a directory was refused, all other entries in
   this directory must also be skipped (if the directory does not exist, we can
   probably assume that it was refused and skip its contents)
+* tell the user what he did wrong and what to do on refuse
 
 

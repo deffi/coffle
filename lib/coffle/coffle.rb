@@ -55,7 +55,8 @@ module Coffle
 
 			self.class.assert_source_directory @source
 
-			@backup=@source.join(".backups/#{Time.now.strftime("%Y-%m-%d_%H-%M-%S")}")
+			#@backup=@source.join(".backups/#{Time.now.strftime("%Y-%m-%d_%H-%M-%S")}")
+			@backup=@source.join(".backup")
 			@build =@source.join(".build")
 			@org   =@build .join(".org")
 

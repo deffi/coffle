@@ -101,23 +101,26 @@ module Coffle
 				assert_equal dir.join("source"                    , "_foo").absolute, @foo.source
 				assert_equal dir.join("source", ".build"          , "_foo").absolute, @foo.build
 				assert_equal dir.join("source", ".build" , ".org" , "_foo").absolute, @foo.org
+				assert_equal dir.join("source", ".backup"         , ".foo").absolute, @foo.backup
 				assert_equal dir.join("target"                    , ".foo").absolute, @foo.target
-				assert_match /^#{dir.join("source", ".backups").absolute}\/\d\d\d\d-\d\d-\d\d_\d\d-\d\d-\d\d\/.foo$/,
-					                                                                  @foo.backup.to_s
+				#assert_match /^#{dir.join("source", ".backups").absolute}\/\d\d\d\d-\d\d-\d\d_\d\d-\d\d-\d\d\/.foo$/,
+				#	                                                                  @foo.backup.to_s
 
 				assert_equal dir.join("source"                    , "_bar").absolute, @bar.source
 				assert_equal dir.join("source", ".build"          , "_bar").absolute, @bar.build
 				assert_equal dir.join("source", ".build", ".org"  , "_bar").absolute, @bar.org
+				assert_equal dir.join("source", ".backup"         , ".bar").absolute, @bar.backup
 				assert_equal dir.join("target"                    , ".bar").absolute, @bar.target
-				assert_match /^#{dir.join("source", ".backups").absolute}\/\d\d\d\d-\d\d-\d\d_\d\d-\d\d-\d\d\/.bar$/,
-					                                                                  @bar.backup.to_s
+				#assert_match /^#{dir.join("source", ".backups").absolute}\/\d\d\d\d-\d\d-\d\d_\d\d-\d\d-\d\d\/.bar$/,
+				#	                                                                  @bar.backup.to_s
 
 				assert_equal dir.join("source"                    , "_bar", "baz").absolute, @baz.source
 				assert_equal dir.join("source", ".build"          , "_bar", "baz").absolute, @baz.build
 				assert_equal dir.join("source", ".build", ".org"  , "_bar", "baz").absolute, @baz.org
+				assert_equal dir.join("source", ".backup"         , ".bar", "baz").absolute, @baz.backup
 				assert_equal dir.join("target"                    , ".bar", "baz").absolute, @baz.target
-				assert_match /^#{dir.join("source", ".backups").absolute}\/\d\d\d\d-\d\d-\d\d_\d\d-\d\d-\d\d\/.bar\/baz$/,
-					                                                                         @baz.backup.to_s
+				#assert_match /^#{dir.join("source", ".backups").absolute}\/\d\d\d\d-\d\d-\d\d_\d\d-\d\d-\d\d\/.bar\/baz$/,
+				#	                                                                         @baz.backup.to_s
 			end
 		end
 

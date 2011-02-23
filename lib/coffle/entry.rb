@@ -72,6 +72,16 @@ module Coffle
 			end
 		end
 
+		def matches?(pathname)
+			if file? && pathname.file?
+				true
+			elsif directory? && pathname.directory?
+				true
+			else
+				false
+			end
+		end
+
 
 		############
 		## Status ##
@@ -107,6 +117,7 @@ module Coffle
 		### Of the target
 
 		# Whether the target already exists (file, directory or symlink)
+		# TODO rename, this is misleading
 		def target_exist?
 			target.exist? || target.symlink?
 		end
@@ -234,6 +245,7 @@ module Coffle
 		MDir          = "Directory      "
 		MCreate       = "Creating       "
 		MExist        = "Exists         "
+		MBlocked      = "Blocked        "
 		MCurrent      = "Current        "
 		MOverwrite    = "Overwrite      "
 		MBuild        = "Building       "
@@ -302,15 +314,26 @@ module Coffle
 				# directory entries, the target is not a directory,
 				# and for file entries it is not a symlink to the
 				# correct position)
-				if overwrite
-					puts "#{MOverwrite} #{target} #{create_description} (backup in #{backup})" if @verbose
-					remove!
-					create!
-					true
+				if matches?(target)
+					# The target type matches the entry type
+					# Note that this must be a file because a directory would
+					# have been recognized as installed.
+
+					if overwrite
+						puts "#{MOverwrite} #{target} #{create_description} (backup in #{backup})" if @verbose
+						remove!
+						create!
+						true
+					else
+						puts "#{MExist} #{target} (not overwriting)" if @verbose
+						false
+					end
 				else
-					puts "#{MExist} #{target} (not overwriting)" if @verbose
+					# Refuse
+					puts "#{MBlocked} #{target}" if @verbose
 					false
 				end
+
 			else
 				# Target does not exist - create it
 				puts "#{MCreate} #{target} #{create_description}" if @verbose

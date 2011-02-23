@@ -1,30 +1,34 @@
 == Next
 
+.target_exist? stinkt
+* Pathname.present => auch, wenn ungültiger symlink
+* .exist durch .present ersetzen, wo angemessen
+* test: target already exists and is a link => not recognized as existing in backup dir?
+
+
+On directories:
+* Can we uninstall a directory?
+* Can we have directory entries at all? (nb: empty directories!)
+
+
 == High priority
 
-* Cannot be distinguished: single file backup in directory, or directory backup
-  with file?
-  => maybe we cannot have directory entries?
-  => would be bad, because we could not have empty directories
-  => also, would not help, because we still may have a directory where we want
-     to install a file entry
 * Uninstall (restore backup)
-  * What about directories with non-coffle files?
+  => must remove backup?
 * skipping files
-  * do we need to distinguish "none" and "don't touch"?
-    => for now, "act as if it never happened" should be enough
   * how to mark a file as skipped?
 	=> status file - yaml may be undesirable if gems cannot be installed
-  * skipped means "not under coffle control on this machine", "act is if it did
-    not exist"
-  * skipped files are not installed
-  * if already installed, uninstall
 * "full" test for backups
-* Should backup filenames be unescaped?
+* Should backup filenames really be unescaped?
 * Should there be a single .coffle directory in source?
   => probably yes, so we can freely add things later
+  => where would things like host class definitions go? need further structure?
+  => are coffle source directories marked?
 * Need a directory specification version, so we can add migrations
   => don't resort to "no spec => version 0" so we can recognize a missing spec
+* What happens if a entry is no longer present? how to detect?
+  => should be restored
+  => ?
 
 
 == Documentation
@@ -34,6 +38,27 @@
 * not .build/.install: because the install operation is something else
 * no unescaped names in processing directories: so we can use dotfiles for bookkeeping
 
+On directories:
+* If the target of a directory entry already exists, we use it and keep its contents.
+** coffle directores are the same as other directories
+** we want to keep, for example, .ssh/identity when installing .ssh/config
+
+For now, we don't allow overwriting a file with a directory or vice versa.
+We never make a backup of a directory (cannot be overwritten by a file
+(refused) nor a directory (exists)).
+
+Notes on backups of directories (in case we want to make them one day):
+* Can we/do we have to distinguish a file backup in a directory from a
+  directory backup?
+* What about uninstalling directories that contain non-coffle entries?
+
+
+On skipping:
+* skipped means: not under coffle control
+* act as if the entry didn't exist
+* file ist not installed
+* if it is already installed, uninstall it
+
 
 === Backups ===
 
@@ -41,25 +66,39 @@ Goals:
 * install (even with --overwrite) followed by uninstall => same as before
 
 Conclusions:
-* The only reason where we could possibly use multiple backups is to handle the
-  case where the user replaced an installed entry, and we don't want to allow
-  that. Therefore, a single backup is sufficient.
+* The only reason to use multiple backups would be to allow the user to replace
+  the the installed entries. However, this is probably neither easy nor simple.
+  Therefore, we only use a single backup.
 * If on "install" the backup is present and the target is "none" or "other", we
   may not keep the backup because after "uninstall", we would have restored an
   old backup. We also do not want to silently drop the backup after the user
   deletes the coffle link. Thus, we have to refuse.
 
+
+
 Install
 =======
-target    |backup  ||condition          |backup action |target action |comments
-----------+--------++-------------------+--------------+--------------+-------------------
-installed |*       ||-                  |-             |-             |already current
-----------+--------++-------------------+--------------+--------------+-------------------
-none      |none    ||-                  |-             |install       |regular install
-other     |none    ||--overwrite        |make          |install       |overwriting install
-----------+--------++-------------------+--------------+--------------+-------------------
-none      |present ||refuse                                           |target was removed
-other     |present ||refuse                                           |target was replaced
+type      |target    |backup  |overwrite ||backup action |target action |comments
+----------+----------+--------+----------++--------------+--------------+-------------------
+*         |installed |*       |*         ||-             |-             |already current
+----------+----------+--------+----------++--------------+--------------+-------------------
+*         |none      |present |*         ||            refuse           |target was removed
+*         |file/dir  |present |*         ||            refuse           |target was replaced
+----------+----------+--------+----------++--------------+--------------+-------------------
+*         |none      |none    |*         ||-             |install       |regular install
+file      |file      |none    |false     ||-             |-             |not overwriting
+file      |file      |none    |true      ||make          |install       |overwriting install
+file      |dir       |none    |*         ||            refuse           |file blocked by dir
+dir       |file      |none    |*         ||            refuse           |dir blocked by file
+
+Note:
+* For directory entries, there is no overwriting install, since an existing
+  directory will be treated as target=installed
+* removed and replaced is only detected when there is a backup, which is never
+  the case for directory entries.
+
+
+
 
 
 Uninstall
@@ -124,5 +163,6 @@ other     |present ||refuse                       |target was replaced
   this directory must also be skipped (if the directory does not exist, we can
   probably assume that it was refused and skip its contents)
 * tell the user what he did wrong and what to do on refuse
+* allow "file should not exist" option (like skipping)
 
 

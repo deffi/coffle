@@ -2,14 +2,11 @@
 
 require File.dirname(__FILE__) + '/test_helper.rb'
 
-# TODO with_test_entries (instead of with_test_data) if you don't need the dir
-# and the entries array
-
 module Coffle
 	class FilenameTest <Test::Unit::TestCase
 		include TestHelper
 
-		# Create some test data in a test directory.
+		# Create some test data in a test directory {{{
 		# The directory name will be passed to the block.
 		#
 		# Paths (relative to dir):
@@ -27,8 +24,8 @@ module Coffle
 		# Also sets @foo, @bar, @baz (TODO pass a hash instead)
 		#
 		# Use with_test_entries instead if you do not need the dir or
-		# the entries array
-		def with_test_data
+		# the entries array }}}
+		def with_test_data #{{{
 			with_testdir do |dir|
 				source_dir=dir.join("source")
 				target_dir=dir.join("target")
@@ -68,10 +65,13 @@ module Coffle
 				# TODO test for individual entries (yield dir, [@baz]), but
 				# have to restore state first
 			end
-		end
+		end #}}}
 
-		# Like with_test_data, but only passes each of the entries
-		def with_test_entries(selection=:all)
+		# Like with_test_data, but only passes each of the entries. {{{
+		# Also, entries can be pre-filtered by type.
+		# Use this rather than with_test_data if you don't need the directory,
+		# the entries array or the individual entries by name. }}}
+		def with_test_entries(selection=:all) #{{{
 			with_test_data do |dir, entries|
 				active_entries=
 					case selection
@@ -85,9 +85,11 @@ module Coffle
 					yield entry
 				end
 			end
-		end
+		end #}}}
 
-		def test_paths
+
+
+		def test_paths #{{{
 			with_test_data do |dir, entries|
 				# The path names must be absolute
 				entries.each do |entry|
@@ -122,9 +124,9 @@ module Coffle
 				#assert_match /^#{dir.join("source", ".backups").absolute}\/\d\d\d\d-\d\d-\d\d_\d\d-\d\d-\d\d\/.bar\/baz$/,
 				#	                                                                         @baz.backup.to_s
 			end
-		end
+		end #}}}
 
-		def test_with_test_entries
+		def test_with_test_entries #{{{
 			# Make sure the with_test_entries selection works properly
 
 			with_test_entries(:directories) do |entry|
@@ -136,9 +138,9 @@ module Coffle
 				assert_equal true , entry.file?
 				assert_equal false, entry.directory?
 			end
-		end
+		end #}}}
 
-		def test_directory
+		def test_directory #{{{
 			with_test_data do |dir, entries|
 				# directory? must return true for directory entries, false for
 				# file entries
@@ -146,9 +148,9 @@ module Coffle
 				assert_equal true , @bar.directory?
 				assert_equal false, @baz.directory?
 			end
-		end
+		end #}}}
 
-		def test_file
+		def test_file #{{{
 			with_test_data do |dir, entries|
 				# file? must return false for directory entries, true for
 				# file entries
@@ -156,18 +158,18 @@ module Coffle
 				assert_equal false, @bar.file?
 				assert_equal true , @baz.file?
 			end
-		end
+		end #}}}
 
-		def test_link_target
+		def test_link_target #{{{
 			with_test_data do |dir, entries|
 				# link_target must return a relative link to the build path
 				assert_equal    "../source/.build/_foo"    , @foo.link_target.to_s
 				assert_equal    "../source/.build/_bar"    , @bar.link_target.to_s
 				assert_equal "../../source/.build/_bar/baz", @baz.link_target.to_s
 			end
-		end
+		end #}}}
 
-		def test_target_checks
+		def test_target_checks #{{{
 			with_test_entries do |entry|
 				# The target may not exist (not created yet)
 				assert_not_exist entry.target
@@ -225,9 +227,9 @@ module Coffle
 				assert_equal false, entry.installed?
 				entry.target.delete
 			end
-		end
+		end #}}}
 
-		def test_create
+		def test_create #{{{
 			with_test_entries do |entry|
 				# If the target already exists and is a directory, create! must
 				# raise an exception
@@ -251,9 +253,9 @@ module Coffle
 				assert       entry.installed?
 				assert_equal entry.directory?, entry.target_directory?
 			end
-		end
+		end #}}}
 
-		def test_remove
+		def test_remove #{{{
 			with_test_entries do |entry|
 				# Create the entry
 				entry.create!
@@ -269,9 +271,9 @@ module Coffle
 				assert_not_exist entry.target
 				assert_exist     entry.backup
 			end
-		end
+		end #}}}
 
-		def test_remove_directory
+		def test_remove_directory #{{{
 			with_test_data do |dir, entries|
 				# Create an entry in a subdirectory
 				@baz.create!
@@ -294,9 +296,9 @@ module Coffle
 				assert_exist @bar.backup
 				assert_exist @baz.backup
 			end
-		end
+		end #}}}
 
-		def test_remove_file_from_directory
+		def test_remove_file_from_directory #{{{
 			with_test_data do |dir, entries|
 				# Create an entry in a subdirectory
 				@baz.create!
@@ -316,9 +318,9 @@ module Coffle
 				assert_exist     @bar.target
 				assert_not_exist @baz.target
 			end
-		end
+		end #}}}
 
-		def test_remove_directory_existing_backup
+		def test_remove_directory_existing_backup #{{{
 			with_test_data do |dir, entries|
 				# Create and remove a directory entry with an additional file,
 				# so the backup directory exists.
@@ -349,9 +351,9 @@ module Coffle
 				assert_exist     @bar.backup.join(".bull")
 				assert_exist     @bar.backup.join("previous")
 			end
-		end
+		end #}}}
 
-		def test_build
+		def test_build #{{{
 			with_test_entries do |entry|
 				# Before building, the build and org items may not exist
 				assert_not_exist entry.build
@@ -379,9 +381,9 @@ module Coffle
 					assert_file entry.org
 				end
 			end
-		end
+		end #}}}
 
-		def test_build_outdated
+		def test_build_outdated #{{{
 			# Test rebuilding of outdated entries, this only applies to
 			# file entries
 			with_test_entries(:files) do |entry|
@@ -397,9 +399,9 @@ module Coffle
 				entry.build!
 				assert !entry.outdated?
 			end
-		end
+		end #}}}
 
-		def test_build_modified
+		def test_build_modified #{{{
 			# Test rebuilding of outdated entries, this only applies to
 			# file entries
 			with_test_entries(:files) do |entry|
@@ -434,9 +436,9 @@ module Coffle
 				assert !entry.outdated?
 				assert !entry.modified?
 			end
-		end
+		end #}}}
 
-		def test_outdated
+		def test_outdated #{{{
 			with_test_entries do |entry|
 				# Before building, the build must be outdated (it does
 				# not exist)
@@ -457,9 +459,9 @@ module Coffle
 				entry.build!
 				assert !entry.outdated?
 			end
-		end
+		end #}}}
 
-		def test_modified
+		def test_modified #{{{
 			with_test_entries do |entry|
 				entry.build!
 
@@ -472,10 +474,9 @@ module Coffle
 					assert_equal true, entry.modified?
 				end
 			end
-		end
+		end #}}}
 
-
-		def test_build_file_in_nonexistent_directory
+		def test_build_file_in_nonexistent_directory #{{{
 			with_test_data do |dir, entries|
 				# Building a file in a non-existing directory
 				assert_not_exist @bar.build
@@ -486,10 +487,32 @@ module Coffle
 				assert_exist     @baz.build
 				assert_exist     @baz.org
 			end
-		end
+		end #}}}
+
+		def test_matches? #{{{
+			with_test_data do |dir, entries|
+				dummy_dir=dir.join(".dummy")
+				dummy_file     =dummy_dir.join("file")
+				dummy_directory=dummy_dir.join("directory")
+				dummy_none     =dummy_dir.join("none")
+
+				dummy_dir.mkpath
+				dummy_file     .touch
+				dummy_directory.mkpath
+				#dummy_none nothing
+
+				entries.each do |entry|
+					assert_equal entry.file?     , entry.matches?(dummy_file)
+					assert_equal entry.directory?, entry.matches?(dummy_directory)
+					assert_equal false           , entry.matches?(dummy_none)
+				end
+			end
+		end #}}}
 
 
-		def test_install
+
+		# Installing entries: regular install {{{
+		def test_install_regular
 			with_test_entries do |entry|
 				# Target does not exist before - must be installed, no backup
 				# made
@@ -497,81 +520,116 @@ module Coffle
 				assert_equal true, result           # Operation succeeded
 				assert_equal true, entry.installed? # Entry is installed
 				assert_not_exist entry.backup       # Backup was not made
+			end
+		end #}}}
+
+		# Installing entries: already current {{{
+		def test_install_current
+			with_test_entries do |entry|
+				# Install the entry
+				entry.install!(false)
 
 				# Target is already installed - no backup made
+				result=entry.install!(false)
 				assert_equal true, result           # Operation succeeded
 				assert_equal true, entry.installed? # Entry is installed
 				assert_not_exist entry.backup       # Backup was not made
 			end
-		end
 
-		def test_install_with_backup
-			# Target already exists - backup must be made
+		end #}}}
 
-			# Target already exists (file)
-			with_test_entries do |entry|
-				entry.target.touch!
-				assert_equal false, entry.installed? # Not installed
+		# Installing entries: file entry already exists (without/with overwrite) {{{
+		def test_install_file_exists
+			with_test_entries(:files) do |entry|
+				# Create a file where we want to install the entry
+				existing_contents="existing"
+				entry.target.dirname.mkpath
+				entry.target.write existing_contents
 
-				# Install without overwriting
+				# Without overwriting
+				result=entry.install!(false)
+				assert_equal false, result                        # Operation did not succeed
+				assert_equal false, entry.installed?              # Entry is not installed
+				assert_not_exist entry.backup                     # Backup was not made
+				assert_equal existing_contents, entry.target.read # Target contents are not touched
+
+				# With overwriting
+				result=entry.install!(true)
+				assert_equal true, result                         # Operation succeeded
+				assert_equal true, entry.installed?               # Entry is not installed
+				assert_exist entry.backup                         # Backup was not made
+				assert_equal existing_contents, entry.backup.read # Backup contents are correct
+			end
+		end #}}}
+
+		# Installing entries: directory entry already exists {{{
+		def test_install_directory_exists
+			with_test_entries(:directories) do |entry|
+				# Create a directory where we want to install the entry
+				entry.target.mkpath
+
+				# Existing directories count as existing
+				result=entry.install!(false)
+				assert_equal true, result           # Operation succeeded
+				assert_equal true, entry.installed? # Entry is installed
+				assert_not_exist entry.backup       # Backup was not made
+			end
+		end #}}}
+
+		# Installing entries: file blocked by directory {{{
+		def test_install_file_blocked
+			with_test_entries(:files) do |entry|
+				# Create a directory where we want to install the entry
+				entry.target.mkpath
+
+				# Without overwriting
 				result=entry.install!(false)
 				assert_equal false, result           # Operation did not succeed
 				assert_equal false, entry.installed? # Entry is not installed
 				assert_not_exist entry.backup        # Backup was not made
 
-				# Install with overwriting
+				# With overwriting
 				result=entry.install!(true)
-				assert_equal true, result           # Operation succeeded
-				assert_equal true, entry.installed? # Entry is installed
-				assert_exist entry.backup           # Backup was made
-				assert_file entry.backup            # The backup is a file
-
-				# We need to delete the backup, because otherwise, there might
-				# be a file in the backup directory (a) where we want to create
-				# a directory to backup another file.
-				# This cannot happen in reality, because (a) can only happen if
-				# the corresponding entry is a file, and (b) can only happen if
-				# it is a directory.
-				entry.backup.delete
+				assert_equal false, result           # Operation did not succeed
+				assert_equal false, entry.installed? # Entry is not installed
+				assert_not_exist entry.backup        # Backup was not made
 			end
+		end #}}}
 
-			# Target already exists (directory)
-			with_test_entries do |entry|
-				entry.target.mkpath
+		# Installing entries: directory blocked by file {{{
+		def test_install_directory_blocked
+			with_test_entries(:directories) do |entry|
+				# Create a file where we want to install the entry
+				existing_contents="existing"
+				entry.target.dirname.mkpath
+				entry.target.write existing_contents
 
-				if entry.directory?
-					# Directory entries are simply created, so if they already
-					# exist, they count as installed.
-					assert_equal true, entry.installed? # Installed
-				else
-					assert_equal false, entry.installed? # Not installed
+				# Without overwriting
+				result=entry.install!(false)
+				assert_equal false, result           # Operation did not succeed
+				assert_equal false, entry.installed? # Entry is not installed
+				assert_not_exist entry.backup        # Backup was not made
 
-					# Install without overwriting
-					result=entry.install!(false)
-					assert_equal false, result           # Operation did not succeed
-					assert_equal false, entry.installed? # Entry is not installed
-					assert_not_exist entry.backup        # Backup was not made
+				# With overwriting
+				result=entry.install!(true)
+				assert_equal false, result           # Operation did not succeed
+				assert_equal false, entry.installed? # Entry is not installed
+				assert_not_exist entry.backup        # Backup was not made
 
-					# Install with overwriting
-					result=entry.install!(true)
-					assert_equal true, result           # Operation succeeded
-					assert_equal true, entry.installed? # Entry is installed
-					assert_exist entry.backup           # Backup was made
-					assert_directory entry.backup       # Backup is a directory
-
-					# We need to delete the backup, see above
-					entry.backup.delete
-				end
+				assert_equal existing_contents, entry.target.read # File is not touched
 			end
-		end
+		end #}}}
 
-		def test_install_refused
-			# Target was removed or replaced - install must be refused
+		# Installing entries: file was removed or replaced by the user {{{
+		# Note that a directory removal/replacement cannot be detected because
+		# it has no backup.
+		def test_install_file_replaced
+			# A file entry target (symlink) can be removed, replaced with a
+			# file or replaced with a directory
 			[:none, :file, :directory].each do |replace_option|
-				with_test_entries do |entry|
-					# Make the target already exist
-					#entry.target.dirname.mkpath
-					entry.target.touch
+				with_test_entries(:files) do |entry|
+					# Make the target already exist, so a backup will be created
+					entry.target.touch!
 					assert_equal false, entry.installed? # Not installed
 
 					# Install, overwriting the target
@@ -581,32 +639,19 @@ module Coffle
 					# Remove or replace the target (bad user!)
 					replace_with replace_option, entry.target
 
-					# If the entry is a directory entry and the target was
-					# replaced with a directory - and only in this case - the
-					# target will be current and the installation will succeed.
-					expected_success=(entry.directory? && replace_option==:directory)
-
 					# Try to install (without overwriting)
 					result=entry.install!(false)
-					assert_equal expected_success, result           # Operation did/did not succeed
-					assert_equal expected_success, entry.installed? # Entry is/is not installed
-					assert_file_type replace_option, entry.target   # Target still has the correct type
+					assert_equal false, result                    # Operation did not succeed
+					assert_equal false, entry.installed?          # Entry is not installed
+					assert_file_type replace_option, entry.target # Target still has the correct type
 
 					# Try to install (with overwriting)
-					result=entry.install!(true)
-					assert_equal expected_success, result           # Operation did/did not succeed
-					assert_equal expected_success, entry.installed? # Entry is/is not installed
-					assert_file_type replace_option, entry.target   # Target still has the correct type
-
-					# Remove the backup and install the entry, so subsequent
-					# entries will work correctly
-					entry.backup.delete
-					entry.target.delete if entry.target.exist?
-					entry.install!(false)
-					assert_equal true, entry.installed? # Entry is installed
+					assert_equal false, result                    # Operation did not succeed
+					assert_equal false, entry.installed?          # Entry is not installed
+					assert_file_type replace_option, entry.target # Target still has the correct type
 				end
 			end
-		end
+		end #}}}
 
 		def test_uninstall
 			# FIXME, see also table in TODO.rdoc

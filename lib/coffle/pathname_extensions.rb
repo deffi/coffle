@@ -63,5 +63,9 @@ class Pathname
 	def set_newer(other, seconds=1)
 		self.utime other.atime+seconds, other.mtime+seconds
 	end
+
+	def present?
+		exist? or symlink?
+	end
 end
 

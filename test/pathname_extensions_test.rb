@@ -153,6 +153,68 @@ module Coffle
 				assert_exist file
 			end
 		end
+
+		def test_exist
+			with_testdir do |testdir|
+				# Primary
+				file      =testdir.join("file")
+				directory =testdir.join("directory")
+				missing   =testdir.join("missing")
+
+				# Links
+				file_link      =testdir.join("file_link")
+				directory_link =testdir.join("directory_link")
+				missing_link   =testdir.join("missing_link")
+
+				# Links to links
+				file_link_link      =testdir.join("file_link_link")
+				directory_link_link =testdir.join("directory_link_link")
+				missing_link_link   =testdir.join("missing_link_link")
+
+
+				# Create
+				file     .write "moo"
+				directory.mkpath
+				# missing - nothing
+
+				file_link     .make_symlink("file")
+				directory_link.make_symlink("directory")
+				missing_link  .make_symlink("missing")
+				
+				file_link_link     .make_symlink("file_link")
+				directory_link_link.make_symlink("directory_link")
+				missing_link_link  .make_symlink("missing_link")
+
+
+				# Make sure we understand exist? correctly: follows links
+				assert_equal true , file.exist?
+				assert_equal true , directory.exist?
+				assert_equal false, missing.exist?
+
+				assert_equal true , file_link.exist?
+				assert_equal true , directory_link.exist?
+				assert_equal false, missing_link.exist?
+
+				assert_equal true , file_link_link.exist?
+				assert_equal true , directory_link_link.exist?
+				assert_equal false, missing_link_link.exist?
+
+
+				# present? acknowleges the existence of links, even if invalid
+				assert_equal true , file.present?
+				assert_equal true , directory.present?
+				assert_equal false, missing.present?
+
+				assert_equal true , file_link.present?
+				assert_equal true , directory_link.present?
+				assert_equal true , missing_link.present?
+
+				assert_equal true , file_link_link.present?
+				assert_equal true , directory_link_link.present?
+				assert_equal true , missing_link_link.present?
+
+			end
+		end
 	end
 end
 

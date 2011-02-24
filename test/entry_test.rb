@@ -175,55 +175,55 @@ module Coffle
 				assert_not_exist entry.target
 
 				# If the target does not exist, target.present?,
-				# target_directory? and installed? must return false
+				# target.proper_directory? and installed? must return false
 				assert_equal false, entry.target.present?
-				assert_equal false, entry.target_directory?
+				assert_equal false, entry.target.proper_directory?
 				assert_equal false, entry.installed?
 
 				# If the target is a file, target.present? must return true,
-				# target_directory? and installed? must return false
+				# target.proper_directory? and installed? must return false
 				entry.target.dirname.mkpath
 				entry.target.touch
 				assert_equal true , entry.target.present?
-				assert_equal false, entry.target_directory?
+				assert_equal false, entry.target.proper_directory?
 				assert_equal false, entry.installed?
 				entry.target.delete
 
 				# If the target is a directory, target.present? and
-				# target_directory? must return true, installed? must
+				# target.proper_directory? must return true, installed? must
 				# return true exactly for directory entries
 				entry.target.mkdir
 				assert_equal true            , entry.target.present?
-				assert_equal true            , entry.target_directory?
+				assert_equal true            , entry.target.proper_directory?
 				assert_equal entry.directory?, entry.installed?
 				entry.target.delete
 
 				# If the target is a symlink to a non-existing file,
-				# target.present? must return true, target_directory?
+				# target.present? must return true, target.proper_directory?
 				# and installed? must return false
 				entry.target.make_symlink "bull"
 				assert_equal true , entry.target.present?
-				assert_equal false, entry.target_directory?
+				assert_equal false, entry.target.proper_directory?
 				assert_equal false, entry.installed?
 				entry.target.delete
 
 				# If the target is a symlink to a file (except the correct
 				# link target), target.present? must return true,
-				# target_directory? and installed? must return false
+				# target.proper_directory? and installed? must return false
 				entry.target.dirname.join("dummy").touch
 				entry.target.make_symlink "dummy"
 				assert_equal true , entry.target.present?
-				assert_equal false, entry.target_directory?
+				assert_equal false, entry.target.proper_directory?
 				assert_equal false, entry.installed?
 				entry.target.delete
 				entry.target.dirname.join("dummy").delete
 
 				# If the target is a symlink to a directory, target.present?
-				# must return true, target_directory? and installed?
+				# must return true, target.proper_directory? and installed?
 				# must return false.
 				entry.target.make_symlink "."
 				assert_equal true , entry.target.present?
-				assert_equal false, entry.target_directory?
+				assert_equal false, entry.target.proper_directory?
 				assert_equal false, entry.installed?
 				entry.target.delete
 			end
@@ -251,7 +251,7 @@ module Coffle
 				assert_exist entry.target
 				assert       entry.target.present?
 				assert       entry.installed?
-				assert_equal entry.directory?, entry.target_directory?
+				assert_equal entry.directory?, entry.target.proper_directory?
 			end
 		end #}}}
 

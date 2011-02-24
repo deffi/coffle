@@ -116,16 +116,11 @@ module Coffle
 
 		### Of the target
 
-		# Whether the target is a proper directory
-		def target_directory?
-			target.directory? && !target.symlink?
-		end
-
 		# Whether the target for the entry is a symlink to the correct location
 		def installed?
 			if directory?
-				# Directory entry: the target must be a directory
-				target_directory?
+				# Directory entry: the target must be a proper directory
+				target.proper_directory?
 			else
 				# File entry: the target must be a symlink to the correct
 				# location

@@ -1,8 +1,7 @@
 == Next
 
 .target_exist? stinkt
-* .exist durch .present ersetzen, wo angemessen
-* .file/.directory durch .proper_ ersetzen
+* .file/.directory durch .proper_ ersetzen, wo angemessen
 * test: target already exists and is a link => not recognized as existing in backup dir?
 * we should rename .directory?, .file?, and potentially .exist? to avoid
   mistakes

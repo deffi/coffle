@@ -172,7 +172,7 @@ module Coffle
 		def test_target_checks #{{{
 			with_test_entries do |entry|
 				# The target may not exist (not created yet)
-				assert_not_exist entry.target
+				assert_not_present entry.target
 
 				# If the target does not exist, target.present?,
 				# target.proper_directory? and installed? must return false
@@ -248,10 +248,10 @@ module Coffle
 				# target must exist and be current, and be a directory exactly
 				# for directory entries
 				assert_nothing_raised { entry.create! }
-				assert_exist entry.target
-				assert       entry.target.present?
-				assert       entry.installed?
-				assert_equal entry.directory?, entry.target.proper_directory?
+				assert_present entry.target
+				assert         entry.target.present?
+				assert         entry.installed?
+				assert_equal   entry.directory?, entry.target.proper_directory?
 			end
 		end #}}}
 
@@ -261,15 +261,15 @@ module Coffle
 				entry.create!
 
 				# The target must exist, the backup may not exist
-				assert_exist     entry.target
-				assert_not_exist entry.backup
+				assert_present     entry.target
+				assert_not_present entry.backup
 
 				# Remove the entry (creates a backup)
 				entry.remove!
 				
 				# The target may not exist, the backup must exist
-				assert_not_exist entry.target
-				assert_exist     entry.backup
+				assert_not_present entry.target
+				assert_present     entry.backup
 			end
 		end #}}}
 
@@ -280,21 +280,21 @@ module Coffle
 
 				# Both the target for this entry and for the containing
 				# directory must exist; the backups may not exist
-				assert_exist @bar.target
-				assert_exist @baz.target
+				assert_present @bar.target
+				assert_present @baz.target
 
-				assert_not_exist @bar.backup
-				assert_not_exist @baz.backup
+				assert_not_present @bar.backup
+				assert_not_present @baz.backup
 
 				# Remove the containing directory
 				@bar.remove!
 
 				# The targets may not exist; the backups must exist
-				assert_not_exist @bar.target
-				assert_not_exist @baz.target
+				assert_not_present @bar.target
+				assert_not_present @baz.target
 
-				assert_exist @bar.backup
-				assert_exist @baz.backup
+				assert_present @bar.backup
+				assert_present @baz.backup
 			end
 		end #}}}
 
@@ -304,19 +304,19 @@ module Coffle
 				@baz.create!
 
 				# The backup directory for the containing entry may not exist
-				assert_not_exist @bar.backup
+				assert_not_present @bar.backup
 
 				# Remove the entry in the subdirectory
 				@baz.remove!
 
 				# Now both the backup entry for the directory and for the entry
 				# must exist.
-				assert_exist @bar.backup
-				assert_exist @baz.backup
+				assert_present @bar.backup
+				assert_present @baz.backup
 
 				# The entry must not exist any more, the directory must still exist
-				assert_exist     @bar.target
-				assert_not_exist @baz.target
+				assert_present     @bar.target
+				assert_not_present @baz.target
 			end
 		end #}}}
 
@@ -335,35 +335,35 @@ module Coffle
 				@bar.target.join(".bull").touch
 
 				# Make sure the directory, the files and the backup directory exist
-				assert_exist dir.join @bar.target
-				assert_exist dir.join @bar.target.join("bull")
-				assert_exist dir.join @bar.target.join(".bull")
-				assert_exist dir.join @bar.backup
+				assert_present dir.join @bar.target
+				assert_present dir.join @bar.target.join("bull")
+				assert_present dir.join @bar.target.join(".bull")
+				assert_present dir.join @bar.backup
 
 				# Remove the directory
 				@bar.remove!
 
 				# Make sure the directory does not exist any more and the files
 				# exist in the backup directory.
-				assert_not_exist @bar.target
-				assert_exist     @bar.backup
-				assert_exist     @bar.backup.join("bull")
-				assert_exist     @bar.backup.join(".bull")
-				assert_exist     @bar.backup.join("previous")
+				assert_not_present @bar.target
+				assert_present     @bar.backup
+				assert_present     @bar.backup.join("bull")
+				assert_present     @bar.backup.join(".bull")
+				assert_present     @bar.backup.join("previous")
 			end
 		end #}}}
 
 		def test_build #{{{
 			with_test_entries do |entry|
 				# Before building, the build and org items may not exist
-				assert_not_exist entry.build
-				assert_not_exist entry.org
+				assert_not_present entry.build
+				assert_not_present entry.org
 				assert !entry.built?
 
 				# After building, the build and org items must exist and be identical
 				entry.build!
-				assert_exist entry.build
-				assert_exist entry.org
+				assert_present entry.build
+				assert_present entry.org
 				assert entry.built?
 
 				if entry.directory?
@@ -479,32 +479,32 @@ module Coffle
 		def test_build_file_in_nonexistent_directory #{{{
 			with_test_data do |dir, entries|
 				# Building a file in a non-existing directory
-				assert_not_exist @bar.build
-				assert_not_exist @bar.org
+				assert_not_present @bar.build
+				assert_not_present @bar.org
 				@baz.build!
 				assert_directory @bar.build
 				assert_directory @bar.org
-				assert_exist     @baz.build
-				assert_exist     @baz.org
+				assert_present   @baz.build
+				assert_present   @baz.org
 			end
 		end #}}}
 
-		def test_matches? #{{{
-			with_test_data do |dir, entries|
-				dummy_dir=dir.join(".dummy")
-				dummy_file     =dummy_dir.join("file")
-				dummy_directory=dummy_dir.join("directory")
-				dummy_none     =dummy_dir.join("none")
+		def test_blocked_by? #{{{
+			with_test_data do |testdir, entries|
+				dir=testdir.join(".dummy")
+				file     =dir.join("file")
+				directory=dir.join("directory")
+				none     =dir.join("none")
 
-				dummy_dir.mkpath
-				dummy_file     .touch
-				dummy_directory.mkpath
-				#dummy_none nothing
+				dir.mkpath
+				file     .touch
+				directory.mkpath
+				#none nothing
 
 				entries.each do |entry|
-					assert_equal entry.file?     , entry.matches?(dummy_file)
-					assert_equal entry.directory?, entry.matches?(dummy_directory)
-					assert_equal false           , entry.matches?(dummy_none)
+					assert_equal !entry.file?     , entry.blocked_by?(file)
+					assert_equal !entry.directory?, entry.blocked_by?(directory)
+					assert_equal false            , entry.blocked_by?(none)
 				end
 			end
 		end #}}}
@@ -519,7 +519,7 @@ module Coffle
 				result=entry.install!(false)
 				assert_equal true, result           # Operation succeeded
 				assert_equal true, entry.installed? # Entry is installed
-				assert_not_exist entry.backup       # Backup was not made
+				assert_not_present entry.backup     # Backup was not made
 			end
 		end #}}}
 
@@ -533,7 +533,7 @@ module Coffle
 				result=entry.install!(false)
 				assert_equal true, result           # Operation succeeded
 				assert_equal true, entry.installed? # Entry is installed
-				assert_not_exist entry.backup       # Backup was not made
+				assert_not_present entry.backup     # Backup was not made
 			end
 
 		end #}}}
@@ -550,14 +550,14 @@ module Coffle
 				result=entry.install!(false)
 				assert_equal false, result                        # Operation did not succeed
 				assert_equal false, entry.installed?              # Entry is not installed
-				assert_not_exist entry.backup                     # Backup was not made
+				assert_not_present entry.backup                   # Backup was not made
 				assert_equal existing_contents, entry.target.read # Target contents are not touched
 
 				# With overwriting
 				result=entry.install!(true)
 				assert_equal true, result                         # Operation succeeded
 				assert_equal true, entry.installed?               # Entry is not installed
-				assert_exist entry.backup                         # Backup was not made
+				assert_present entry.backup                         # Backup was not made
 				assert_equal existing_contents, entry.backup.read # Backup contents are correct
 			end
 		end #}}}
@@ -572,7 +572,7 @@ module Coffle
 				result=entry.install!(false)
 				assert_equal true, result           # Operation succeeded
 				assert_equal true, entry.installed? # Entry is installed
-				assert_not_exist entry.backup       # Backup was not made
+				assert_not_present entry.backup     # Backup was not made
 			end
 		end #}}}
 
@@ -586,13 +586,13 @@ module Coffle
 				result=entry.install!(false)
 				assert_equal false, result           # Operation did not succeed
 				assert_equal false, entry.installed? # Entry is not installed
-				assert_not_exist entry.backup        # Backup was not made
+				assert_not_present entry.backup      # Backup was not made
 
 				# With overwriting
 				result=entry.install!(true)
 				assert_equal false, result           # Operation did not succeed
 				assert_equal false, entry.installed? # Entry is not installed
-				assert_not_exist entry.backup        # Backup was not made
+				assert_not_present entry.backup      # Backup was not made
 			end
 		end #}}}
 
@@ -608,13 +608,13 @@ module Coffle
 				result=entry.install!(false)
 				assert_equal false, result           # Operation did not succeed
 				assert_equal false, entry.installed? # Entry is not installed
-				assert_not_exist entry.backup        # Backup was not made
+				assert_not_present entry.backup      # Backup was not made
 
 				# With overwriting
 				result=entry.install!(true)
 				assert_equal false, result           # Operation did not succeed
 				assert_equal false, entry.installed? # Entry is not installed
-				assert_not_exist entry.backup        # Backup was not made
+				assert_not_present entry.backup      # Backup was not made
 
 				assert_equal existing_contents, entry.target.read # File is not touched
 			end
@@ -629,11 +629,15 @@ module Coffle
 			[:none, :file, :directory].each do |replace_option|
 				with_test_entries(:files) do |entry|
 					# Make the target already exist, so a backup will be created
-					entry.target.touch!
+					# Use a symlink because they might not be recognized as
+					# existing if they are invalid in the backup.
+					entry.target.dirname.mkpath
+					entry.target.make_symlink("invalid")
 					assert_equal false, entry.installed? # Not installed
 
 					# Install, overwriting the target
-					entry.install!(true)
+					result=entry.install!(true)
+					assert_equal true, result
 					assert_equal true, entry.installed? # Installed
 
 					# Remove or replace the target (bad user!)

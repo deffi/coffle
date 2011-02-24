@@ -72,13 +72,19 @@ module Coffle
 			end
 		end
 
-		def matches?(pathname)
-			if file? && pathname.file?
-				true
-			elsif directory? && pathname.directory?
-				true
-			else
+		# TODO test vs. symlinks
+		def blocked_by?(pathname)
+			if !pathname.present?
+				# If it is not there, it can't block us
 				false
+			elsif file? && !pathname.proper_directory?
+				# File entries are only blocked by proper directories
+				false
+			elsif directory? && pathname.proper_directory?
+				# Directory entries are blocked by anything except proper directories
+				false
+			else
+				true
 			end
 		end
 
@@ -293,7 +299,7 @@ module Coffle
 				# Nothing to do
 				puts "#{MCurrent} #{target}" if @verbose
 				true
-			elsif backup.exist?
+			elsif backup.present?
 				# The entry is not installed, but the backup exists. This
 				# should not happen - the user messed it up. Refuse.
 				puts "#{MBackupExists} #{target}" if @verbose
@@ -303,7 +309,11 @@ module Coffle
 				# directory entries, the target is not a directory,
 				# and for file entries it is not a symlink to the
 				# correct position)
-				if matches?(target)
+				if blocked_by?(target)
+					# Refuse
+					puts "#{MBlocked} #{target}" if @verbose
+					false
+				else
 					# The target type matches the entry type
 					# Note that this must be a file because a directory would
 					# have been recognized as installed.
@@ -317,10 +327,6 @@ module Coffle
 						puts "#{MExist} #{target} (not overwriting)" if @verbose
 						false
 					end
-				else
-					# Refuse
-					puts "#{MBlocked} #{target}" if @verbose
-					false
 				end
 
 			else

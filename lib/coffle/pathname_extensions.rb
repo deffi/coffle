@@ -64,6 +64,8 @@ class Pathname
 		self.utime other.atime+seconds, other.mtime+seconds
 	end
 
+	# This is only different from exist? for symlinks that cannot be resolved
+	# (including symlinks to symlinks to missing entries)
 	def present?
 		exist? or symlink?
 	end

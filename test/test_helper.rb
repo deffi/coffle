@@ -56,21 +56,21 @@ module Coffle
 			end
 		end
 
-		def assert_exist(path, message = nil)
+		def assert_present(path, message = nil)
 			path=path.to_s unless path.is_a? String
 
 			message=build_message message, '<?> does not exist.', path
 			assert_block message do
-				File.exist?(path) || File.symlink?(path)
+				File.present?(path)
 			end
 		end
 
-		def assert_not_exist(path, message = nil)
+		def assert_not_present(path, message = nil)
 			path=path.to_s unless path.is_a? String
 
 			message=build_message message, '<?> exists.', path
 			assert_block message do
-				!(File.exist?(path) || File.symlink?(path))
+				!File.present?(path)
 			end
 		end
 
@@ -108,7 +108,7 @@ module Coffle
 
 				# Unexpected
 				assert_block "Unexpected file #{actual_path}" do
-					expected_path.exist? || expected_path.symlink?
+					expected_path.present? # FIXME should be negated?
 				end
 
 				# Wrong type
@@ -137,16 +137,16 @@ module Coffle
 
 				# Missing
 				assert_block "Missing file #{actual_path}" do
-					actual_path.exist? || expected_path.symlink?
+					actual_path.present?
 				end
 			}
 		end
 
 		def assert_file_type(file_type, target)
 			case file_type
-			when :none      then assert_not_exist target
-			when :file      then assert_file      target
-			when :directory then assert_directory target
+			when :none      then assert_not_present target
+			when :file      then assert_file        target
+			when :directory then assert_directory   target
 			else raise "Unhandled file_type #{file_type.inspect}"
 			end
 		end
@@ -155,12 +155,12 @@ module Coffle
 	module TestHelper
 		include Assertions
 
-		Testdir="testdata/test"
+		Testdir=Pathname("testdata").join("test")
 
 		# Calls the block with a relative Pathname referring newly created,
 		# empty directory and cleans up the directory afterwards.
 		def with_testdir(&block)
-			raise "#{Testdir} exists" if File.exist?(Testdir)
+			raise "#{Testdir} exists" if Testdir.present?
 
 			# If this fails, don't ensure unlink it
 			Dir.mkdir Testdir

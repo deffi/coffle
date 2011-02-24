@@ -14,8 +14,9 @@ module Coffle
 		# Absolute
 		attr_reader :source, :build, :org, :target, :backup
 
+		# Calls path.mkpath and outputs a message if it did not exist before
 		def create_directory (path)
-			if !path.exist?
+			if !path.present?
 				puts "Creating #{path}" if @verbose
 				path.mkpath
 			end
@@ -26,8 +27,7 @@ module Coffle
 		end
 
 		def self.coffle_source_directory?(directory)
-			coffle_dir=coffle_directory(directory)
-			coffle_dir.exist? and coffle_dir.directory?
+			coffle_directory(directory).directory? # Hehe
 		end
 
 		def self.assert_source_directory(directory, msg=nil)
@@ -78,10 +78,10 @@ module Coffle
 			@backup=@backup.absolute
 
 			# Make sure they are directories
-			raise "Source location #{source} is not a directory" if !@source.directory?                   # Must exist
-			raise "Build location #{ build } is not a directory" if !@build .directory?                   # Has been created
-			raise "Target location #{target} is not a directory" if !@target.directory?                   # Has been created
-			raise "Backup location #{backup} is not a directory" if @backup.exist? && !@backup.directory? # Must not be a non-directory
+			raise "Source location #{source} is not a directory" if !@source.directory?                     # Must exist
+			raise "Build location #{ build } is not a directory" if !@build .directory?                     # Has been created
+			raise "Target location #{target} is not a directory" if !@target.directory?                     # Has been created
+			raise "Backup location #{backup} is not a directory" if @backup.present? && !@backup.directory? # Must not be a non-directory
 		end
 
 		def entries

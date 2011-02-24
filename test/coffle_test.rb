@@ -59,7 +59,7 @@ module Coffle
 				#	                                                coffle.backup.to_s
 
 				# The backup direcory must not exist (only created when used)
-				assert_not_exist coffle.backup
+				assert_not_present coffle.backup
 			end
 		end
 

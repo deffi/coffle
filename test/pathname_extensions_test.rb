@@ -82,7 +82,7 @@ module Coffle
 				file1.write contents
 				file1.copy_file file2
 
-				assert_exist file2
+				assert_present file2
 				assert_file_equal file1, file2 
 			end
 		end
@@ -146,11 +146,11 @@ module Coffle
 			with_testdir do |dir|
 				file=dir.join("file")
 
-				assert_not_exist file
+				assert_not_present file
 				file.touch
-				assert_exist file
+				assert_present file
 				file.touch
-				assert_exist file
+				assert_present file
 			end
 		end
 

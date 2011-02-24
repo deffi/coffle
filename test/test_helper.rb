@@ -47,12 +47,30 @@ module Coffle
 			end
 		end
 
+		def assert_proper_directory(dir, message = nil)
+			dir=dir.to_s unless dir.is_a? String
+
+			message=build_message message, '<?> is not a proper directory.', dir
+			assert_block message do
+				File.proper_directory? dir
+			end
+		end
+
 		def assert_file(file, message = nil)
 			file=file.to_s unless file.is_a? String
 
-			message=build_message message, '<?> is not a directory.', file
+			message=build_message message, '<?> is not a file.', file
 			assert_block message do
 				File.file? file
+			end
+		end
+
+		def assert_proper_file(file, message = nil)
+			file=file.to_s unless file.is_a? String
+
+			message=build_message message, '<?> is not a proper file.', file
+			assert_block message do
+				File.proper_file? file
 			end
 		end
 
@@ -100,15 +118,16 @@ module Coffle
 			end
 		end
 
+		# TODO test this and other test_helper methods
 		def assert_tree_equal(expected, actual)
 			# Iterate over existing files
 			actual.find { |actual_path|
 				relative_path = actual_path.relative_path_from(actual)
 				expected_path = expected.join(relative_path)
 
-				# Unexpected
+				# The existing entry is unexpected if it not also in expected.
 				assert_block "Unexpected file #{actual_path}" do
-					expected_path.present? # FIXME should be negated?
+					expected_path.present?
 				end
 
 				# Wrong type
@@ -142,6 +161,7 @@ module Coffle
 			}
 		end
 
+		# Note: this follows symlinks
 		def assert_file_type(file_type, target)
 			case file_type
 			when :none      then assert_not_present target

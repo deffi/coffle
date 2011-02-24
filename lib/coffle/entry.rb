@@ -49,7 +49,7 @@ module Coffle
 
 		# Whether the entry represents a directory
 		def directory?
-			!source.symlink? && source.directory?
+			source.proper_directory?
 		end
 
 		def file?

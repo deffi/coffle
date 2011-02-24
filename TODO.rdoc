@@ -1,13 +1,13 @@
 == Next
 
 .target_exist? stinkt
-* .file/.directory durch .proper_ ersetzen, wo angemessen
-* test: target already exists and is a link => not recognized as existing in backup dir?
 * we should rename .directory?, .file?, and potentially .exist? to avoid
   mistakes
 
 
+
 On directories:
+* Should we accept a symlink to a directory as existing target directory?
 * Can we uninstall a directory?
 * Can we have directory entries at all? (nb: empty directories!)
 

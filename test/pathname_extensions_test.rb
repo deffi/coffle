@@ -57,6 +57,12 @@ module Coffle
 				file2.write(contents+" ")
 				assert_equal false, file1.file_identical?(file2)
 				assert_equal false, file2.file_identical?(file1)
+
+				# TODO test
+				# * file vs. dir (false)
+				# * dir vs. dir (false)
+				# * symlink vs. file (true/false)
+				# * symlink vs. symlink (true/false)
 			end
 
 		end

@@ -374,11 +374,11 @@ module Coffle
 
 				# For directory entries, the built file must be a directory
 				if entry.directory?
-					assert_directory entry.build
-					assert_directory entry.org
+					assert_proper_directory entry.build
+					assert_proper_directory entry.org
 				else
-					assert_file entry.build
-					assert_file entry.org
+					assert_proper_file entry.build
+					assert_proper_file entry.org
 				end
 			end
 		end #}}}
@@ -478,14 +478,12 @@ module Coffle
 
 		def test_build_file_in_nonexistent_directory #{{{
 			with_test_data do |dir, entries|
-				# Building a file in a non-existing directory
+				# Building a file (@baz) in a non-existing directory (@bar)
 				assert_not_present @bar.build
 				assert_not_present @bar.org
 				@baz.build!
-				assert_directory @bar.build
-				assert_directory @bar.org
-				assert_present   @baz.build
-				assert_present   @baz.org
+				assert_proper_directory @bar.build
+				assert_proper_directory @bar.org
 			end
 		end #}}}
 

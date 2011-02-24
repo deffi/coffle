@@ -1,13 +1,8 @@
 == Next
 
-.target_exist? stinkt
-* we should rename .directory?, .file?, and potentially .exist? to avoid
-  mistakes
-
-
-
 On directories:
-* Should we accept a symlink to a directory as existing target directory?
+* Should we accept a symlink to a directory as existing target directory
+  (don't require the target directory to be proper)?
 * Can we uninstall a directory?
 * Can we have directory entries at all? (nb: empty directories!)
 
@@ -24,7 +19,7 @@ On directories:
 * Should there be a single .coffle directory in source?
   => probably yes, so we can freely add things later
   => where would things like host class definitions go? need further structure?
-  => are coffle source directories marked?
+  => how are coffle source directories marked?
 * Need a directory specification version, so we can add migrations
   => don't resort to "no spec => version 0" so we can recognize a missing spec
 * What happens if a entry is no longer present? how to detect?

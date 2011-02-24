@@ -67,5 +67,13 @@ class Pathname
 	def present?
 		exist? or symlink?
 	end
+
+	def proper_directory?
+		directory? and not symlink?
+	end
+
+	def proper_file?
+		file? and not symlink?
+	end
 end
 

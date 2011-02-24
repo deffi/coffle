@@ -116,12 +116,6 @@ module Coffle
 
 		### Of the target
 
-		# Whether the target already exists (file, directory or symlink)
-		# TODO rename, this is misleading
-		def target_exist?
-			target.exist? || target.symlink?
-		end
-
 		# Whether the target is a proper directory
 		def target_directory?
 			target.directory? && !target.symlink?
@@ -183,9 +177,9 @@ module Coffle
 			# TODO test
 			# TODO skipped
 			# Target status depends on @target
-			if    installed?    ; "Installed"
-			elsif target_exist? ; "Blocked"
-			else                ; "Not installed"
+			if    installed?      ; "Installed"
+			elsif target.present? ; "Blocked"
+			else                  ; "Not installed"
 			end
 		end
 
@@ -230,7 +224,7 @@ module Coffle
 
 		# Create the target (which must not exist)
 		def create!
-			raise "Target exists" if target_exist?
+			raise "Target exists" if target.present?
 
 			if directory?
 				# Directory entry - create the directory
@@ -309,7 +303,7 @@ module Coffle
 				# should not happen - the user messed it up. Refuse.
 				puts "#{MBackupExists} #{target}" if @verbose
 				false
-			elsif target_exist?
+			elsif target.present?
 				# Target already exists and is not current (i. e. for
 				# directory entries, the target is not a directory,
 				# and for file entries it is not a symlink to the

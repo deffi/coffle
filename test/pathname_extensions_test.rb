@@ -274,7 +274,7 @@ module Coffle
 				assert_equal false, entries.directory_link_link.file?
 				assert_equal false, entries.missing_link_link.file?
 
-				# proper_directory? knows a symlink when it sees one
+				# proper_file? knows a symlink when it sees one
 				assert_equal true , entries.file.proper_file?
 				assert_equal false, entries.directory.proper_file?
 				assert_equal false, entries.missing.proper_file?

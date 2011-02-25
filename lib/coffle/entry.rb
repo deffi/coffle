@@ -60,23 +60,6 @@ module Coffle
 			end
 		end
 
-		# TODO test vs. symlinks
-		def blocked_by?(pathname)
-			if !pathname.present?
-				# If it is not there, it can't block us
-				false
-			elsif file? && !pathname.proper_directory?
-				# File entries are only blocked by proper directories
-				false
-			elsif directory? && pathname.directory?
-				# Directory entries are blocked by anything except directories
-				# (proper directories or symlinks to directories)
-				false
-			else
-				true
-			end
-		end
-
 
 		############
 		## Status ##
@@ -108,21 +91,6 @@ module Coffle
 			end
 		end
 
-
-		### Of the target
-
-		# Whether the target for the entry is a symlink to the correct location
-		def installed?
-			if directory?
-				# Directory entry: the target must be a directory (proper
-				# directory or symlink to directory)
-				target.directory?
-			else
-				# File entry: the target must be a symlink to the correct
-				# location
-				target.symlink? && target.readlink==link_target
-			end
-		end
 
 
 		### Combined
@@ -213,20 +181,6 @@ module Coffle
 		end
 
 
-		# Create the target (which must not exist)
-		def create!
-			raise "Target exists" if target.present?
-
-			if directory?
-				# Directory entry - create the directory
-				target.mkpath
-			else
-				# File entry - create the containing directory and the symlink
-				target.dirname.mkpath
-				target.make_symlink link_target
-			end
-		end
-
 		MDir          = "Directory      "
 		MCreate       = "Creating       "
 		MExist        = "Exists         "
@@ -281,7 +235,7 @@ module Coffle
 		# Returns true if the entry is now uninstalled (even if nothing had to
 		# be done)
 		#def uninstall!
-		#	# FIXME
+		#	# FIXME implement
 		#	if !installed?
 		#		puts "#{MNotInstalled}" if @verbose
 		#		true
@@ -355,6 +309,28 @@ module Coffle
 		def create_description; "-> #{link_target}"; end
 
 		def initialize(*args); super(*args); end
+
+		# TODO test vs. symlinks - must fail if changed to .directory
+		def blocked_by?(pathname)
+			# File entries are only blocked by proper directories (everything
+			# else can be backuped and removed)
+			pathname.proper_directory?
+		end
+
+		def installed?
+			# File entry: the target must be a symlink to the correct location
+			target.symlink? && target.readlink==link_target
+		end
+
+		# Create the target (which must not exist)
+		def create!
+			raise "Target exists" if target.present?
+
+			# File entry - create the containing directory and the symlink
+			target.dirname.mkpath
+			target.make_symlink link_target
+		end
+
 	end
 
 	# An entry representing a proper directory (no symlinks)
@@ -364,6 +340,29 @@ module Coffle
 		def create_description; "(directory)"; end
 
 		def initialize(*args); super(*args); end
+
+		# TODO test vs. symlinks - must fail if changed to .proper_directory
+		def blocked_by?(pathname)
+			# Directory entries are blocked by anything except directories
+			# (proper directories or symlinks to directories)
+			pathname.present? and not pathname.directory?
+		end
+
+		# Whether the target for the entry is a symlink to the correct location
+		def installed?
+			# Directory entry: the target must be a directory (proper directory
+			# or symlink to directory)
+			target.directory?
+		end
+
+		# Create the target (which must not exist)
+		def create!
+			raise "Target exists" if target.present?
+
+			# Directory entry - create the directory
+			target.mkpath
+		end
+
 	end
 end
 

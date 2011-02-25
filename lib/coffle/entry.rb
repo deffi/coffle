@@ -26,17 +26,17 @@ module Coffle
 
 		# Options:
 		# * :verbose: print messages; recommended for interactive applications
+		# TODO can we make the constructor protected?
 		def initialize(coffle, path, options={})
-			@coffle=coffle
 			@path=path
 
 			@verbose = options.fetch :verbose, false
 
-			@source=@coffle.source.join @path # The absolute path to the source (i. e. the template)
-			@build =@coffle.build .join @path # The absolute path to the built file
-			@org   =@coffle.org   .join @path # The absolute path to the original of the built file
-			@target=@coffle.target.join unescape_path(@path) # The absolute path to the target (i. e. the config file location)
-			@backup=@coffle.backup.join unescape_path(@path) # The absolute path to the backup file
+			@source=coffle.source.join @path # The absolute path to the source (i. e. the template)
+			@build =coffle.build .join @path # The absolute path to the built file
+			@org   =coffle.org   .join @path # The absolute path to the original of the built file
+			@target=coffle.target.join unescape_path(@path) # The absolute path to the target (i. e. the config file location)
+			@backup=coffle.backup.join unescape_path(@path) # The absolute path to the backup file
 
 			# The target the link should point to
 			@link_target=build.relative_path_from(target.dirname)
@@ -47,28 +47,16 @@ module Coffle
 		## Properties ##
 		################
 
-		# Whether the entry represents a directory
-		def directory?
-			source.proper_directory?
-		end
+		def file?     ; false; end
+		def directory?; false; end
 
-		def file?
-			!directory?
-		end
+		# Entry factory method
+		def Entry.create(coffle, path, options={})
+			source_path=coffle.source.join(path) # TODO code duplication
 
-		def create_description
-			if directory?
-				"(directory)"
-			else
-				"-> #{link_target}"
-			end
-		end
-
-		def type
-			if directory?
-				"Dir"
-			else
-				"File"
+			if    source_path.proper_file?     ; FileEntry     .new(coffle, path, options)
+			elsif source_path.proper_directory?; DirectoryEntry.new(coffle, path, options)
+			else  nil
 			end
 		end
 
@@ -248,6 +236,7 @@ module Coffle
 		MBuild        = "Building       "
 		MModified     = "Modified       "
 		MBackupExists = "Backup exists  "
+		MNotInstalled = "Not installed  "
 
 		# Unconditionally build it
 		def do_build!
@@ -289,11 +278,28 @@ module Coffle
 			end
 		end
 
+		# Returns true if the entry is now uninstalled (even if nothing had to
+		# be done)
+		#def uninstall!
+		#	# FIXME
+		#	if !installed?
+		#		puts "#{MNotInstalled}" if @verbose
+		#		true
+		#	elsif directory?
+		#	else
+		#		if backup.present?
+		#			# No backup present, nothing to restore
+		#		else
+		#			# Need to restore the backup
+		#		end
+		#	end
+		#end
+
 		# Install the entry
 		# * overwrite: If true, existing entries will be backed up and replaced.
 		#   If false, existing entries will not be touched.
-		# Returns true if the operation succeeded (even if nothing had to be
-		# done)
+		# Returns true if the entry is now installed (even if nothing had to
+		# be done)
 		def install!(overwrite)
 			build! if (!built? || outdated?)
 
@@ -319,6 +325,7 @@ module Coffle
 					# The target type matches the entry type
 					# Note that this must be a file because a directory would
 					# have been recognized as installed.
+					raise "Internal error: directory exists" if target.directory?
 
 					if overwrite
 						puts "#{MOverwrite} #{target} #{create_description} (backup in #{backup})" if @verbose
@@ -338,6 +345,25 @@ module Coffle
 				true
 			end
 		end
+
+	end
+
+	# An entry representing a proper file (no symlinks, no specials)
+	class FileEntry <Entry
+		def file?; true; end
+		def type; "File"; end
+		def create_description; "-> #{link_target}"; end
+
+		def initialize(*args); super(*args); end
+	end
+
+	# An entry representing a proper directory (no symlinks)
+	class DirectoryEntry <Entry
+		def directory?; true; end
+		def type; "Dir"; end
+		def create_description; "(directory)"; end
+
+		def initialize(*args); super(*args); end
 	end
 end
 

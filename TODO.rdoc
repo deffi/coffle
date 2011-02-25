@@ -1,5 +1,9 @@
 == Next
 
+* implementation: there should be a DirectoryClass and a FileClass
+* the operations should return a result object (with a message, a performed and
+  a success flag)
+
 * Uninstall (restore backup)
   => must remove backup, or it will count as removed
 
@@ -156,7 +160,6 @@ other     |present ||refuse                       |target was replaced
   * switches to drop the old back or the target
   * operation drop_backup
 * similarly, allow uninstalling of removed or replaced target with a switch
-* implementation: there should be a DirectoryClass and a FileClass
 * Handle error condition: backup directory is blocked by a file
 * Handle error condition: when a directory was refused, all other entries in
   this directory must also be skipped (if the target directory for a file entry
@@ -164,6 +167,7 @@ other     |present ||refuse                       |target was replaced
   contents)
 * tell the user what he did wrong and what to do on refuse
 * allow "file should not exist" option (like skipping)
+* allow "symlink to ..." (like skipping)
 * Should we remove directory entries and just (try to) create the containing
   directory for file entries?
   * simplifies backup, validity rules etc.

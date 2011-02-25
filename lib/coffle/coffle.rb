@@ -93,7 +93,7 @@ module Coffle
 				dir.gsub(/^#{@source}/, '').gsub(/^\/*/, '')
 			}.map { |dir|
 				# Create an entry with the (relative) pathname
-				Entry.new(self, Pathname.new(dir), :verbose=>@verbose)
+				Entry.create(self, Pathname.new(dir), :verbose=>@verbose)
 			}
 		end
 

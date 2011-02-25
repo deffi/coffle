@@ -169,62 +169,42 @@ module Coffle
 			end
 		end #}}}
 
-		def test_target_checks #{{{
+		def test_installed #{{{
 			with_test_entries do |entry|
-				# The target may not exist (not created yet)
+				# Make sure that the target does not exist (not created yet)
 				assert_not_present entry.target
 
-				# If the target does not exist, target.present?,
-				# target.proper_directory? and installed? must return false
-				assert_equal false, entry.target.present?
-				assert_equal false, entry.target.proper_directory?
+				# If the target does not exist, installed must return false
 				assert_equal false, entry.installed?
 
-				# If the target is a file, target.present? must return true,
-				# target.proper_directory? and installed? must return false
-				entry.target.dirname.mkpath
-				entry.target.touch
-				assert_equal true , entry.target.present?
-				assert_equal false, entry.target.proper_directory?
+				# If the target is a file, installed? must return false
+				entry.target.touch!
 				assert_equal false, entry.installed?
 				entry.target.delete
 
-				# If the target is a directory, target.present? and
-				# target.proper_directory? must return true, installed? must
-				# return true exactly for directory entries
+				# If the target is a directory installed? must return true
+				# exactly for directory entries
 				entry.target.mkdir
-				assert_equal true            , entry.target.present?
-				assert_equal true            , entry.target.proper_directory?
 				assert_equal entry.directory?, entry.installed?
 				entry.target.delete
 
 				# If the target is a symlink to a non-existing file,
-				# target.present? must return true, target.proper_directory?
-				# and installed? must return false
-				entry.target.make_symlink "bull"
-				assert_equal true , entry.target.present?
-				assert_equal false, entry.target.proper_directory?
+				# installed? must return false
+				entry.target.make_symlink "missing"
 				assert_equal false, entry.installed?
 				entry.target.delete
 
-				# If the target is a symlink to a file (except the correct
-				# link target), target.present? must return true,
-				# target.proper_directory? and installed? must return false
-				entry.target.dirname.join("dummy").touch
+				# If the target is a symlink to a file (other than the
+				# correct link target), installed? must return false
+				entry.target.dirname.join("dummy").touch!
 				entry.target.make_symlink "dummy"
-				assert_equal true , entry.target.present?
-				assert_equal false, entry.target.proper_directory?
 				assert_equal false, entry.installed?
 				entry.target.delete
 				entry.target.dirname.join("dummy").delete
 
-				# If the target is a symlink to a directory, target.present?
-				# must return true, target.proper_directory? must return false
-				# and installed? must return true exactly for directories.
+				# If the target is a symlink to a directory, installed? must
+				# return true exactly for directories.
 				entry.target.make_symlink "."
-				assert_equal true            , entry.target.present?
-				assert_equal true            , entry.target.directory?
-				assert_equal false           , entry.target.proper_directory?
 				assert_equal entry.directory?, entry.installed?
 				entry.target.delete
 			end

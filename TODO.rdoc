@@ -170,5 +170,6 @@ other     |present ||refuse                       |target was replaced
   * means we cannot have empty directores
   * makes it more difficult to properly skip files whose path is blocked by
     another directory
+* test for Pathname.touch!
 
 

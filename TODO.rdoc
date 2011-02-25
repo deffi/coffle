@@ -1,20 +1,20 @@
 == Next
 
-On directories:
-* Should we accept a symlink to a directory as existing target directory
-  (don't require the target directory to be proper)?
-* Can we uninstall a directory?
-* Can we have directory entries at all? (nb: empty directories!)
+* Uninstall (restore backup)
+  => must remove backup, or it will count as removed
 
 
 == High priority
 
-* Uninstall (restore backup)
-  => must remove backup?
+* Uninstalling directories:
+  * Need hierarchical entries structure?
+  * Simple approach: remove directory if empty after children uninstalled
+  * Better: remove directory if empty and was created by coffle?
 * skipping files
   * how to mark a file as skipped?
 	=> status file - yaml may be undesirable if gems cannot be installed
 * "full" test for backups
+* "full" test: install into symlink directory
 * Should backup filenames really be unescaped?
 * Should there be a single .coffle directory in source?
   => probably yes, so we can freely add things later
@@ -38,6 +38,7 @@ On directories:
 * If the target of a directory entry already exists, we use it and keep its contents.
 ** coffle directores are the same as other directories
 ** we want to keep, for example, .ssh/identity when installing .ssh/config
+* We accept a symlink to a directory as existing target directory
 
 For now, we don't allow overwriting a file with a directory or vice versa.
 We never make a backup of a directory (cannot be overwritten by a file
@@ -55,6 +56,8 @@ On skipping:
 * file ist not installed
 * if it is already installed, uninstall it
 
+On uninstalling:
+* the backup must be removed, or the entry will be treated as removed
 
 === Backups ===
 
@@ -156,9 +159,16 @@ other     |present ||refuse                       |target was replaced
 * implementation: there should be a DirectoryClass and a FileClass
 * Handle error condition: backup directory is blocked by a file
 * Handle error condition: when a directory was refused, all other entries in
-  this directory must also be skipped (if the directory does not exist, we can
-  probably assume that it was refused and skip its contents)
+  this directory must also be skipped (if the target directory for a file entry
+  does not exist, we can probably assume that it was refused and skip its
+  contents)
 * tell the user what he did wrong and what to do on refuse
 * allow "file should not exist" option (like skipping)
+* Should we remove directory entries and just (try to) create the containing
+  directory for file entries?
+  * simplifies backup, validity rules etc.
+  * means we cannot have empty directores
+  * makes it more difficult to properly skip files whose path is blocked by
+    another directory
 
 

@@ -219,12 +219,13 @@ module Coffle
 				entry.target.dirname.join("dummy").delete
 
 				# If the target is a symlink to a directory, target.present?
-				# must return true, target.proper_directory? and installed?
-				# must return false.
+				# must return true, target.proper_directory? must return false
+				# and installed? must return true exactly for directories.
 				entry.target.make_symlink "."
-				assert_equal true , entry.target.present?
-				assert_equal false, entry.target.proper_directory?
-				assert_equal false, entry.installed?
+				assert_equal true            , entry.target.present?
+				assert_equal true            , entry.target.directory?
+				assert_equal false           , entry.target.proper_directory?
+				assert_equal entry.directory?, entry.installed?
 				entry.target.delete
 			end
 		end #}}}
@@ -567,6 +568,20 @@ module Coffle
 				entry.target.mkpath
 
 				# Existing directories count as existing
+				assert_equal true, entry.installed? # Entry is installed
+				result=entry.install!(false)
+				assert_equal true, result           # Operation succeeded
+				assert_equal true, entry.installed? # Entry is installed
+				assert_not_present entry.backup     # Backup was not made
+			end
+
+			with_test_entries(:directories) do |entry|
+				# Create a directory where we want to install the entry
+				entry.target.dirname.join("__test").mkpath
+				entry.target.make_symlink("__test")
+
+				# Existing directories count as existing
+				assert_equal true, entry.installed? # Entry is installed
 				result=entry.install!(false)
 				assert_equal true, result           # Operation succeeded
 				assert_equal true, entry.installed? # Entry is installed

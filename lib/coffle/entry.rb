@@ -80,8 +80,9 @@ module Coffle
 			elsif file? && !pathname.proper_directory?
 				# File entries are only blocked by proper directories
 				false
-			elsif directory? && pathname.proper_directory?
-				# Directory entries are blocked by anything except proper directories
+			elsif directory? && pathname.directory?
+				# Directory entries are blocked by anything except directories
+				# (proper directories or symlinks to directories)
 				false
 			else
 				true
@@ -125,8 +126,9 @@ module Coffle
 		# Whether the target for the entry is a symlink to the correct location
 		def installed?
 			if directory?
-				# Directory entry: the target must be a proper directory
-				target.proper_directory?
+				# Directory entry: the target must be a directory (proper
+				# directory or symlink to directory)
+				target.directory?
 			else
 				# File entry: the target must be a symlink to the correct
 				# location

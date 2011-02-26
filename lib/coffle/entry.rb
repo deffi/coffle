@@ -47,9 +47,6 @@ module Coffle
 		## Properties ##
 		################
 
-		def file?     ; false; end
-		def directory?; false; end
-
 		# Entry factory method
 		def Entry.create(coffle, path, options={})
 			source_path=coffle.source.join(path) # TODO code duplication
@@ -71,25 +68,6 @@ module Coffle
 			build.exist?
 		end
 
-		# The source has to be rebuilt (because it has been modified after it
-		# was last built, or it doesn't exist)
-		def outdated?
-			# TODO skipped
-			if    !built?    ; true    # Need rebuild because it does not exist
-			elsif  directory?; false   # Existing directories are never outdated
-			else             ; !@build.current?(@source)
-			end
-		end
-
-		# The built file has been modified, i. e. we cannot rebuild it without
-		# overwriting the changes
-		def modified?
-			# TODO skipped
-			if    !built?     ; false # What has not been built cannot be modified
-			elsif  directory? ; false # Directories are never modified
-			else              ; !@build.file_identical?(@org)
-			end
-		end
 
 
 
@@ -192,24 +170,6 @@ module Coffle
 		MBackupExists = "Backup exists  "
 		MNotInstalled = "Not installed  "
 
-		# Unconditionally build it
-		def do_build!
-			puts "#{MBuild} #{build}" if @verbose
-
-			if directory?
-				build.mkpath
-				org  .mkpath
-			else
-				# Create the directory if it does not exist
-				build.dirname.mkpath
-				org.dirname.mkpath
-
-				# TODO test dereferencing
-				Builder.build source, build
-				build.copy_file org
-			end
-		end
-
 		def build!(rebuild=false, overwrite=false)
 			# Note that if the entry is modified and overwrite is true, it
 			# is rebuilt even if it is current.
@@ -304,7 +264,6 @@ module Coffle
 
 	# An entry representing a proper file (no symlinks, no specials)
 	class FileEntry <Entry
-		def file?; true; end
 		def type; "File"; end
 		def create_description; "-> #{link_target}"; end
 
@@ -331,11 +290,47 @@ module Coffle
 			target.make_symlink link_target
 		end
 
+		# The source has to be rebuilt (because it has been modified after it
+		# was last built, or it doesn't exist)
+		def outdated?
+			if !built?
+				# Does not exist
+				true
+			else
+				# Is not current
+				!@build.current?(@source)
+			end
+		end
+
+		# The built file has been modified, i. e. we cannot rebuild it without
+		# overwriting the changes
+		def modified?
+			# TODO skipped
+			if  !built?
+				# What has not been built cannot be modified
+				false
+			else
+				!@build.file_identical?(@org)
+			end
+		end
+
+		# Unconditionally build it
+		def do_build!
+			puts "#{MBuild} #{build}" if @verbose
+
+			# Create the directory if it does not exist
+			build.dirname.mkpath
+			org.dirname.mkpath
+
+			# TODO test dereferencing
+			Builder.build source, build
+			build.copy_file org
+		end
+
 	end
 
 	# An entry representing a proper directory (no symlinks)
 	class DirectoryEntry <Entry
-		def directory?; true; end
 		def type; "Dir"; end
 		def create_description; "(directory)"; end
 
@@ -363,6 +358,29 @@ module Coffle
 			target.mkpath
 		end
 
+		# The source has to be rebuilt (because it has been modified after it
+		# was last built, or it doesn't exist)
+		def outdated?
+			# TODO skipped
+			# Existing directories are never outdated
+			!built?
+		end
+
+		# The built file has been modified, i. e. we cannot rebuild it without
+		# overwriting the changes
+		def modified?
+			# TODO skipped
+			# Directories are never modified
+			false
+		end
+
+		# Unconditionally build it
+		def do_build!
+			puts "#{MBuild} #{build}" if @verbose
+
+			build.mkpath
+			org  .mkpath
+		end
 	end
 end
 

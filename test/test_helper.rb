@@ -12,16 +12,11 @@ class Pathname
 	def entry_type
 		# Ad order: a symlink counts as !exist?, so we test for symlink before
 		# exist
-		if symlink?
-			"symlink"
-		elsif !exist?
-			nil
-		elsif directory?
-			"directory"
-		elsif file?
-			"file"
-		else
-			"other"
+		if symlink?      then "symlink"
+		elsif !exist?    then nil
+		elsif directory? then "directory"
+		elsif file?      then "file"
+		else                  "other"
 		end
 	end
 

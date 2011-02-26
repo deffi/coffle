@@ -6,6 +6,7 @@ module Coffle
 	class FilenameTest <Test::Unit::TestCase
 		include TestHelper
 
+
 		# Create some test data in a test directory {{{
 		# The directory name will be passed to the block.
 		#
@@ -76,8 +77,8 @@ module Coffle
 				active_entries=
 					case selection
 					when :all         then entries
-					when :files       then entries.select { |e| e.file? }
-					when :directories then entries.select { |e| e.directory? }
+					when :files       then entries.select { |e| e.is_a? FileEntry }
+					when :directories then entries.select { |e| e.is_a? DirectoryEntry }
 					else raise ArgumentError, "Invalid selection #{selection.inspect}"
 					end
 
@@ -130,33 +131,21 @@ module Coffle
 			# Make sure the with_test_entries selection works properly
 
 			with_test_entries(:directories) do |entry|
-				assert_equal true , entry.directory?
-				assert_equal false, entry.file?
+				assert_equal true , entry.is_a?(DirectoryEntry)
+				assert_equal false, entry.is_a?(FileEntry)
 			end
 
 			with_test_entries(:files) do |entry|
-				assert_equal true , entry.file?
-				assert_equal false, entry.directory?
+				assert_equal true , entry.is_a?(FileEntry)
+				assert_equal false, entry.is_a?(DirectoryEntry)
 			end
 		end #}}}
 
-		def test_directory #{{{
+		def test_entry_class #{{{
 			with_test_data do |dir, entries|
-				# directory? must return true for directory entries, false for
-				# file entries
-				assert_equal false, @foo.directory?
-				assert_equal true , @bar.directory?
-				assert_equal false, @baz.directory?
-			end
-		end #}}}
-
-		def test_file #{{{
-			with_test_data do |dir, entries|
-				# file? must return false for directory entries, true for
-				# file entries
-				assert_equal true , @foo.file?
-				assert_equal false, @bar.file?
-				assert_equal true , @baz.file?
+				assert_equal FileEntry     , @foo.class
+				assert_equal DirectoryEntry, @bar.class
+				assert_equal FileEntry     , @baz.class
 			end
 		end #}}}
 
@@ -185,7 +174,7 @@ module Coffle
 				# If the target is a directory installed? must return true
 				# exactly for directory entries
 				entry.target.mkdir
-				assert_equal entry.directory?, entry.installed?
+				assert_equal entry.is_a?(DirectoryEntry), entry.installed?
 				entry.target.delete
 
 				# If the target is a symlink to a non-existing file,
@@ -205,7 +194,7 @@ module Coffle
 				# If the target is a symlink to a directory, installed? must
 				# return true exactly for directories.
 				entry.target.make_symlink "."
-				assert_equal entry.directory?, entry.installed?
+				assert_equal entry.is_a?(DirectoryEntry), entry.installed?
 				entry.target.delete
 			end
 		end #}}}
@@ -232,7 +221,7 @@ module Coffle
 				assert_present entry.target
 				assert         entry.target.present?
 				assert         entry.installed?
-				assert_equal   entry.directory?, entry.target.proper_directory?
+				assert_equal   entry.is_a?(DirectoryEntry), entry.target.proper_directory?
 			end
 		end #}}}
 
@@ -347,14 +336,14 @@ module Coffle
 				assert_present entry.org
 				assert entry.built?
 
-				if entry.directory?
+				if entry.is_a?(DirectoryEntry)
 					assert_tree_equal(entry.build, entry.org)
 				else
 					assert_file_equal(entry.build, entry.org)
 				end
 
 				# For directory entries, the built file must be a directory
-				if entry.directory?
+				if entry.is_a?(DirectoryEntry)
 					assert_proper_directory entry.build
 					assert_proper_directory entry.org
 				else
@@ -433,8 +422,8 @@ module Coffle
 				# outdated? must return true, except for directores,
 				# which are never outdated
 				entry.build.set_older(entry.source)
-				assert  entry.outdated?                                     if !entry.directory?
-				assert !entry.outdated?, "A directory must not be outdated" if  entry.directory?
+				assert  entry.outdated?                                     if !entry.is_a?(DirectoryEntry)
+				assert !entry.outdated?, "A directory must not be outdated" if  entry.is_a?(DirectoryEntry)
 
 				# After building, outdated? must return false again
 				entry.build!
@@ -446,7 +435,7 @@ module Coffle
 			with_test_entries do |entry|
 				entry.build!
 
-				if entry.directory?
+				if entry.is_a?(DirectoryEntry)
 					assert_equal false, entry.modified?
 				else
 					assert_equal false, entry.modified?
@@ -481,9 +470,9 @@ module Coffle
 				#none nothing
 
 				entries.each do |entry|
-					assert_equal !entry.file?     , entry.blocked_by?(file)
-					assert_equal !entry.directory?, entry.blocked_by?(directory)
-					assert_equal false            , entry.blocked_by?(none)
+					assert_equal false                       , entry.blocked_by?(none)
+					assert_equal !entry.is_a?(FileEntry)     , entry.blocked_by?(file)
+					assert_equal !entry.is_a?(DirectoryEntry), entry.blocked_by?(directory)
 				end
 			end
 		end #}}}

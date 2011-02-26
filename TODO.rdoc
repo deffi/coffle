@@ -1,13 +1,5 @@
 == Next
 
-
-SpecificEntry migration:
-* change everything that uses file? or directory? in Entry
-* change everything that uses file? or directory? everywhere else
-* remove Entry.file? and Entry.directory?
-  * both in Entry and SpecificEntries
-  * tests may use .is_a? or monkey patch the methods
-
 The operations should return a result object, with
 * a message
 * a performed flag
@@ -38,6 +30,8 @@ The operations should return a result object, with
 * What happens if a entry is no longer present? how to detect?
   => should be restored
   => ?
+* Remove hack @included_messages - why is the file read twice (require should
+  only read it once)?
 
 
 == Documentation

@@ -1,10 +1,12 @@
 require 'pathname'
 
 require 'coffle/filenames'
+require 'coffle/messages'
 
 module Coffle
 	class Entry
 		include Filenames
+		include Messages
 
 		################
 		## Attributes ##
@@ -159,17 +161,6 @@ module Coffle
 		end
 
 
-		MDir          = "Directory      "
-		MCreate       = "Creating       "
-		MExist        = "Exists         "
-		MBlocked      = "Blocked        "
-		MCurrent      = "Current        "
-		MOverwrite    = "Overwrite      "
-		MBuild        = "Building       "
-		MModified     = "Modified       "
-		MBackupExists = "Backup exists  "
-		MNotInstalled = "Not installed  "
-
 		def build!(rebuild=false, overwrite=false)
 			# Note that if the entry is modified and overwrite is true, it
 			# is rebuilt even if it is current.
@@ -258,128 +249,6 @@ module Coffle
 				create!
 				true
 			end
-		end
-
-	end
-
-	# An entry representing a proper file (no symlinks, no specials)
-	class FileEntry <Entry
-		def type; "File"; end
-		def create_description; "-> #{link_target}"; end
-
-		def initialize(*args); super(*args); end
-
-		# TODO test vs. symlinks - must fail if changed to .directory
-		def blocked_by?(pathname)
-			# File entries are only blocked by proper directories (everything
-			# else can be backuped and removed)
-			pathname.proper_directory?
-		end
-
-		def installed?
-			# File entry: the target must be a symlink to the correct location
-			target.symlink? && target.readlink==link_target
-		end
-
-		# Create the target (which must not exist)
-		def create!
-			raise "Target exists" if target.present?
-
-			# File entry - create the containing directory and the symlink
-			target.dirname.mkpath
-			target.make_symlink link_target
-		end
-
-		# The source has to be rebuilt (because it has been modified after it
-		# was last built, or it doesn't exist)
-		def outdated?
-			if !built?
-				# Does not exist
-				true
-			else
-				# Is not current
-				!@build.current?(@source)
-			end
-		end
-
-		# The built file has been modified, i. e. we cannot rebuild it without
-		# overwriting the changes
-		def modified?
-			# TODO skipped
-			if  !built?
-				# What has not been built cannot be modified
-				false
-			else
-				!@build.file_identical?(@org)
-			end
-		end
-
-		# Unconditionally build it
-		def do_build!
-			puts "#{MBuild} #{build}" if @verbose
-
-			# Create the directory if it does not exist
-			build.dirname.mkpath
-			org.dirname.mkpath
-
-			# TODO test dereferencing
-			Builder.build source, build
-			build.copy_file org
-		end
-
-	end
-
-	# An entry representing a proper directory (no symlinks)
-	class DirectoryEntry <Entry
-		def type; "Dir"; end
-		def create_description; "(directory)"; end
-
-		def initialize(*args); super(*args); end
-
-		# TODO test vs. symlinks - must fail if changed to .proper_directory
-		def blocked_by?(pathname)
-			# Directory entries are blocked by anything except directories
-			# (proper directories or symlinks to directories)
-			pathname.present? and not pathname.directory?
-		end
-
-		# Whether the target for the entry is a symlink to the correct location
-		def installed?
-			# Directory entry: the target must be a directory (proper directory
-			# or symlink to directory)
-			target.directory?
-		end
-
-		# Create the target (which must not exist)
-		def create!
-			raise "Target exists" if target.present?
-
-			# Directory entry - create the directory
-			target.mkpath
-		end
-
-		# The source has to be rebuilt (because it has been modified after it
-		# was last built, or it doesn't exist)
-		def outdated?
-			# TODO skipped
-			# Existing directories are never outdated
-			!built?
-		end
-
-		# The built file has been modified, i. e. we cannot rebuild it without
-		# overwriting the changes
-		def modified?
-			# TODO skipped
-			# Directories are never modified
-			false
-		end
-
-		# Unconditionally build it
-		def do_build!
-			puts "#{MBuild} #{build}" if @verbose
-
-			build.mkpath
-			org  .mkpath
 		end
 	end
 end

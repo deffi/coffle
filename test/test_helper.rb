@@ -31,6 +31,44 @@ class Pathname
 	end
 end
 
+class DirectoryEntries
+	attr_accessor :file     , :file_link     , :file_link_link
+	attr_accessor :directory, :directory_link, :directory_link_link
+	attr_accessor :missing  , :missing_link  , :missing_link_link
+
+	def initialize(testdir)
+		# Primary
+		@file      =testdir.join("file")
+		@directory =testdir.join("directory")
+		@missing   =testdir.join("missing")
+
+		# Links
+		@file_link      =testdir.join("file_link")
+		@directory_link =testdir.join("directory_link")
+		@missing_link   =testdir.join("missing_link")
+
+		# Links to links
+		@file_link_link      =testdir.join("file_link_link")
+		@directory_link_link =testdir.join("directory_link_link")
+		@missing_link_link   =testdir.join("missing_link_link")
+
+
+		# Create
+		@file     .write "moo"
+		@directory.mkpath
+		# @missing - nothing
+
+		@file_link     .make_symlink("file")
+		@directory_link.make_symlink("directory")
+		@missing_link  .make_symlink("missing")
+		
+		@file_link_link     .make_symlink("file_link")
+		@directory_link_link.make_symlink("directory_link")
+		@missing_link_link  .make_symlink("missing_link")
+	end
+end
+
+
 module Coffle
 	module Assertions
 		def assert_directory(dir, message = nil)

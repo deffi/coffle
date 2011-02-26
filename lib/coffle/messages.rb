@@ -1,4 +1,11 @@
 module Coffle
+	#begin
+	#	raise
+	#rescue Exception=>e
+	#	puts "================"
+	#	puts e.backtrace
+	#end
+
 	unless @included_messages
 		@included_messages=true
 

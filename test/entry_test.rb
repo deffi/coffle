@@ -458,21 +458,36 @@ module Coffle
 		end #}}}
 
 		def test_blocked_by? #{{{
+			# TODO add selection by type to with_test_data, or Enumerable.select_by_class
 			with_test_data do |testdir, entries|
-				dir=testdir.join(".dummy")
-				file     =dir.join("file")
-				directory=dir.join("directory")
-				none     =dir.join("none")
+				dir_entries=DirectoryEntries.new(testdir)
 
-				dir.mkpath
-				file     .touch
-				directory.mkpath
-				#none nothing
+				entries.select { |e| e.is_a? FileEntry }.each do |entry|
+					assert_equal false, entry.blocked_by?(dir_entries.missing  )
+					assert_equal false, entry.blocked_by?(dir_entries.file     )
+					assert_equal true , entry.blocked_by?(dir_entries.directory)
 
-				entries.each do |entry|
-					assert_equal false                       , entry.blocked_by?(none)
-					assert_equal !entry.is_a?(FileEntry)     , entry.blocked_by?(file)
-					assert_equal !entry.is_a?(DirectoryEntry), entry.blocked_by?(directory)
+					assert_equal false, entry.blocked_by?(dir_entries.missing_link  )
+					assert_equal false, entry.blocked_by?(dir_entries.file_link     )
+					assert_equal false, entry.blocked_by?(dir_entries.directory_link)
+
+					assert_equal false, entry.blocked_by?(dir_entries.missing_link_link  )
+					assert_equal false, entry.blocked_by?(dir_entries.file_link_link     )
+					assert_equal false, entry.blocked_by?(dir_entries.directory_link_link)
+				end
+
+				entries.select { |e| e.is_a? DirectoryEntry }.each do |entry|
+					assert_equal false , entry.blocked_by?(dir_entries.missing  )
+					assert_equal true  , entry.blocked_by?(dir_entries.file     )
+					assert_equal false , entry.blocked_by?(dir_entries.directory)
+
+					assert_equal true , entry.blocked_by?(dir_entries.missing_link  )
+					assert_equal true , entry.blocked_by?(dir_entries.file_link     )
+					assert_equal false, entry.blocked_by?(dir_entries.directory_link)
+
+					assert_equal true , entry.blocked_by?(dir_entries.missing_link_link  )
+					assert_equal true , entry.blocked_by?(dir_entries.file_link_link     )
+					assert_equal false, entry.blocked_by?(dir_entries.directory_link_link)
 				end
 			end
 		end #}}}

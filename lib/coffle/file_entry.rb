@@ -8,7 +8,10 @@ module Coffle
 
 		def initialize(*args); super(*args); end
 
-		# TODO test vs. symlinks - must fail if changed to .directory
+		def built?
+			build.proper_file?
+		end
+
 		def blocked_by?(pathname)
 			# File entries are only blocked by proper directories (everything
 			# else can be backuped and removed)

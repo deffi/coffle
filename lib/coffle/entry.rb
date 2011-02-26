@@ -64,17 +64,6 @@ module Coffle
 		## Status ##
 		############
 
-		### Of the build
-
-		def built?
-			build.exist?
-		end
-
-
-
-
-		### Combined
-
 		def build_status
 			# TODO test
 			# TODO skipped

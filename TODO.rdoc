@@ -7,14 +7,14 @@ The operations should return a result object, with
 
 * Uninstall (restore backup)
   => must remove backup, or it will count as removed
-
-
-== High priority
-
 * Uninstalling directories:
   * Need hierarchical entries structure?
   * Simple approach: remove directory if empty after children uninstalled
   * Better: remove directory if empty and was created by coffle?
+
+
+== High priority
+
 * skipping files
   * how to mark a file as skipped?
 	=> status file - yaml may be undesirable if gems cannot be installed
@@ -124,6 +124,13 @@ other     |present ||refuse                       |target was replaced
 
 == Low priority
 
+Unit tests:
+* Use TestEntry whereever useful (especially in entry_test)
+* test Pathname.touch!
+* test the TestHelper methods
+
+
+Other:
 * Special files, like ssh authorized keys: define keys, then invoke keys in
   host blocks:
   {{{
@@ -177,6 +184,5 @@ other     |present ||refuse                       |target was replaced
   * means we cannot have empty directores
   * makes it more difficult to properly skip files whose path is blocked by
     another directory
-* test for Pathname.touch!
 
 

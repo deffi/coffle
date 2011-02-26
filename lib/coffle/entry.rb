@@ -172,14 +172,14 @@ module Coffle
 					do_build!
 				else
 					# Do not overwrite
-					puts "#{MModified} #{build}" if @verbose
+					message "#{MModified} #{build}"
 				end
 			elsif outdated? || rebuild
 				# Outdated (source changed)
 				do_build!
 			else
 				# Current
-				puts "#{MCurrent} #{build}" if @verbose
+				message "#{MCurrent} #{build}"
 			end
 		end
 
@@ -188,7 +188,7 @@ module Coffle
 		#def uninstall!
 		#	# FIXME implement
 		#	if !installed?
-		#		puts "#{MNotInstalled}" if @verbose
+		#		message "#{MNotInstalled}"
 		#		true
 		#	elsif directory?
 		#	else
@@ -210,12 +210,12 @@ module Coffle
 
 			if installed?
 				# Nothing to do
-				puts "#{MCurrent} #{target}" if @verbose
+				message "#{MCurrent} #{target}"
 				true
 			elsif backup.present?
 				# The entry is not installed, but the backup exists. This
 				# should not happen - the user messed it up. Refuse.
-				puts "#{MBackupExists} #{target}" if @verbose
+				message "#{MBackupExists} #{target}"
 				false
 			elsif target.present?
 				# Target already exists and is not current (i. e. for
@@ -224,7 +224,7 @@ module Coffle
 				# correct position)
 				if blocked_by?(target)
 					# Refuse
-					puts "#{MBlocked} #{target}" if @verbose
+					message "#{MBlocked} #{target}"
 					false
 				else
 					# The target type matches the entry type
@@ -233,22 +233,30 @@ module Coffle
 					raise "Internal error: directory exists" if target.directory?
 
 					if overwrite
-						puts "#{MOverwrite} #{target} #{create_description} (backup in #{backup})" if @verbose
+						message "#{MOverwrite} #{target} #{create_description} (backup in #{backup})"
 						remove!
 						create!
 						true
 					else
-						puts "#{MExist} #{target} (not overwriting)" if @verbose
+						message "#{MExist} #{target} (not overwriting)"
 						false
 					end
 				end
 
 			else
 				# Target does not exist - create it
-				puts "#{MCreate} #{target} #{create_description}" if @verbose
+				message "#{MCreate} #{target} #{create_description}"
 				create!
 				true
 			end
+		end
+
+		##########
+		## Misc ##
+		##########
+
+		def message(m)
+			puts m if @verbose
 		end
 	end
 end

@@ -255,6 +255,69 @@ module Coffle
 				assert_equal false, dir_entries.missing_link_link  .proper_file?
 			end
 		end
+
+		def test_empty
+			with_testdir do |testdir|
+				# Directories with certain contents
+				empty_directory     =testdir.join("empty_dir")
+				file_directory      =testdir.join("file_dir")
+				directory_directory =testdir.join("directory_dir")
+				symlink_directory   =testdir.join("symlink_dir")
+
+				# Links to above directories
+				empty_directory_link     =testdir.join("empty_link")
+				file_directory_link      =testdir.join("file_link")
+				directory_directory_link =testdir.join("directory_link")
+				symlink_directory_link   =testdir.join("symlink_link")
+
+				# Contents
+				empty     =empty_directory    .join("foo")
+				file      =file_directory     .join("bar")
+				directory =directory_directory.join("baz")
+				symlink   =symlink_directory  .join("qux")
+
+
+				# Create the directories
+				empty_directory     .mkpath
+				file_directory      .mkpath
+				directory_directory .mkpath
+				symlink_directory   .mkpath
+
+				# Create the contents
+				# empty.nothing
+				file     .touch
+				directory.mkdir
+				symlink  .make_symlink(".")
+
+				# Create the links
+				empty_directory_link    .make_symlink("empty_dir")
+				file_directory_link     .make_symlink("file_dir")
+				directory_directory_link.make_symlink("directory_dir")
+				symlink_directory_link  .make_symlink("symlink_dir")
+
+
+				# Emptyness of the testdir
+				assert_equal false, testdir.empty?
+
+				# Emptiness of the directories
+				assert_equal true , empty_directory    .empty?
+				assert_equal false, file_directory     .empty?
+				assert_equal false, directory_directory.empty?
+				assert_equal false, symlink_directory  .empty?
+
+				# Links treated like files
+				assert_equal true , empty_directory_link    .empty?
+				assert_equal false, file_directory_link     .empty?
+				assert_equal false, directory_directory_link.empty?
+				assert_equal false, symlink_directory_link  .empty?
+
+				# Emptiness of the contents
+				assert_raise(Errno::ENOTDIR) { empty    .empty? } # can't call empty? for non-directory
+				assert_raise(Errno::ENOTDIR) { file     .empty? } # can't call empty? for non-directory
+				assert_nothing_raised        { directory.empty? } # this one is fine, it's a directory
+				assert_nothing_raised        { symlink  .empty? } # this one too, it's a symlink to a directory
+			end
+		end
 	end
 end
 

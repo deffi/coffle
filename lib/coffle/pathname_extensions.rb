@@ -77,5 +77,12 @@ class Pathname
 	def proper_file?
 		file? and not symlink?
 	end
+
+	def empty?
+		raise Errno::ENOTDIR, to_s unless directory?
+
+		entries=Dir.entries(self.to_s)
+		entries==[".", ".."] or entries==["..", "."]
+	end
 end
 

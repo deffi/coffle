@@ -9,7 +9,7 @@ module Coffle
 		def initialize(*args); super(*args); end
 
 		def built?
-			build.proper_directory?
+			output.proper_directory?
 		end
 
 		def blocked_by?(pathname)
@@ -51,10 +51,10 @@ module Coffle
 
 		# Unconditionally build it
 		def do_build!
-			puts "#{MBuild} #{build}" if @verbose
+			puts "#{MBuild} #{output}" if @verbose
 
-			build.mkpath
-			org  .mkpath
+			output.mkpath
+			org   .mkpath
 		end
 	end
 end

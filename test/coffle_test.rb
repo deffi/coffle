@@ -44,15 +44,15 @@ module Coffle
 				# Create the Coffle
 				coffle=Coffle.new("#{dir}/source", "#{dir}/target")
 
-				# The build and target directories must exist now
-				assert_proper_directory dir.join("source/.build")
-				assert_proper_directory dir.join("source/.build/.org")
+				# The output and target directories must exist now
+				assert_proper_directory dir.join("source/.output")
+				assert_proper_directory dir.join("source/.output/.org")
 				assert_directory        dir.join("target")
 
 				# Absolute paths
 				assert_equal "#{dir.absolute}/source"             , coffle.source.to_s
-				assert_equal "#{dir.absolute}/source/.build"      , coffle.build .to_s
-				assert_equal "#{dir.absolute}/source/.build/.org" , coffle.org   .to_s
+				assert_equal "#{dir.absolute}/source/.output"     , coffle.output.to_s
+				assert_equal "#{dir.absolute}/source/.output/.org", coffle.org   .to_s
 				assert_equal "#{dir.absolute}/source/.backup"     , coffle.backup.to_s
 				assert_equal "#{dir.absolute}/target"             , coffle.target.to_s
 				#assert_match /^#{dir.absolute}\/source\/.backups\/\d\d\d\d-\d\d-\d\d_\d\d-\d\d-\d\d$/,

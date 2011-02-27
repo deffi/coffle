@@ -12,8 +12,8 @@ module Coffle
 		#
 		# Paths (relative to dir):
 		# * source: .source/
-		# * build:  .build/
-		# * org:    .build/.org
+		# * output: .output/
+		# * org:    .output/.org
 		# * target: .target/
 		# * backup: .backup/
 		#
@@ -95,31 +95,31 @@ module Coffle
 				# The path names must be absolute
 				entries.each do |entry|
 					assert entry.source.absolute?
-					assert entry.build .absolute?
+					assert entry.output.absolute?
 					assert entry.target.absolute?
 					assert entry.backup.absolute?
 				end
 
 				# The path names must have the correct values
 				assert_equal dir.join("source"                    , "_foo").absolute, @foo.source
-				assert_equal dir.join("source", ".build"          , "_foo").absolute, @foo.build
-				assert_equal dir.join("source", ".build" , ".org" , "_foo").absolute, @foo.org
+				assert_equal dir.join("source", ".output"         , "_foo").absolute, @foo.output
+				assert_equal dir.join("source", ".output", ".org" , "_foo").absolute, @foo.org
 				assert_equal dir.join("source", ".backup"         , ".foo").absolute, @foo.backup
 				assert_equal dir.join("target"                    , ".foo").absolute, @foo.target
 				#assert_match /^#{dir.join("source", ".backups").absolute}\/\d\d\d\d-\d\d-\d\d_\d\d-\d\d-\d\d\/.foo$/,
 				#	                                                                  @foo.backup.to_s
 
 				assert_equal dir.join("source"                    , "_bar").absolute, @bar.source
-				assert_equal dir.join("source", ".build"          , "_bar").absolute, @bar.build
-				assert_equal dir.join("source", ".build", ".org"  , "_bar").absolute, @bar.org
+				assert_equal dir.join("source", ".output"         , "_bar").absolute, @bar.output
+				assert_equal dir.join("source", ".output", ".org" , "_bar").absolute, @bar.org
 				assert_equal dir.join("source", ".backup"         , ".bar").absolute, @bar.backup
 				assert_equal dir.join("target"                    , ".bar").absolute, @bar.target
 				#assert_match /^#{dir.join("source", ".backups").absolute}\/\d\d\d\d-\d\d-\d\d_\d\d-\d\d-\d\d\/.bar$/,
 				#	                                                                  @bar.backup.to_s
 
 				assert_equal dir.join("source"                    , "_bar", "baz").absolute, @baz.source
-				assert_equal dir.join("source", ".build"          , "_bar", "baz").absolute, @baz.build
-				assert_equal dir.join("source", ".build", ".org"  , "_bar", "baz").absolute, @baz.org
+				assert_equal dir.join("source", ".output"         , "_bar", "baz").absolute, @baz.output
+				assert_equal dir.join("source", ".output", ".org" , "_bar", "baz").absolute, @baz.org
 				assert_equal dir.join("source", ".backup"         , ".bar", "baz").absolute, @baz.backup
 				assert_equal dir.join("target"                    , ".bar", "baz").absolute, @baz.target
 				#assert_match /^#{dir.join("source", ".backups").absolute}\/\d\d\d\d-\d\d-\d\d_\d\d-\d\d-\d\d\/.bar\/baz$/,
@@ -151,10 +151,10 @@ module Coffle
 
 		def test_link_target #{{{
 			with_test_data do |dir, entries|
-				# link_target must return a relative link to the build path
-				assert_equal    "../source/.build/_foo"    , @foo.link_target.to_s
-				assert_equal    "../source/.build/_bar"    , @bar.link_target.to_s
-				assert_equal "../../source/.build/_bar/baz", @baz.link_target.to_s
+				# link_target must return a relative link to the output path
+				assert_equal    "../source/.output/_foo"    , @foo.link_target.to_s
+				assert_equal    "../source/.output/_bar"    , @bar.link_target.to_s
+				assert_equal "../../source/.output/_bar/baz", @baz.link_target.to_s
 			end
 		end #}}}
 
@@ -325,29 +325,29 @@ module Coffle
 
 		def test_build #{{{
 			with_test_entries do |entry|
-				# Before building, the build and org items may not exist
-				assert_not_present entry.build
+				# Before building, the output and org items may not exist
+				assert_not_present entry.output
 				assert_not_present entry.org
 				assert !entry.built?
 
-				# After building, the build and org items must exist and be identical
+				# After building, the output and org items must exist and be identical
 				entry.build!
-				assert_present entry.build
+				assert_present entry.output
 				assert_present entry.org
 				assert entry.built?
 
 				if entry.is_a?(DirectoryEntry)
-					assert_tree_equal(entry.build, entry.org)
+					assert_tree_equal(entry.output, entry.org)
 				else
-					assert_file_equal(entry.build, entry.org)
+					assert_file_equal(entry.output, entry.org)
 				end
 
 				# For directory entries, the built file must be a directory
 				if entry.is_a?(DirectoryEntry)
-					assert_proper_directory entry.build
+					assert_proper_directory entry.output
 					assert_proper_directory entry.org
 				else
-					assert_proper_file entry.build
+					assert_proper_file entry.output
 					assert_proper_file entry.org
 				end
 			end
@@ -362,7 +362,7 @@ module Coffle
 				assert !entry.outdated?
 
 				# Outdate - must be outdated
-				entry.build.set_older(entry.source)
+				entry.output.set_older(entry.source)
 				assert entry.outdated?
 
 				# Rebuild - must be current
@@ -372,7 +372,7 @@ module Coffle
 		end #}}}
 
 		def test_build_modified #{{{
-			# Test rebuilding of outdated entries, this only applies to
+			# Test rebuilding of modified entries, this only applies to
 			# file entries
 			with_test_entries(:files) do |entry|
 				# Build - must be current
@@ -380,8 +380,8 @@ module Coffle
 				assert !entry.outdated?
 
 				# Outdate and modify - must be outdated
-				entry.build.append "x"
-				entry.build.set_older(entry.source)
+				entry.output.append "x"
+				entry.output.set_older(entry.source)
 				assert entry.outdated?
 				assert entry.modified?
 
@@ -395,7 +395,7 @@ module Coffle
 				assert !entry.outdated?
 
 				# Modify only
-				entry.build.append "x"
+				entry.output.append "x"
 				assert !entry.outdated?
 				assert entry.modified?
 
@@ -410,18 +410,18 @@ module Coffle
 
 		def test_outdated #{{{
 			with_test_entries do |entry|
-				# Before building, the build must be outdated (it does
+				# Before building, the output must be outdated (it does
 				# not exist)
 				assert entry.outdated?
 
-				# After building, the build must not be outdated
+				# After building, the output must not be outdated
 				entry.build!
 				assert !entry.outdated?
 
-				# If the build file is older than the source file,
+				# If the output file is older than the source file,
 				# outdated? must return true, except for directores,
 				# which are never outdated
-				entry.build.set_older(entry.source)
+				entry.output.set_older(entry.source)
 				assert  entry.outdated?                                     if !entry.is_a?(DirectoryEntry)
 				assert !entry.outdated?, "A directory must not be outdated" if  entry.is_a?(DirectoryEntry)
 
@@ -440,7 +440,7 @@ module Coffle
 				else
 					assert_equal false, entry.modified?
 
-					entry.build.append "x"
+					entry.output.append "x"
 					assert_equal true, entry.modified?
 				end
 			end
@@ -449,10 +449,10 @@ module Coffle
 		def test_build_file_in_nonexistent_directory #{{{
 			with_test_data do |dir, entries|
 				# Building a file (@baz) in a non-existing directory (@bar)
-				assert_not_present @bar.build
+				assert_not_present @bar.output
 				assert_not_present @bar.org
 				@baz.build!
-				assert_proper_directory @bar.build
+				assert_proper_directory @bar.output
 				assert_proper_directory @bar.org
 			end
 		end #}}}
@@ -670,7 +670,7 @@ module Coffle
 			with_testdir do |dir|
 				# source          in actual/source
 				# target          in actual/target
-				# expected source in expected/source (containing .build)
+				# expected source in expected/source (containing .output)
 				# expected target in expected/target
 				expected=dir.join("expected").absolute
 				actual  =dir.join("actual"  ).absolute
@@ -687,23 +687,23 @@ module Coffle
 
 				# Create the expected target data
 				expected.join("target").mkpath
-				expected.join("target", ".foo").make_symlink("../source/.build/_foo")
+				expected.join("target", ".foo").make_symlink("../source/.output/_foo")
 				expected.join("target", ".bar").mkdir
-				expected.join("target", ".bar", "baz").make_symlink("../../source/.build/_bar/baz")
+				expected.join("target", ".bar", "baz").make_symlink("../../source/.output/_bar/baz")
 
-				# Create the expected build data
-				expected.join("source", ".build").mkpath
-				expected.join("source", ".build", "_foo").touch
-				expected.join("source", ".build", "_bar").mkdir
-				expected.join("source", ".build", "_bar", "baz").touch
+				# Create the expected output data
+				expected.join("source", ".output").mkpath
+				expected.join("source", ".output", "_foo").touch
+				expected.join("source", ".output", "_bar").mkdir
+				expected.join("source", ".output", "_bar", "baz").touch
 
 				# Create the expected org data
-				expected.join("source", ".build", ".org").mkpath
-				expected.join("source", ".build", ".org", "_foo").touch
-				expected.join("source", ".build", ".org", "_bar").mkdir
-				expected.join("source", ".build", ".org", "_bar", "baz").touch
+				expected.join("source", ".output", ".org").mkpath
+				expected.join("source", ".output", ".org", "_foo").touch
+				expected.join("source", ".output", ".org", "_bar").mkdir
+				expected.join("source", ".output", ".org", "_bar", "baz").touch
 
-				# Create the coffle (also creates the build and target directories)
+				# Create the coffle (also creates the output and target directories)
 				coffle=Coffle.new("#{dir}/actual/source", "#{dir}/actual/target")
 
 				coffle.entries.each do |entry|

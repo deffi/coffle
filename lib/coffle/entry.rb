@@ -16,9 +16,9 @@ module Coffle
 		attr_reader :path
 
 		# Absolute paths to entries
-		attr_reader :source, :build, :org, :target, :backup
+		attr_reader :source, :output, :org, :target, :backup
 
-		# Relative link target from target to build
+		# Relative link target from target to output
 		attr_reader :link_target
 
 
@@ -35,19 +35,14 @@ module Coffle
 			@verbose = options.fetch :verbose, false
 
 			@source=coffle.source.join @path # The absolute path to the source (i. e. the template)
-			@build =coffle.build .join @path # The absolute path to the built file
+			@output=coffle.output.join @path # The absolute path to the built file
 			@org   =coffle.org   .join @path # The absolute path to the original of the built file
 			@target=coffle.target.join unescape_path(@path) # The absolute path to the target (i. e. the config file location)
 			@backup=coffle.backup.join unescape_path(@path) # The absolute path to the backup file
 
 			# The target the link should point to
-			@link_target=build.relative_path_from(target.dirname)
+			@link_target=output.relative_path_from(target.dirname)
 		end
-
-
-		################
-		## Properties ##
-		################
 
 		# Entry factory method
 		def Entry.create(coffle, path, options={})
@@ -60,33 +55,34 @@ module Coffle
 		end
 
 
+
 		############
 		## Status ##
 		############
 
-		def build_status
+		def output_status
 			# TODO test
 			# TODO skipped
 			# The source file must exist, or the entry may not exist at all
 
 			# File existence truth table:
 			#
-			# source | build | org || meaning
-			# -------+-------+-----++---------------------------------------------------------
-			# no     | -     | -   || Internal error - the entry should not exist
-			# yes    | no    | -   || Not built (the org is irrelevant)
-			# yes    | yes   | no  || Error: org missing (don't know if the user made changes)
-			# yes    | yes   | yes || Built
+			# source | output | org || meaning
+			# -------+--------+-----++---------------------------------------------------------
+			# no     | -      | -   || Internal error - the entry should not exist
+			# yes    | no     | -   || Not built (the org is irrelevant)
+			# yes    | yes    | no  || Error: org missing (don't know if the user made changes)
+			# yes    | yes    | yes || Built
 
 			if    !@source.exist? ; return "Error"
-			elsif !@build .exist? ; return "Not built"
+			elsif !@output.exist? ; return "Not built"
 			elsif !@org   .exist? ; return "org missing"
 			# Otherwise: built. Check if current.
 			end
 
 			# File currency truth table:
-			#   * outdated: @build is older than @source
-			#   * modified: @build is different from @org
+			#   * outdated: @output is older than @source
+			#   * modified: @output is different from @org
 			#
 			# outdated | modified || meaning
 			# ---------+----------++--------------------------
@@ -112,7 +108,7 @@ module Coffle
 		end
 
 		def status
-			[type, build_status, target_status, unescape_path(path)]
+			[type, output_status, target_status, unescape_path(path)]
 		end
 
 		def simple_status
@@ -155,20 +151,20 @@ module Coffle
 			# is rebuilt even if it is current.
 
 			if modified?
-				# Build modified by the user
+				# Output modified by the user
 				if overwrite
 					# Overwrite the modifications
 					do_build!
 				else
 					# Do not overwrite
-					message "#{MModified} #{build}"
+					message "#{MModified} #{output}"
 				end
 			elsif outdated? || rebuild
 				# Outdated (source changed)
 				do_build!
 			else
 				# Current
-				message "#{MCurrent} #{build}"
+				message "#{MCurrent} #{output}"
 			end
 		end
 
@@ -239,6 +235,7 @@ module Coffle
 				true
 			end
 		end
+
 
 		##########
 		## Misc ##

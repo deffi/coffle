@@ -12,7 +12,7 @@ module Coffle
 		include Filenames
 
 		# Absolute
-		attr_reader :source, :build, :org, :target, :backup
+		attr_reader :source, :output, :org, :target, :backup
 
 		# Calls path.mkpath and outputs a message if it did not exist before
 		def create_directory (path)
@@ -57,14 +57,14 @@ module Coffle
 
 			#@backup=@source.join(".backups/#{Time.now.strftime("%Y-%m-%d_%H-%M-%S")}")
 			@backup=@source.join(".backup")
-			@build =@source.join(".build")
-			@org   =@build .join(".org")
+			@output=@source.join(".output")
+			@org   =@output.join(".org")
 
 			# Make sure the source directory exists
 			raise "Source directory #{@source} does not exist" if !@source.exist?
 
 			# Create the build and target directories if they don't exist
-			create_directory @build
+			create_directory @output
 			create_directory @org
 			create_directory @target
 
@@ -72,14 +72,14 @@ module Coffle
 			# will be created when first used)
 			# Not using realpath - backup need not exist
 			@source=@source.absolute
-			@build =@build .absolute
+			@output=@output.absolute
 			@org   =@org   .absolute
 			@target=@target.absolute
 			@backup=@backup.absolute
 
 			# Make sure they are directories
 			raise "Source location #{source} is not a directory" if !@source.directory?                     # Must exist
-			raise "Build location #{ build } is not a directory" if !@build .directory?                     # Has been created
+			raise "Output location #{output} is not a directory" if !@output.directory?                     # Has been created
 			raise "Target location #{target} is not a directory" if !@target.directory?                     # Has been created
 			raise "Backup location #{backup} is not a directory" if @backup.present? && !@backup.directory? # Must not be a non-directory
 		end
@@ -153,7 +153,7 @@ module Coffle
 			rebuilding =(rebuild  )?"rebuilding" :"non-rebuilding"
 			overwriting=(overwrite)?"overwriting":"non-overwriting"
 
-			puts "Building in #{@build} (#{rebuilding}, #{overwriting})" if @verbose
+			puts "Building in #{@output} (#{rebuilding}, #{overwriting})" if @verbose
 
 			entries.each { |entry| entry.build! rebuild, overwrite }
 		end
@@ -170,7 +170,7 @@ module Coffle
 			puts "Source: #{@source}"
 			puts "Target: #{@target}"
 			puts
-			puts "Build:  #{@build}"
+			puts "Output: #{@output}"
 			puts "Org:    #{@org}"
 			#puts "Backup: #{@backup}"
 		end
@@ -187,9 +187,9 @@ module Coffle
 					puts "== #{unescape_path(entry.path)} (#{entry.path})"
 					puts "="*80
 					org_label  ="original"
-					build_label="modified"
+					output_label="modified"
 
-					system "diff -u --label #{org_label} #{entry.org} --label #{build_label} #{entry.build}"
+					system "diff -u --label #{org_label} #{entry.org} --label #{output_label} #{entry.output}"
 				end
 			}
 		end

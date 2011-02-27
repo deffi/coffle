@@ -9,7 +9,7 @@ module Coffle
 		def initialize(*args); super(*args); end
 
 		def built?
-			build.proper_file?
+			output.proper_file?
 		end
 
 		def blocked_by?(pathname)
@@ -40,7 +40,7 @@ module Coffle
 				true
 			else
 				# Is not current
-				!@build.current?(@source)
+				!output.current?(source)
 			end
 		end
 
@@ -52,21 +52,21 @@ module Coffle
 				# What has not been built cannot be modified
 				false
 			else
-				!@build.file_identical?(@org)
+				!output.file_identical?(org)
 			end
 		end
 
 		# Unconditionally build it
 		def do_build!
-			puts "#{MBuild} #{build}" if @verbose
+			puts "#{MBuild} #{output}" if @verbose
 
 			# Create the directory if it does not exist
-			build.dirname.mkpath
-			org.dirname.mkpath
+			output.dirname.mkpath
+			org   .dirname.mkpath
 
 			# TODO test dereferencing
-			Builder.build source, build
-			build.copy_file org
+			Builder.build source, output
+			output.copy_file org
 		end
 
 	end

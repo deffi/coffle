@@ -74,15 +74,15 @@ module Coffle
 			# yes    | yes    | no  || Error: org missing (don't know if the user made changes)
 			# yes    | yes    | yes || Built
 
-			if    !@source.exist? ; return "Error"
-			elsif !@output.exist? ; return "Not built"
-			elsif !@org   .exist? ; return "org missing"
+			if    !source.exist? ; return "Error"
+			elsif !output.exist? ; return "Not built"
+			elsif !org   .exist? ; return "org missing"
 			# Otherwise: built. Check if current.
 			end
 
 			# File currency truth table:
-			#   * outdated: @output is older than @source
-			#   * modified: @output is different from @org
+			#   * outdated: output is older than source
+			#   * modified: output is different from org
 			#
 			# outdated | modified || meaning
 			# ---------+----------++--------------------------
@@ -100,7 +100,7 @@ module Coffle
 		def target_status
 			# TODO test
 			# TODO skipped
-			# Target status depends on @target
+			# Target status depends on target
 			if    installed?      ; "Installed"
 			elsif target.present? ; "Blocked"
 			else                  ; "Not installed"

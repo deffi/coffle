@@ -58,7 +58,7 @@ module Coffle
 
 		# Unconditionally build it
 		def do_build!
-			puts "#{MBuild} #{output}" if @verbose
+			message "#{MBuild} #{output}"
 
 			# Create the directory if it does not exist
 			output.dirname.mkpath

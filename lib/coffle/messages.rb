@@ -18,7 +18,8 @@ module Coffle
 			MOverwrite    = "Overwrite      "
 			MBuild        = "Building       "
 			MModified     = "Modified       "
-			MBackupExists = "Backup exists  "
+			MReplaced     = "Replaced       "
+			MRemoved      = "Removed        "
 			MNotInstalled = "Not installed  "
 		end
 	end

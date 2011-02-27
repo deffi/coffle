@@ -3,10 +3,31 @@ require 'coffle/entry'
 module Coffle
 	# An entry representing a proper file (no symlinks, no specials)
 	class FileEntry <Entry
-		def type; "File"; end
-		def create_description; "-> #{link_target}"; end
+		##################
+		## Construction ##
+		##################
 
-		def initialize(*args); super(*args); end
+		def initialize(*args)
+			super(*args)
+		end
+
+
+		################
+		## Properties ##
+		################
+
+		def type
+			"File"
+		end
+
+		def create_description
+			"-> #{link_target}"
+		end
+
+
+		############
+		## Status ##
+		############
 
 		def built?
 			output.proper_file?
@@ -21,15 +42,6 @@ module Coffle
 		def installed?
 			# File entry: the target must be a symlink to the correct location
 			target.symlink? && target.readlink==link_target
-		end
-
-		# Create the target (which must not exist)
-		def create!
-			raise "Target exists" if target.present?
-
-			# File entry - create the containing directory and the symlink
-			target.dirname.mkpath
-			target.make_symlink link_target
 		end
 
 		# The source has to be rebuilt (because it has been modified after it
@@ -56,8 +68,17 @@ module Coffle
 			end
 		end
 
+
+		#############
+		## Actions ##
+		#############
+
+		# These methods perform their respective operation unconditionally,
+		# without checking for errors. It is the caller's responsibility to
+		# performe any necessary checks.
+
 		# Unconditionally build it
-		def do_build!
+		def build!
 			message "#{MBuild} #{output}"
 
 			# Create the directory if it does not exist
@@ -67,6 +88,27 @@ module Coffle
 			# TODO test dereferencing
 			Builder.build source, output
 			output.copy_file org
+		end
+		
+		# Create the target (which must not exist)
+		def install!
+			raise "Target exists" if target.present?
+
+			# File entry - create the containing directory and the symlink
+			target.dirname.mkpath
+			target.make_symlink link_target
+		end
+
+		# Preconditions: target exists, does not block, backup does not exist
+		def install_overwrite!
+			# Make sure the backup directory exists
+			backup.dirname.mkpath
+
+			# Move the file to the backup
+			target.rename backup
+
+			# Now we can regularly install the file
+			install!
 		end
 
 	end

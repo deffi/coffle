@@ -201,23 +201,23 @@ module Coffle
 
 		def test_create #{{{
 			with_test_entries do |entry|
-				# If the target already exists and is a directory, create! must
+				# If the target already exists and is a directory, install! must
 				# raise an exception
 				entry.target.mkpath
-				assert_raise(RuntimeError) { entry.create! }
+				assert_raise(RuntimeError) { entry.install! }
 				entry.target.rmdir
 
-				# If the target already exists and is a file, create! must
+				# If the target already exists and is a file, install! must
 				# raise an exception
 				entry.target.dirname.mkpath
 				entry.target.touch
-				assert_raise(RuntimeError) { entry.create! }
+				assert_raise(RuntimeError) { entry.install! }
 				entry.target.delete
 
-				# If the target does not exist, create! must succeed, the
+				# If the target does not exist, install! must succeed, the
 				# target must exist and be current, and be a directory exactly
 				# for directory entries
-				assert_nothing_raised { entry.create! }
+				assert_nothing_raised { entry.install! }
 				assert_present entry.target
 				assert         entry.target.present?
 				assert         entry.installed?
@@ -225,103 +225,104 @@ module Coffle
 			end
 		end #}}}
 
-		def test_remove #{{{
-			with_test_entries do |entry|
-				# Create the entry
-				entry.create!
+		# FIXME: test install_overwrite!
+#		def test_remove #{{{
+#			with_test_entries do |entry|
+#				# Create the entry
+#				entry.install!
+#
+#				# The target must exist, the backup may not exist
+#				assert_present     entry.target
+#				assert_not_present entry.backup
+#
+#				# Remove the entry (creates a backup)
+#				entry.remove!
+#				
+#				# The target may not exist, the backup must exist
+#				assert_not_present entry.target
+#				assert_present     entry.backup
+#			end
+#		end #}}}
 
-				# The target must exist, the backup may not exist
-				assert_present     entry.target
-				assert_not_present entry.backup
+#		def test_remove_directory #{{{
+#			with_test_data do |dir, entries|
+#				# Create an entry in a subdirectory
+#				@baz.install!
+#
+#				# Both the target for this entry and for the containing
+#				# directory must exist; the backups may not exist
+#				assert_present @bar.target
+#				assert_present @baz.target
+#
+#				assert_not_present @bar.backup
+#				assert_not_present @baz.backup
+#
+#				# Remove the containing directory
+#				@bar.remove!
+#
+#				# The targets may not exist; the backups must exist
+#				assert_not_present @bar.target
+#				assert_not_present @baz.target
+#
+#				assert_present @bar.backup
+#				assert_present @baz.backup
+#			end
+#		end #}}}
 
-				# Remove the entry (creates a backup)
-				entry.remove!
-				
-				# The target may not exist, the backup must exist
-				assert_not_present entry.target
-				assert_present     entry.backup
-			end
-		end #}}}
+#		def test_remove_file_from_directory #{{{
+#			with_test_data do |dir, entries|
+#				# Create an entry in a subdirectory
+#				@baz.install!
+#
+#				# The backup directory for the containing entry may not exist
+#				assert_not_present @bar.backup
+#
+#				# Remove the entry in the subdirectory
+#				@baz.remove!
+#
+#				# Now both the backup entry for the directory and for the entry
+#				# must exist.
+#				assert_present @bar.backup
+#				assert_present @baz.backup
+#
+#				# The entry must not exist any more, the directory must still exist
+#				assert_present     @bar.target
+#				assert_not_present @baz.target
+#			end
+#		end #}}}
 
-		def test_remove_directory #{{{
-			with_test_data do |dir, entries|
-				# Create an entry in a subdirectory
-				@baz.create!
-
-				# Both the target for this entry and for the containing
-				# directory must exist; the backups may not exist
-				assert_present @bar.target
-				assert_present @baz.target
-
-				assert_not_present @bar.backup
-				assert_not_present @baz.backup
-
-				# Remove the containing directory
-				@bar.remove!
-
-				# The targets may not exist; the backups must exist
-				assert_not_present @bar.target
-				assert_not_present @baz.target
-
-				assert_present @bar.backup
-				assert_present @baz.backup
-			end
-		end #}}}
-
-		def test_remove_file_from_directory #{{{
-			with_test_data do |dir, entries|
-				# Create an entry in a subdirectory
-				@baz.create!
-
-				# The backup directory for the containing entry may not exist
-				assert_not_present @bar.backup
-
-				# Remove the entry in the subdirectory
-				@baz.remove!
-
-				# Now both the backup entry for the directory and for the entry
-				# must exist.
-				assert_present @bar.backup
-				assert_present @baz.backup
-
-				# The entry must not exist any more, the directory must still exist
-				assert_present     @bar.target
-				assert_not_present @baz.target
-			end
-		end #}}}
-
-		def test_remove_directory_existing_backup #{{{
-			with_test_data do |dir, entries|
-				# Create and remove a directory entry with an additional file,
-				# so the backup directory exists.
-				@bar.create!
-				@bar.target.join("previous").touch
-				@bar.remove!
-
-				# Recreate the directory entry and create a file and a dot file
-				# in the directory
-				@bar.create!
-				@bar.target.join("bull").touch
-				@bar.target.join(".bull").touch
-
-				# Make sure the directory, the files and the backup directory exist
-				assert_present dir.join @bar.target
-				assert_present dir.join @bar.target.join("bull")
-				assert_present dir.join @bar.target.join(".bull")
-				assert_present dir.join @bar.backup
-
-				# Remove the directory
-				@bar.remove!
-
-				# Make sure the directory does not exist any more and the files
-				# exist in the backup directory.
-				assert_not_present @bar.target
-				assert_present     @bar.backup
-				assert_present     @bar.backup.join("bull")
-				assert_present     @bar.backup.join(".bull")
-				assert_present     @bar.backup.join("previous")
-			end
-		end #}}}
+#		def test_remove_directory_existing_backup #{{{
+#			with_test_data do |dir, entries|
+#				# Create and remove a directory entry with an additional file,
+#				# so the backup directory exists.
+#				@bar.install!
+#				@bar.target.join("previous").touch
+#				@bar.remove!
+#
+#				# Recreate the directory entry and create a file and a dot file
+#				# in the directory
+#				@bar.install!
+#				@bar.target.join("bull").touch
+#				@bar.target.join(".bull").touch
+#
+#				# Make sure the directory, the files and the backup directory exist
+#				assert_present dir.join @bar.target
+#				assert_present dir.join @bar.target.join("bull")
+#				assert_present dir.join @bar.target.join(".bull")
+#				assert_present dir.join @bar.backup
+#
+#				# Remove the directory
+#				@bar.remove!
+#
+#				# Make sure the directory does not exist any more and the files
+#				# exist in the backup directory.
+#				assert_not_present @bar.target
+#				assert_present     @bar.backup
+#				assert_present     @bar.backup.join("bull")
+#				assert_present     @bar.backup.join(".bull")
+#				assert_present     @bar.backup.join("previous")
+#			end
+#		end #}}}
 
 		def test_build #{{{
 			with_test_entries do |entry|
@@ -331,7 +332,7 @@ module Coffle
 				assert !entry.built?
 
 				# After building, the output and org items must exist and be identical
-				entry.build!
+				entry.build
 				assert_present entry.output
 				assert_present entry.org
 				assert entry.built?
@@ -358,7 +359,7 @@ module Coffle
 			# file entries
 			with_test_entries(:files) do |entry|
 				# Build - must be current
-				entry.build!
+				entry.build
 				assert !entry.outdated?
 
 				# Outdate - must be outdated
@@ -366,7 +367,7 @@ module Coffle
 				assert entry.outdated?
 
 				# Rebuild - must be current
-				entry.build!
+				entry.build
 				assert !entry.outdated?
 			end
 		end #}}}
@@ -376,7 +377,7 @@ module Coffle
 			# file entries
 			with_test_entries(:files) do |entry|
 				# Build - must be current
-				entry.build!
+				entry.build
 				assert !entry.outdated?
 
 				# Outdate and modify - must be outdated
@@ -387,11 +388,11 @@ module Coffle
 
 				# Rebuild - must still be outdated because modified
 				# entries are not overwritten
-				entry.build!
+				entry.build
 				assert entry.outdated?
 
 				# Rebuild with overwrite - must be current
-				entry.build!(false, true)
+				entry.build(false, true)
 				assert !entry.outdated?
 
 				# Modify only
@@ -402,7 +403,7 @@ module Coffle
 				# Rebuild with overwrite - must no longer be modified,
 				# even though it was current before
 				assert !entry.outdated?
-				entry.build!(false, true)
+				entry.build(false, true)
 				assert !entry.outdated?
 				assert !entry.modified?
 			end
@@ -415,7 +416,7 @@ module Coffle
 				assert entry.outdated?
 
 				# After building, the output must not be outdated
-				entry.build!
+				entry.build
 				assert !entry.outdated?
 
 				# If the output file is older than the source file,
@@ -426,14 +427,14 @@ module Coffle
 				assert !entry.outdated?, "A directory must not be outdated" if  entry.is_a?(DirectoryEntry)
 
 				# After building, outdated? must return false again
-				entry.build!
+				entry.build
 				assert !entry.outdated?
 			end
 		end #}}}
 
 		def test_modified #{{{
 			with_test_entries do |entry|
-				entry.build!
+				entry.build
 
 				if entry.is_a?(DirectoryEntry)
 					assert_equal false, entry.modified?
@@ -451,7 +452,7 @@ module Coffle
 				# Building a file (@baz) in a non-existing directory (@bar)
 				assert_not_present @bar.output
 				assert_not_present @bar.org
-				@baz.build!
+				@baz.build
 				assert_proper_directory @bar.output
 				assert_proper_directory @bar.org
 			end
@@ -499,7 +500,7 @@ module Coffle
 			with_test_entries do |entry|
 				# Target does not exist before - must be installed, no backup
 				# made
-				result=entry.install!(false)
+				result=entry.install(false)
 				assert_equal true, result           # Operation succeeded
 				assert_equal true, entry.installed? # Entry is installed
 				assert_not_present entry.backup     # Backup was not made
@@ -510,10 +511,10 @@ module Coffle
 		def test_install_current
 			with_test_entries do |entry|
 				# Install the entry
-				entry.install!(false)
+				entry.install(false)
 
 				# Target is already installed - no backup made
-				result=entry.install!(false)
+				result=entry.install(false)
 				assert_equal true, result           # Operation succeeded
 				assert_equal true, entry.installed? # Entry is installed
 				assert_not_present entry.backup     # Backup was not made
@@ -530,17 +531,17 @@ module Coffle
 				entry.target.write existing_contents
 
 				# Without overwriting
-				result=entry.install!(false)
+				result=entry.install(false)
 				assert_equal false, result                        # Operation did not succeed
 				assert_equal false, entry.installed?              # Entry is not installed
 				assert_not_present entry.backup                   # Backup was not made
 				assert_equal existing_contents, entry.target.read # Target contents are not touched
 
 				# With overwriting
-				result=entry.install!(true)
+				result=entry.install(true)
 				assert_equal true, result                         # Operation succeeded
 				assert_equal true, entry.installed?               # Entry is not installed
-				assert_present entry.backup                         # Backup was not made
+				assert_present entry.backup                       # Backup was not made
 				assert_equal existing_contents, entry.backup.read # Backup contents are correct
 			end
 		end #}}}
@@ -553,7 +554,7 @@ module Coffle
 
 				# Existing directories count as existing
 				assert_equal true, entry.installed? # Entry is installed
-				result=entry.install!(false)
+				result=entry.install(false)
 				assert_equal true, result           # Operation succeeded
 				assert_equal true, entry.installed? # Entry is installed
 				assert_not_present entry.backup     # Backup was not made
@@ -566,7 +567,7 @@ module Coffle
 
 				# Existing directories count as existing
 				assert_equal true, entry.installed? # Entry is installed
-				result=entry.install!(false)
+				result=entry.install(false)
 				assert_equal true, result           # Operation succeeded
 				assert_equal true, entry.installed? # Entry is installed
 				assert_not_present entry.backup     # Backup was not made
@@ -580,13 +581,13 @@ module Coffle
 				entry.target.mkpath
 
 				# Without overwriting
-				result=entry.install!(false)
+				result=entry.install(false)
 				assert_equal false, result           # Operation did not succeed
 				assert_equal false, entry.installed? # Entry is not installed
 				assert_not_present entry.backup      # Backup was not made
 
 				# With overwriting
-				result=entry.install!(true)
+				result=entry.install(true)
 				assert_equal false, result           # Operation did not succeed
 				assert_equal false, entry.installed? # Entry is not installed
 				assert_not_present entry.backup      # Backup was not made
@@ -602,13 +603,13 @@ module Coffle
 				entry.target.write existing_contents
 
 				# Without overwriting
-				result=entry.install!(false)
+				result=entry.install(false)
 				assert_equal false, result           # Operation did not succeed
 				assert_equal false, entry.installed? # Entry is not installed
 				assert_not_present entry.backup      # Backup was not made
 
 				# With overwriting
-				result=entry.install!(true)
+				result=entry.install(true)
 				assert_equal false, result           # Operation did not succeed
 				assert_equal false, entry.installed? # Entry is not installed
 				assert_not_present entry.backup      # Backup was not made
@@ -633,7 +634,7 @@ module Coffle
 					assert_equal false, entry.installed? # Not installed
 
 					# Install, overwriting the target
-					result=entry.install!(true)
+					result=entry.install(true)
 					assert_equal true, result
 					assert_equal true, entry.installed? # Installed
 
@@ -641,7 +642,7 @@ module Coffle
 					replace_with replace_option, entry.target
 
 					# Try to install (without overwriting)
-					result=entry.install!(false)
+					result=entry.install(false)
 					assert_equal false, result                    # Operation did not succeed
 					assert_equal false, entry.installed?          # Entry is not installed
 					assert_file_type replace_option, entry.target # Target still has the correct type
@@ -707,8 +708,8 @@ module Coffle
 				coffle=Coffle.new("#{dir}/actual/source", "#{dir}/actual/target")
 
 				coffle.entries.each do |entry|
-					entry.build!
-					entry.install!(false)
+					entry.build
+					entry.install(false)
 				end
 
 				assert_tree_equal(expected, actual)

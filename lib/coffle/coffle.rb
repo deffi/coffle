@@ -63,7 +63,7 @@ module Coffle
 			# Make sure the source directory exists
 			raise "Source directory #{@source} does not exist" if !@source.exist?
 
-			# Create the build and target directories if they don't exist
+			# Create the output and target directories if they don't exist
 			create_directory @output
 			create_directory @org
 			create_directory @target
@@ -155,7 +155,7 @@ module Coffle
 
 			puts "Building in #{@output} (#{rebuilding}, #{overwriting})" if @verbose
 
-			entries.each { |entry| entry.build! rebuild, overwrite }
+			entries.each { |entry| entry.build rebuild, overwrite }
 		end
 
 		def install! (options={})
@@ -163,7 +163,7 @@ module Coffle
 
 			puts "Installing to #{@target} (#{(overwrite)?"overwriting":"non-overwriting"})" if @verbose
 
-			entries.each { |entry| entry.install! overwrite }
+			entries.each { |entry| entry.install overwrite }
 		end
 
 		def info! (options={})

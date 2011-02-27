@@ -3,10 +3,31 @@ require 'coffle/entry'
 module Coffle
 	# An entry representing a proper directory (no symlinks)
 	class DirectoryEntry <Entry
-		def type; "Dir"; end
-		def create_description; "(directory)"; end
+		##################
+		## Construction ##
+		##################
 
-		def initialize(*args); super(*args); end
+		def initialize(*args)
+			super(*args)
+		end
+
+
+		################
+		## Properties ##
+		################
+
+		def type
+			"Dir"
+		end
+
+		def create_description
+			"(directory)"
+		end
+
+
+		############
+		## Status ##
+		############
 
 		def built?
 			output.proper_directory?
@@ -18,19 +39,10 @@ module Coffle
 			pathname.present? and not pathname.directory?
 		end
 
-		# Whether the target for the entry is a symlink to the correct location
 		def installed?
 			# Directory entry: the target must be a directory (proper directory
 			# or symlink to directory)
 			target.directory?
-		end
-
-		# Create the target (which must not exist)
-		def create!
-			raise "Target exists" if target.present?
-
-			# Directory entry - create the directory
-			target.mkpath
 		end
 
 		# The source has to be rebuilt (because it has been modified after it
@@ -49,12 +61,38 @@ module Coffle
 			false
 		end
 
+
+		#############
+		## Actions ##
+		#############
+
+		# These methods perform their respective operation unconditionally,
+		# without checking for errors. It is the caller's responsibility to
+		# performe any necessary checks.
+
 		# Unconditionally build it
-		def do_build!
+		def build!
 			message "#{MBuild} #{output}"
 
 			output.mkpath
 			org   .mkpath
+		end
+
+		# Create the target (which must not exist)
+		def install!
+			raise "Target exists" if target.present?
+
+			# Directory entry - create the directory
+			target.mkpath
+		end
+
+		# Preconditions: target exists, does not block, backup does not exist
+		def install_overwrite!
+			# This may not happen because for a directory entry, an existing
+			# target is either current (if it's a directory or a symlink to a
+			# directory) or blocking (it it's anything else), and both must
+			# be checked before calling this method.
+			raise "Trying to overwrite a directory"
 		end
 	end
 end

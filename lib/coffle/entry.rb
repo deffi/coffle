@@ -63,13 +63,12 @@ module Coffle
 		def output_status
 			# TODO test
 			# TODO skipped
-			# The source file must exist, or the entry may not exist at all
 
 			# File existence truth table:
 			#
 			# source | output | org || meaning
 			# -------+--------+-----++---------------------------------------------------------
-			# no     | -      | -   || Internal error - the entry should not exist
+			# no     | -      | -   || Internal error - this entry should not exist
 			# yes    | no     | -   || Not built (the org is irrelevant)
 			# yes    | yes    | no  || Error: org missing (don't know if the user made changes)
 			# yes    | yes    | yes || Built
@@ -116,61 +115,89 @@ module Coffle
 		end
 
 
-		#############
-		## Actions ##
-		#############
+		#######################
+		## Front-end actions ##
+		#######################
 
-		# Remove the target path (and make a backup)
-		def remove!
-			# Make sure the backup directory exists
-			backup.dirname.mkpath
-
-			if target.directory? && backup.directory?
-				# The target is a directory and the backup already exists.
-				# This can happen if a file inside the directory was backed up
-				# before the directory itself.
-
-				# Move all the files inside the directory to the backup
-				target.entries.reject { |entry|
-					# Exclude . and ..
-					['.', '..'].include? entry.to_s
-				}.each { |entry|
-					target.join(entry).rename backup.join(entry)
-				}
-
-				target.rmdir
-			else
-				# Move the target to the backup
-				target.rename backup
-			end
-		end
-
-
-		def build!(rebuild=false, overwrite=false)
+		# Build the entry, that is, create the output in the output directory
+		def build(rebuild=false, overwrite=false)
 			# Note that if the entry is modified and overwrite is true, it
 			# is rebuilt even if it is current.
 
-			if modified?
+			if !built?
+				build!
+			elsif modified?
 				# Output modified by the user
 				if overwrite
 					# Overwrite the modifications
-					do_build!
+					build!
 				else
 					# Do not overwrite
 					message "#{MModified} #{output}"
 				end
 			elsif outdated? || rebuild
-				# Outdated (source changed)
-				do_build!
+				# Outdated (source changed), or forced rebuild
+				build!
 			else
 				# Current
 				message "#{MCurrent} #{output}"
 			end
 		end
 
+		# Install the entry
+		# * overwrite: If true, existing entries will be backed up and replaced.
+		#   If false, existing entries will not be touched.
+		# Returns true if the entry is now installed (even if nothing had to
+		# be done)
+		def install(overwrite)
+			build # non-rebuilding, non-overwriting
+
+			if installed?
+				# Nothing to do
+				message "#{MCurrent} #{target}"
+				true
+			elsif backup.present?
+				# The entry is not installed, but there is a backup, which
+				# means that the entry was installed once. This should not
+				# happen - the user either replaced or removed the installed
+				# entry. Refuse.
+				if target.present?
+					message "#{MReplaced} #{target}"
+				else
+					message "#{MRemoved} #{target}"
+				end
+				false
+			elsif !target.present?
+				# Regular install
+				message "#{MCreate} #{target} #{create_description}"
+				install!
+				true
+			else
+				# Target already exists, but is not installed (i. e. for
+				# directory entries, the target is not a directory, and for
+				# file entries it is not a symlink to the correct position)
+				# TODO test for target = invalid symlink
+				if blocked_by?(target)
+					# It's not possible to install the entry. Refuse.
+					message "#{MBlocked} #{target}"
+					false
+				else
+					# The target type matches the entry type
+					if overwrite
+						message "#{MOverwrite} #{target} #{create_description} (backup in #{backup})"
+						install_overwrite!
+						true
+					else
+						message "#{MExist} #{target} (not overwriting)"
+						false
+					end
+				end
+			end
+		end
+
 		# Returns true if the entry is now uninstalled (even if nothing had to
 		# be done)
-		#def uninstall!
+		#def uninstall
 		#	# FIXME implement
 		#	if !installed?
 		#		message "#{MNotInstalled}"
@@ -185,56 +212,6 @@ module Coffle
 		#	end
 		#end
 
-		# Install the entry
-		# * overwrite: If true, existing entries will be backed up and replaced.
-		#   If false, existing entries will not be touched.
-		# Returns true if the entry is now installed (even if nothing had to
-		# be done)
-		def install!(overwrite)
-			build! if (!built? || outdated?)
-
-			if installed?
-				# Nothing to do
-				message "#{MCurrent} #{target}"
-				true
-			elsif backup.present?
-				# The entry is not installed, but the backup exists. This
-				# should not happen - the user messed it up. Refuse.
-				message "#{MBackupExists} #{target}"
-				false
-			elsif target.present?
-				# Target already exists and is not current (i. e. for
-				# directory entries, the target is not a directory,
-				# and for file entries it is not a symlink to the
-				# correct position)
-				if blocked_by?(target)
-					# Refuse
-					message "#{MBlocked} #{target}"
-					false
-				else
-					# The target type matches the entry type
-					# Note that this must be a file because a directory would
-					# have been recognized as installed.
-					raise "Internal error: directory exists" if target.directory?
-
-					if overwrite
-						message "#{MOverwrite} #{target} #{create_description} (backup in #{backup})"
-						remove!
-						create!
-						true
-					else
-						message "#{MExist} #{target} (not overwriting)"
-						false
-					end
-				end
-
-			else
-				# Target does not exist - create it
-				message "#{MCreate} #{target} #{create_description}"
-				create!
-				true
-			end
-		end
 
 
 		##########

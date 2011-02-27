@@ -1,9 +1,6 @@
 == Next
 
-The operations should return a result object, with
-* a message
-* a performed flag
-* a success flag
+* Unit tests for uninstall
 
 * Uninstall (restore backup)
   => must remove backup, or it will count as removed
@@ -12,9 +9,18 @@ The operations should return a result object, with
   * Simple approach: remove directory if empty after children uninstalled
   * Better: remove directory if empty and was created by coffle?
 
+The operations should return a result object, with
+* a message
+* a performed flag
+* a success flag
+
 
 == High priority
 
+* Whether a target was removed or replaced should not be depend on the
+  existence of the backup, but instead on whether it was installed (keep a
+  list)
+  * then we can distinguish removed (no backup) from not installed on uninstall
 * The preconditions in the specific entries should be checked in the entries,
   or better yet (?), the methods just called and throw an exception/return a
   result if they cannot do that
@@ -116,14 +122,14 @@ Uninstall
 =========
 target    |backup  ||target action |backup action |comments
 ----------+--------++--------------+--------------+-------------------------------------
-installed |present ||restore       |remove        |restore original file
-installed |none    ||remove        |-             |restore (file was not present before)
+installed |present ||restore       |remove        |regular uninstall with restore
+installed |none    ||remove        |-             |regular uninstall without restore
+----------+--------++--------------+--------------+-------------------------------------
+none      |present ||            refuse           |target was removed
+other     |present ||            refuse           |target was replaced
 ----------+--------++--------------+--------------+-------------------------------------
 none      |none    ||-             |-             |not installed (or: removed and not present before)
 other     |none    ||-             |-             |not installed (or: replaced and not present before)
-----------+--------++--------------+--------------+-------------------------------------
-none      |present ||refuse                       |target was removed
-other     |present ||refuse                       |target was replaced
 
 
 

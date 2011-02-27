@@ -556,18 +556,47 @@ module Coffle
 			end
 		end #}}}
 
-		def test_uninstall
-			# FIXME, see also table in TODO.rdoc
-			# Test uninstall:
-			#   * target installed, with/without backup
-			#   * backup not present, target is none/file/dir (nothing done)
-			#   * target was removed
-			#   * target was replaced
-			with_test_entries do |entry|
-			end
+		# Uninstalling entries: regular uninstall without restore {{{
+		def test_uninstall_without_restore
+			# FIXME implement
 		end
+		#}}}
+		
+		# Uninstalling entries: regular uninstall with restore {{{
+		def test_uninstall_with_restore
+			# FIXME implement
+		end
+		#}}}
+
+		# Uninstalling entries: uninstalling directories {{{
+		def test_uninstall_directory
+			# FIXME implement
+		end
+		#}}}
+
+		# Uninstalling entries: target removed or replaced {{{
+		def test_uninstall_replaced
+			# FIXME implement
+		end
+		#}}}
+
+		# Uninstalling entries: not installed {{{
+		def test_uninstall_not_installed
+			# FIXME implement
+		end
+		#}}}
+
+		# Uninstalling entries: not installed, something else there {{{
+		def test_uninstall_not_installed_present
+			# FIXME implement
+		end
+		#}}}
+
 
 		# TODO also compare file contents
+		# TODO also test uninstall
+		# TODO also test backup dir
+		# TODO include installation into existing symlink directory
 		def test_full
 			with_testdir do |dir|
 				# source          in actual/source

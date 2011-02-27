@@ -125,11 +125,13 @@ module Coffle
 			# is rebuilt even if it is current.
 
 			if !built?
+				message "#{MBuild} #{output}"
 				build!
 			elsif modified?
 				# Output modified by the user
 				if overwrite
 					# Overwrite the modifications
+					message "#{MBuild} #{output}"
 					build!
 				else
 					# Do not overwrite
@@ -137,6 +139,7 @@ module Coffle
 				end
 			elsif outdated? || rebuild
 				# Outdated (source changed), or forced rebuild
+				message "#{MBuild} #{output}"
 				build!
 			else
 				# Current
@@ -169,7 +172,7 @@ module Coffle
 				false
 			elsif !target.present?
 				# Regular install
-				message "#{MCreate} #{target} #{create_description}"
+				message "#{MInstall} #{target} #{create_description}"
 				install!
 				true
 			else
@@ -197,20 +200,23 @@ module Coffle
 
 		# Returns true if the entry is now uninstalled (even if nothing had to
 		# be done)
-		#def uninstall
-		#	# FIXME implement
-		#	if !installed?
-		#		message "#{MNotInstalled}"
-		#		true
-		#	elsif directory?
-		#	else
-		#		if backup.present?
-		#			# No backup present, nothing to restore
-		#		else
-		#			# Need to restore the backup
-		#		end
-		#	end
-		#end
+		def uninstall
+			if installed?
+				message "#{MUninstall} #{target}"
+				uninstall!
+				true
+			elsif backup.present?
+				if target.present?
+					message "#{MReplaced} #{target}"
+				else
+					message "#{MRemoved} #{target}"
+				end
+				false
+			else
+				message "#{MNotInstalled} #{target}"
+				true
+			end
+		end
 
 
 

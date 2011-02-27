@@ -79,8 +79,6 @@ module Coffle
 
 		# Unconditionally build it
 		def build!
-			message "#{MBuild} #{output}"
-
 			# Create the directory if it does not exist
 			output.dirname.mkpath
 			org   .dirname.mkpath
@@ -111,6 +109,15 @@ module Coffle
 			install!
 		end
 
+		# Preconditions: target installed
+		def uninstall!
+			raise "Target is not installed" if !installed?
+
+			target.delete
+
+			# We must remove the backup, or the entry will count as removed
+			backup.rename target if backup.present?
+		end
 	end
 end
 

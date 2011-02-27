@@ -72,8 +72,6 @@ module Coffle
 
 		# Unconditionally build it
 		def build!
-			message "#{MBuild} #{output}"
-
 			output.mkpath
 			org   .mkpath
 		end
@@ -93,6 +91,19 @@ module Coffle
 			# directory) or blocking (it it's anything else), and both must
 			# be checked before calling this method.
 			raise "Trying to overwrite a directory"
+		end
+
+		# Preconditions: target installed
+		def uninstall!
+			raise "Target is not installed" if !installed?
+
+			# Only uninstall if the target is a proper directory
+			if target.proper_directory?
+				# Delete the directory if it is empty
+				if target.empty?
+					target.rmdir
+				end
+			end
 		end
 	end
 end

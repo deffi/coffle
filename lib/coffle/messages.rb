@@ -11,7 +11,8 @@ module Coffle
 
 		module Messages
 			MDir          = "Directory      "
-			MCreate       = "Creating       "
+			MInstall      = "Installing     "
+			MUninstall    = "Uninstalling   "
 			MExist        = "Exists         "
 			MBlocked      = "Blocked        "
 			MCurrent      = "Current        "

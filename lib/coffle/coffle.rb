@@ -110,7 +110,7 @@ module Coffle
 			options = {}
 			opts=OptionParser.new
 
-			opts.banner = "Usage: #{$0} [options] action\n    action is one of build, install, info, status, diff"
+			opts.banner = "Usage: #{$0} [options] action\n    action is one of build, install, uninstall, info, status, diff"
 
 			opts.separator ""
 			opts.separator "install options:"
@@ -137,11 +137,12 @@ module Coffle
 			action=ARGV[0]||""
 
 			case action.downcase
-			when "build"  : build!   options
-			when "install": install! options
-			when "info"   : info!    options
-			when "status" : status!  options
-			when "diff"   : diff!    options
+			when "build"    : build!   options
+			when "install"  : install! options
+			when "uninstall": uninstall! options
+			when "info"     : info!    options
+			when "status"   : status!  options
+			when "diff"     : diff!    options
 			else puts opts # Output the options help message
 			end
 		end
@@ -164,6 +165,12 @@ module Coffle
 			puts "Installing to #{@target} (#{(overwrite)?"overwriting":"non-overwriting"})" if @verbose
 
 			entries.each { |entry| entry.install overwrite }
+		end
+
+		def uninstall! (options={})
+			puts "Uninstalling from #{@target}" if @verbose
+
+			entries.reverse.each { |entry| entry.uninstall }
 		end
 
 		def info! (options={})

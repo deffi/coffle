@@ -86,8 +86,8 @@ module Coffle
 			org   .dirname.mkpath
 
 			# TODO test dereferencing
-			Builder.build source, output
-			output.copy_file org
+			skipped=!Builder.build(source, output)
+			output.copy_file org unless skipped
 		end
 		
 		# Create the target (which must not exist)

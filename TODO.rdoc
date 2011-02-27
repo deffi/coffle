@@ -1,29 +1,19 @@
 == Next
 
-* Uninstalling directories:
-  * Need hierarchical entries structure?
-  * Simple approach: remove directory if empty after children uninstalled
-  * Better: remove directory if empty and was created by coffle?
-
-The operations should return a result object, with
-* a message
-* a performed flag
-* a success flag
+Skipping files
+Marking: yaml file
+* properties of Entry or Coffle?
 
 
 == High priority
 
-* Whether a target was removed or replaced should not be depend on the
-  existence of the backup, but instead on whether it was installed (keep a
-  list)
-  * then we can distinguish removed (no backup) from not installed on uninstall
+* Uninstalling directories:
+  * Need hierarchical entries structure?
+  * Simple approach: remove directory if empty after children uninstalled
+  * Better: remove directory if empty and was created by coffle?
 * The preconditions in the specific entries should be checked in the entries,
   or better yet (?), the methods just called and throw an exception/return a
   result if they cannot do that
-* install! et al should be private
-* skipping files
-  * how to mark a file as skipped?
-	=> status file - yaml may be undesirable if gems cannot be installed
 * "full" test for backups
 * "full" test: install into symlink directory
 * Should backup filenames really be unescaped?
@@ -41,92 +31,7 @@ The operations should return a result object, with
 * Uninstall in reverse direction unless we have hierarchic entries
 
 
-== Documentation
 
-* Not copying directly to target: because it is unclear whether the file was
-  installed by coffle
-* not .build/.install: because the install operation is something else
-* no unescaped names in processing directories: so we can use dotfiles for bookkeeping
-
-On directories:
-* If the target of a directory entry already exists, we use it and keep its contents.
-** coffle directores are the same as other directories
-** we want to keep, for example, .ssh/identity when installing .ssh/config
-* We accept a symlink to a directory as existing target directory
-
-For now, we don't allow overwriting a file with a directory or vice versa.
-We never make a backup of a directory (cannot be overwritten by a file
-(refused) nor a directory (exists)).
-
-Notes on backups of directories (in case we want to make them one day):
-* Can we/do we have to distinguish a file backup in a directory from a
-  directory backup?
-* What about uninstalling directories that contain non-coffle entries?
-
-
-On skipping:
-* skipped means: not under coffle control
-* act as if the entry didn't exist
-* file ist not installed
-* if it is already installed, uninstall it
-
-On uninstalling:
-* the backup must be removed, or the entry will be treated as removed
-
-=== Backups ===
-
-Goals:
-* install (even with --overwrite) followed by uninstall => same as before
-
-Conclusions:
-* The only reason to use multiple backups would be to allow the user to replace
-  the the installed entries. However, this is probably neither easy nor simple.
-  Therefore, we only use a single backup.
-* If on "install" the backup is present and the target is "none" or "other", we
-  may not keep the backup because after "uninstall", we would have restored an
-  old backup. We also do not want to silently drop the backup after the user
-  deletes the coffle link. Thus, we have to refuse.
-
-
-
-Install
-=======
-type      |target    |backup  |overwrite ||backup action |target action |comments
-----------+----------+--------+----------++--------------+--------------+-------------------
-*         |installed |*       |*         ||-             |-             |already current
-----------+----------+--------+----------++--------------+--------------+-------------------
-*         |none      |present |*         ||            refuse           |target was removed
-*         |wrong     |present |*         ||            refuse           |target was replaced
-----------+----------+--------+----------++--------------+--------------+-------------------
-*         |none      |none    |*         ||-             |install       |regular install
-----------+----------+--------+----------++--------------+--------------+-------------------
-file      |dir       |none    |*         ||            refuse           |file blocked by dir
-dir       |file      |none    |*         ||            refuse           |dir blocked by file
-file      |file      |none    |false     ||-             |-             |not overwriting
-file      |file      |none    |true      ||make          |install       |overwriting install
-
-Note:
-* For directory entries, there is no overwriting install, since an existing
-  directory will be treated as target=installed
-* removed and replaced is only detected when there is a backup, which is never
-  the case for directory entries.
-
-
-
-
-
-Uninstall
-=========
-target    |backup  ||target action |backup action |comments
-----------+--------++--------------+--------------+-------------------------------------
-installed |present ||restore       |remove        |regular uninstall with restore
-installed |none    ||remove        |-             |regular uninstall without restore
-----------+--------++--------------+--------------+-------------------------------------
-none      |present ||            refuse           |target was removed
-other     |present ||            refuse           |target was replaced
-----------+--------++--------------+--------------+-------------------------------------
-none      |none    ||-             |-             |not installed (or: removed and not present before)
-other     |none    ||-             |-             |not installed (or: replaced and not present before)
 
 
 
@@ -138,6 +43,11 @@ Unit tests:
 * test the TestHelper methods
 
 Other:
+* Whether a target is considered removed or replaced should not be depend on
+  the existence of the backup, but instead on whether it was installed (keep a
+  list)
+  * then we can distinguish removed (no backup) from not installed on uninstall
+  * either in a status file or in flag files
 * Special files, like ssh authorized keys: define keys, then invoke keys in
   host blocks:
   {{{
@@ -191,5 +101,10 @@ Other:
   * means we cannot have empty directores
   * makes it more difficult to properly skip files whose path is blocked by
     another directory
+* The operations should return a result object, with
+  * a message
+  * a performed flag
+  * a success flag
+
 
 

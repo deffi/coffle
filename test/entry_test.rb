@@ -199,32 +199,6 @@ module Coffle
 			end
 		end #}}}
 
-		def test_create #{{{
-			with_test_entries do |entry|
-				# If the target already exists and is a directory, install! must
-				# raise an exception
-				entry.target.mkpath
-				assert_raise(RuntimeError) { entry.install! }
-				entry.target.rmdir
-
-				# If the target already exists and is a file, install! must
-				# raise an exception
-				entry.target.dirname.mkpath
-				entry.target.touch
-				assert_raise(RuntimeError) { entry.install! }
-				entry.target.delete
-
-				# If the target does not exist, install! must succeed, the
-				# target must exist and be current, and be a directory exactly
-				# for directory entries
-				assert_nothing_raised { entry.install! }
-				assert_present entry.target
-				assert         entry.target.present?
-				assert         entry.installed?
-				assert_equal   entry.is_a?(DirectoryEntry), entry.target.proper_directory?
-			end
-		end #}}}
-
 		def test_build #{{{
 			with_test_entries do |entry|
 				# Before building, the output and org items may not exist

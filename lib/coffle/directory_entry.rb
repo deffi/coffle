@@ -70,6 +70,8 @@ module Coffle
 		# without checking for errors. It is the caller's responsibility to
 		# performe any necessary checks.
 
+		private
+
 		# Unconditionally build it
 		def build!
 			output.mkpath

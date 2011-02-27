@@ -556,39 +556,136 @@ module Coffle
 			end
 		end #}}}
 
-		# Uninstalling entries: regular uninstall without restore {{{
-		def test_uninstall_without_restore
-			# FIXME implement
+
+		# Uninstalling entries: individual regular uninstall {{{
+		def test_uninstall
+			# Each entry individually
+			with_test_entries do |entry|
+				assert_equal false, entry.installed?
+
+				entry.install(false)
+				assert_equal true, entry.installed?
+
+				entry.uninstall
+				assert_equal false, entry.installed?
+			end
+		end
+		#}}}
+
+		# Uninstalling entries: collective regular uninstall {{{
+		def test_uninstall_collective
+			with_test_data do |dir, entries|
+				entries        .each do |entry|; assert_equal false, entry.installed?; end
+				entries        .each do |entry|; entry.install(false)                ; end
+				entries        .each do |entry|; assert_equal true , entry.installed?; end
+				entries.reverse.each do |entry|; entry.uninstall                     ; end
+				entries        .each do |entry|; assert_equal false, entry.installed?; end
+			end
 		end
 		#}}}
 		
-		# Uninstalling entries: regular uninstall with restore {{{
+		# Uninstalling entries: file entry regular uninstall with restore {{{
 		def test_uninstall_with_restore
-			# FIXME implement
-		end
-		#}}}
+			with_test_entries(:files) do |entry|
+				original_contents="original_contents"
 
-		# Uninstalling entries: uninstalling directories {{{
-		def test_uninstall_directory
-			# FIXME implement
-		end
-		#}}}
+				# State before
+				assert_equal false, entry.installed?
+				assert_equal false, entry.target.present?
+				assert_equal false, entry.backup.present?
 
-		# Uninstalling entries: target removed or replaced {{{
-		def test_uninstall_replaced
-			# FIXME implement
+				# Write a previously existing file
+				entry.target.dirname.mkpath
+				entry.target.write original_contents
+				assert_equal false, entry.installed?
+				assert_equal true , entry.target.present?
+				assert_equal false, entry.backup.present?
+
+				# Install the entry (overwriting)
+				result=entry.install(true)
+				assert_equal true, result
+				assert_equal true, entry.installed?
+				assert_equal true, entry.target.present?
+				assert_equal true, entry.backup.present?
+				assert_equal original_contents, entry.backup.read
+
+				# Uninstall the entry
+				result=entry.uninstall
+				assert_equal true , result
+				assert_equal false, entry.installed?
+				assert_equal true , entry.target.present?
+				assert_equal false, entry.backup.present?
+				assert_equal original_contents, entry.target.read
+			end
 		end
 		#}}}
 
 		# Uninstalling entries: not installed {{{
 		def test_uninstall_not_installed
-			# FIXME implement
+			with_test_entries do |entry|
+				# Uninstall the entry
+				result=entry.uninstall
+				assert_equal true , result
+				assert_equal false, entry.installed?
+				assert_equal false, entry.target.present?
+				assert_equal false, entry.backup.present?
+			end
 		end
 		#}}}
 
 		# Uninstalling entries: not installed, something else there {{{
 		def test_uninstall_not_installed_present
-			# FIXME implement
+			with_test_entries do |entry|
+				original_contents="original_contents"
+
+				# Write a previously existing file
+				entry.target.dirname.mkpath
+				entry.target.write original_contents
+
+				# Uninstall the entry
+				result=entry.uninstall
+				assert_equal true , result
+				assert_equal false, entry.installed?
+				assert_equal true , entry.target.present?
+				assert_equal false, entry.backup.present?
+				assert_equal original_contents, entry.target.read
+
+				# Delete the file so it doesn't block a directory
+				entry.target.delete
+			end
+		end
+		#}}}
+
+		# Uninstalling entries: file entry target removed or replaced {{{
+		def test_uninstall_replaced
+			# A file entry target (symlink) can be removed, replaced with a
+			# file or replaced with a directory
+			[:none, :file, :directory].each do |replace_option|
+				with_test_entries(:files) do |entry|
+					original_contents="original_contents"
+
+					# Make the target already exist
+					entry.target.dirname.mkpath
+					entry.target.write original_contents
+					assert_equal false, entry.installed? # Not installed
+
+					# Install, overwriting the target
+					result=entry.install(true)
+					assert_equal true, entry.installed?
+					assert_equal true, entry.backup.present?
+
+					# Remove or replace the target (bad user!)
+					replace_with replace_option, entry.target
+					assert_equal false, entry.installed?
+
+					# Try to uninstall
+					result=entry.uninstall
+					assert_equal false, result
+					assert_equal false, entry.installed?
+					assert_equal true, entry.backup.present?
+					assert_file_type replace_option, entry.target # Target still has the correct type
+				end
+			end
 		end
 		#}}}
 

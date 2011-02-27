@@ -1,9 +1,5 @@
 == Next
 
-* Unit tests for uninstall
-
-* Uninstall (restore backup)
-  => must remove backup, or it will count as removed
 * Uninstalling directories:
   * Need hierarchical entries structure?
   * Simple approach: remove directory if empty after children uninstalled
@@ -42,6 +38,7 @@ The operations should return a result object, with
   => ?
 * Remove hack @included_messages - why is the file read twice (require should
   only read it once)?
+* Uninstall in reverse direction unless we have hierarchic entries
 
 
 == Documentation

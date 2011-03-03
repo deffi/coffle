@@ -52,6 +52,7 @@ module Coffle
 				true
 			else
 				# Is not current
+				# FIXME must check against org - should have been caught by test
 				!output.current?(source)
 			end
 		end

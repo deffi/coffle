@@ -1,8 +1,53 @@
 == Next
 
-Skipping files
-Marking: yaml file
-* properties of Entry or Coffle?
+Entries can have properties. On startup, Coffle constructs the entries with
+their respective properties from the status file. at_exit, Coffle collects the
+properties and writes the status file.
+
+Status file:
+* YAML format (it's in the standard library).
+* Contains version
+
+Structure: TODO
+* version
+* entries
+** entry path...
+*** property...
+* ...
+
+Skipping:
+* a missing output file is not treated as "skipped"
+  => need a "skipped" property which is only set when skipped (and reset when
+     built)
+* need to determine when to rebuild a skipped file
+  => need a timestamp property for skipped files
+* skipped property not present: equivalent to false
+* what if skipped=true, but the output exists?
+  => treat as not current (needs rebuild)
+  => skipped flag is only meaningful if current
+  => make sure the state is written correctly
+  => NB: if the output exist, it may also be installed
+
+Open questions:
+* generated file: use timestamp of output/org file or from status file?
+  => output file: "backwards compatible", touchable, works without status file
+  => status file: simpler current checks
+  => probably output file: undefined if skipped and output exists
+* Do we want to distinguish "not built" from "output missing"? If yes:
+  * skipped property not present means "not built", false means "built"
+  * better: output_state: nil/built/missing
+  * probably not, much more complicated and not much better
+
+With skipped property:
+output |skipped? |meaning                  |build condition
+-------+---------+-------------------------+------------
+false  |false    |not built/output missing |always
+false  |true     |regular skipped          |source newer than timestamp
+true   |false    |regular built            |source newer than org (or timestamp)
+true   |true     |inconsistent             |always
+
+Built: output AND org must exist (?)
+
 
 
 == High priority
@@ -17,6 +62,10 @@ Marking: yaml file
 * "full" test for backups
 * "full" test: install into symlink directory
 * Should backup filenames really be unescaped?
+  => advantage: simple to restore without coffle
+  => disadvantage: no housekeeping files possible
+     => not necessary with coffle files?
+	    => unescape everwhere?
 * Should there be a single .coffle directory in source?
   => probably yes, so we can freely add things later
   => where would things like host class definitions go? need further structure?
@@ -43,6 +92,8 @@ Unit tests:
 * test the TestHelper methods
 
 Other:
+* Make it possible to use coffle commands from the output directory (and
+  subdirectories), using the actual (unescaped) filenames (allow completion)
 * Whether a target is considered removed or replaced should not be depend on
   the existence of the backup, but instead on whether it was installed (keep a
   list)

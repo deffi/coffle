@@ -1,45 +1,46 @@
 == Next
 
-Entries can have properties. On startup, Coffle constructs the entries with
-their respective properties from the status file. at_exit, Coffle collects the
-properties and writes the status file.
-
-Status file:
-* YAML format (it's in the standard library).
-* Contains version
-
-Structure: TODO
-* version
-* entries
-** entry path...
-*** property...
-* ...
-
 Skipping:
-* a missing output file is not treated as "skipped"
-  => need a "skipped" property which is only set when skipped (and reset when
-     built)
-* need to determine when to rebuild a skipped file
-  => need a timestamp property for skipped files
-* skipped property not present: equivalent to false
-* what if skipped=true, but the output exists?
-  => treat as not current (needs rebuild)
-  => skipped flag is only meaningful if current
-  => make sure the state is written correctly
-  => NB: if the output exist, it may also be installed
+* We do not want to rebuild a skipped entry if the source has not changed.
+  However, we need to build an entry that is not yet built. Both "skipped" and
+  "not built" have no existing output file. In order to distinguish between
+  these two states, a "skipped" property is required.
+* The "skipped" property could be stored in a status file or as tag files.  In
+* order to determine when to rebuild a skipped entry, a timestamp is required
+  for skipped files as well as for built entries.
+* If the skipped property is not present, it is treated as false.
+* If skipped is false and the output does not exist, the entry is treated as
+  not yet built and is rebuilt.
+* If skipped is true, but the output exists, the entry is inconsistent and is
+  rebuilt.
+* After building, the skipped property is updated.
+* The skipped flag (also the built status) is only meaningful if the entry is
+  current.
 
 Open questions:
-* generated file: use timestamp of output/org file or from status file?
-  => output file: "backwards compatible", touchable, works without status file
-  => status file: simpler current checks
-  => probably output file: undefined if skipped and output exists
-* Do we want to distinguish "not built" from "output missing"? If yes:
-  * skipped property not present means "not built", false means "built"
-  * better: output_state: nil/built/missing
-  * probably not, much more complicated and not much better
+* if we store the timestamp for skipped entries in a status file, do we want to
+  use it for built entries as well, or do we use the timestamp of the org file
+  in this case?
+  We need to consider the timestamps of the source and output files in any
+  case.
+* do we want to use a status file or tag files for the skipped flag?
+* When do we uninstall a newly skipped entry? Note that it can't be
+  automatically reinstalled if it's newly non-skipped without tracking the
+  install status.
+
+Pragmatic approach:
+* use tag files for skipped entries (no status file)
+* use the timestamp of the respective file
+* uninstalling is done immediately; for reinstalling, the user has to perform
+  "install" again
+
+On directory names:
+* the names output/org are bad
+* install and build are already used for the operations
+
 
 With skipped property:
-output |skipped? |meaning                  |build condition
+built? |skipped? |meaning                  |build condition
 -------+---------+-------------------------+------------
 false  |false    |not built/output missing |always
 false  |true     |regular skipped          |source newer than timestamp
@@ -47,6 +48,28 @@ true   |false    |regular built            |source newer than org (or timestamp)
 true   |true     |inconsistent             |always
 
 Built: output AND org must exist (?)
+
+Alternatives:
+* Build into org only, copy to output only on "update"; also, uninstall a
+  skipped entry only on update
+* Recognize missing output files (as opposed to not built) by using a
+  built/built/skipped status
+* Store an installed flag, so we can selectively install files ("manual skip"),
+  "update" (process only the installed files) and automatically
+  uninstall/reinstall on skipped status change.
+
+
+== Status file
+
+On startup, Coffle constructs the entries with their respective properties from
+the status file. at_exit, Coffle collects the properties and writes the status file.
+
+Status file: YAML. Structure:
+* version
+* entries=>
+** entry path=>
+*** {property=>value)}
+* ...
 
 
 

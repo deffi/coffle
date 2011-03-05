@@ -789,35 +789,42 @@ module Coffle
 				expected=dir.join("expected").absolute
 				actual  =dir.join("actual"  ).absolute
 
-				# Create the source data (and expected source)
-				["actual", "expected"].each do |prefix|
-					dir.join(prefix, "source", ".coffle").mkpath
 
-					dir.join(prefix, "source").mkpath
-					dir.join(prefix, "source", "_foo").touch
-					dir.join(prefix, "source", "_bar").mkdir
-					dir.join(prefix, "source", "_bar", "baz").touch
-				end
+				##### Create the actual directory
 
-				# Create the expected target data
-				expected.join("target").mkpath
-				expected.join("target", ".foo").make_symlink("../source/.output/_foo")
-				expected.join("target", ".bar").mkdir
-				expected.join("target", ".bar", "baz").make_symlink("../../source/.output/_bar/baz")
+				# Source
+				actual.join("source", ".coffle").mkpath
+				actual.join("source").mkpath
+				actual.join("source", "_foo").touch
+				actual.join("source", "_bar").mkdir
+				actual.join("source", "_bar", "baz").touch
 
-				# Create the expected output data
+
+				##### Created the expected directory
+
+				# Source - same as actual
+				FileUtils.cp_r actual.to_s, expected.to_s
+
+				# Output
 				expected.join("source", ".output").mkpath
 				expected.join("source", ".output", "_foo").touch
 				expected.join("source", ".output", "_bar").mkdir
 				expected.join("source", ".output", "_bar", "baz").touch
 
-				# Create the expected org data
+				# Org
 				expected.join("source", ".output", ".org").mkpath
 				expected.join("source", ".output", ".org", "_foo").touch
 				expected.join("source", ".output", ".org", "_bar").mkdir
 				expected.join("source", ".output", ".org", "_bar", "baz").touch
 
-				# Create the coffle (also creates the output and target directories)
+				# Target
+				expected.join("target").mkpath
+				expected.join("target", ".foo").make_symlink("../source/.output/_foo")
+				expected.join("target", ".bar").mkdir
+				expected.join("target", ".bar", "baz").make_symlink("../../source/.output/_bar/baz")
+
+
+				##### Create the coffle (also creates the output and target directories)
 				coffle=Coffle.new("#{dir}/actual/source", "#{dir}/actual/target")
 
 				coffle.entries.each do |entry|

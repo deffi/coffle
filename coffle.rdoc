@@ -143,4 +143,7 @@ Alternatives:
   uninstall/reinstall on skipped status change.
 * Add a link to the source directory in the target directory and use that link 
   for linking the entries
+* All of the output (output, org, backup) could be put in a subdirectory of
+  the target, so it is not affected when the source is deleted
+  * we should still support installing into one target from multiple sources
 

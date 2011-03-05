@@ -221,7 +221,7 @@ module Coffle
 			puts
 			puts "Output: #{@output}"
 			puts "Org:    #{@org}"
-			#puts "Backup: #{@backup}"
+			puts "Backup: #{@backup}"
 		end
 
 		def status! (options={})

@@ -247,12 +247,13 @@ module Coffle
 		end
 
 		def replace_with(replace_option, target)
-			target.delete
+			target.delete if target.present?
 
 			case replace_option
 			when :none      then # Nothing
 			when :file      then target.touch
 			when :directory then target.mkpath
+			when :symlink   then target.make_symlink("symlink_target")
 			else raise "Unhandled replace_option"
 			end
 		end

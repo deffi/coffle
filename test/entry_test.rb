@@ -527,7 +527,7 @@ module Coffle
 		end #}}}
 
 		# Installing entries: directory blocked by file {{{
-		def test_install_directory_blocked
+		def test_install_directory_blocked_by_file
 			with_test_entries(:directories) do |entry|
 				# Create a file where we want to install the entry
 				existing_contents="existing"
@@ -547,6 +547,30 @@ module Coffle
 				assert_not_present entry.backup      # Backup was not made
 
 				assert_equal existing_contents, entry.target.read # File is not touched
+			end
+		end #}}}
+
+		# Installing entries: directory blocked by symlink {{{
+		def test_install_directory_blocked_by_symlink
+			with_test_entries(:directories) do |entry|
+				# Create a symlink where we want to install the entry
+				link_target="missing"
+				entry.target.dirname.mkpath
+				entry.target.make_symlink link_target
+
+				# Without overwriting
+				result=entry.install(false)
+				assert_equal false, result           # Operation did not succeed
+				assert_equal false, entry.installed? # Entry is not installed
+				assert_not_present entry.backup      # Backup was not made
+
+				# With overwriting
+				result=entry.install(true)
+				assert_equal false, result           # Operation did not succeed
+				assert_equal false, entry.installed? # Entry is not installed
+				assert_not_present entry.backup      # Backup was not made
+
+				assert_equal link_target, entry.target.readlink.to_s # Symlink is not touched
 			end
 		end #}}}
 

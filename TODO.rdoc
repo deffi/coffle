@@ -57,6 +57,7 @@ Unit tests:
 * Use TestEntry whereever useful (especially in entry_test)
 * test Pathname.touch!
 * test the TestHelper methods
+* In full_test, also compare file contents
 
 Other:
 * Make it possible to use coffle commands from the output directory (and

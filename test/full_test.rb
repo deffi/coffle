@@ -4,8 +4,6 @@ module Coffle
 	class EntryTest <Test::Unit::TestCase
 		include TestHelper
 
-		# TODO also compare file contents
-		# TODO dir blocked by invalid symlink - not handled properly
 		def test_full
 			with_testdir do |dir|
 				# source                                        in actual/source

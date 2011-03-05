@@ -113,7 +113,7 @@ module Coffle
 			raise "Target exists" if target.present?
 
 			# File entry - create the containing directory and the symlink
-			target.dirname.mkpath
+			target.dirname.mkpath unless target.dirname.directory? # including symlink to directory
 			target.make_symlink link_target
 		end
 

@@ -776,66 +776,6 @@ module Coffle
 		
 
 
-		# TODO also compare file contents
-		# TODO also test uninstall
-		# TODO also test backups
-		# TODO include installation into existing symlink directory
-		def test_full
-			with_testdir do |dir|
-				# source          in actual/source
-				# target          in actual/target
-				# expected source in expected/source (containing .output)
-				# expected target in expected/target
-				expected=dir.join("expected").absolute
-				actual  =dir.join("actual"  ).absolute
-
-
-				##### Create the actual directory
-
-				# Source
-				actual.join("source", ".coffle").mkpath
-				actual.join("source").mkpath
-				actual.join("source", "_foo").touch
-				actual.join("source", "_bar").mkdir
-				actual.join("source", "_bar", "baz").touch
-
-
-				##### Created the expected directory
-
-				# Source - same as actual
-				FileUtils.cp_r actual.to_s, expected.to_s
-
-				# Output
-				expected.join("source", ".output").mkpath
-				expected.join("source", ".output", "_foo").touch
-				expected.join("source", ".output", "_bar").mkdir
-				expected.join("source", ".output", "_bar", "baz").touch
-
-				# Org
-				expected.join("source", ".output", ".org").mkpath
-				expected.join("source", ".output", ".org", "_foo").touch
-				expected.join("source", ".output", ".org", "_bar").mkdir
-				expected.join("source", ".output", ".org", "_bar", "baz").touch
-
-				# Target
-				expected.join("target").mkpath
-				expected.join("target", ".foo").make_symlink("../source/.output/_foo")
-				expected.join("target", ".bar").mkdir
-				expected.join("target", ".bar", "baz").make_symlink("../../source/.output/_bar/baz")
-
-
-				##### Create the coffle (also creates the output and target directories)
-				coffle=Coffle.new("#{dir}/actual/source", "#{dir}/actual/target")
-
-				coffle.entries.each do |entry|
-					entry.build
-					entry.install(false)
-				end
-
-				assert_tree_equal(expected, actual)
-				#p expected.tree_entries
-			end
-		end
 	end
 end
 

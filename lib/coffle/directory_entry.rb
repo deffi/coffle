@@ -108,6 +108,11 @@ module Coffle
 					target.rmdir
 				end
 			end
+
+			# Remove the backup if it is present and empty
+			if backup.present? and backup.empty?
+				backup.rmdir
+			end
 		end
 	end
 end

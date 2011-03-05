@@ -88,5 +88,9 @@ class Pathname
 		entries=Dir.entries(self.to_s)
 		entries==[".", ".."] or entries==["..", "."]
 	end
+
+	def ls(options="-lad")
+		puts `ls #{options} --color=always #{@path}`
+	end
 end
 

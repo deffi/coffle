@@ -44,6 +44,7 @@ On directory names:
 * Remove hack @included_messages - why is the file read twice (require should
   only read it once)?
 * Uninstall in reverse direction unless we have hierarchic entries
+* Clean: remove org/output, only if not installed
 
 
 

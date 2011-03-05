@@ -1,9 +1,5 @@
 == Next
 
-Read properties
-
-
-
 Improvements:
 * The current interpretation is "process source to output (from where it is
   installed) and copy to org". Better: "process source to (a) and copy to (b)

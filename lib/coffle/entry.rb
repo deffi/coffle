@@ -33,7 +33,6 @@ module Coffle
 
 		# Options:
 		# * :verbose: print messages; recommended for interactive applications
-		# TODO can we make the constructor protected?
 		def initialize(coffle, path, status, options)
 			@path=path
 
@@ -52,16 +51,20 @@ module Coffle
 			@link_target=output.relative_path_from(target.dirname)
 		end
 
+		# Make sure the constructor cannot be called except from Entry
+		class <<self
+			protected :new
+		end
+
 		# Entry factory method
 		def Entry.create(coffle, path, status, options)
-			source_path=coffle.source.join(path) # TODO code duplication
+			source_path=coffle.source.join(path)
 
 			if    source_path.proper_file?     ; FileEntry     .new(coffle, path, status, options)
 			elsif source_path.proper_directory?; DirectoryEntry.new(coffle, path, status, options)
 			else  nil
 			end
 		end
-
 
 
 		############
@@ -87,17 +90,15 @@ module Coffle
 		#end
 
 		def output_status
-			# TODO test
-			# TODO skipped
-
 			# File existence truth table:
 			#
-			# source | output | org || meaning
-			# -------+--------+-----++---------------------------------------------------------
-			# no     | -      | -   || Internal error - this entry should not exist
-			# yes    | no     | -   || Not built (the org is irrelevant)
-			# yes    | yes    | no  || Error: org missing (don't know if the user made changes)
-			# yes    | yes    | yes || Built
+			# source | skipped | output | org || meaning
+			# -------+---------+--------+-----++---------------------------------------------------------
+			# no     | -       | -      | -   || Internal error - this entry should not exist
+			# yes    | yes     | no     | -   || Skipped
+			# yes    | no      | no     | -   || Not built (the org is irrelevant)
+			# yes    | no      | yes    | no  || Error: org missing (don't know if the user made changes)
+			# yes    | no      | yes    | yes || Built
 
 			if    !source.exist? ; return "Error"
 			elsif skipped?       ; return "Skipped"
@@ -124,8 +125,6 @@ module Coffle
 		end
 
 		def target_status
-			# TODO test
-			# TODO skipped
 			# Target status depends on target
 			if    installed?      ; "Installed"
 			elsif target.present? ; "Blocked"
@@ -218,7 +217,6 @@ module Coffle
 				# Target already exists, but is not installed (i. e. for
 				# directory entries, the target is not a directory, and for
 				# file entries it is not a symlink to the correct position)
-				# TODO test for target = invalid symlink
 				if blocked_by?(target)
 					# It's not possible to install the entry. Refuse.
 					message "#{MBlocked} #{target}"
@@ -257,7 +255,6 @@ module Coffle
 			end
 		end
 
-		# TODO test for this
 		def outdate
 			@timestamp=source.mtime-1 if @timestamp
 			output.set_older source if output.present?

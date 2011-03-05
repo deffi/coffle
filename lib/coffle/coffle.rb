@@ -43,6 +43,7 @@ module Coffle
 			coffle_directory(directory).mkpath
 		end
 
+
 		# Options:
 		# * :verbose: print messages; recommended for interactive applications
 		def initialize (source, target, options={})

@@ -49,8 +49,6 @@ module Coffle
 		# * directory _bar
 		# * file      _bar/baz
 		#
-		# Also sets @foo, @bar, @baz (TODO pass a hash instead)
-		#
 		# Use with_test_entries instead if you do not need the dir or
 		# the entries array }}}
 		def with_test_data(selection=:all) #{{{
@@ -66,19 +64,19 @@ module Coffle
 				entries=coffle.entries
 
 				# Extract the entries by name and make sure they are found
-				@foo =entries.find { |entry| entry.path.to_s=="_foo" }
-				@bar =entries.find { |entry| entry.path.to_s=="_bar" }
-				@baz =entries.find { |entry| entry.path.to_s=="_bar/baz" }
-				@skip=entries.find { |entry| entry.path.to_s=="_skip" }
+				foo =entries.find { |entry| entry.path.to_s=="_foo" }
+				bar =entries.find { |entry| entry.path.to_s=="_bar" }
+				baz =entries.find { |entry| entry.path.to_s=="_bar/baz" }
+				skip=entries.find { |entry| entry.path.to_s=="_skip" }
 
-				assert_not_nil @foo
-				assert_not_nil @bar
-				assert_not_nil @baz
-				assert_not_nil @skip
+				assert_not_nil foo
+				assert_not_nil bar
+				assert_not_nil baz
+				assert_not_nil skip
 
 				# Sort the entries: contained entries after containing entries
 				# (e. g. files after the directory they're in)
-				entries=[@foo, @bar, @baz, @skip]
+				by_name={:foo=>foo, :bar=>bar, :baz=>baz, :skip=>skip}
 
 				active_entries=
 					case selection
@@ -88,7 +86,7 @@ module Coffle
 					else raise ArgumentError, "Invalid selection #{selection.inspect}"
 					end
 
-				yield dir, active_entries
+				yield dir, active_entries, by_name
 
 				# Don't test the reverse order, because some of the tests
 				# require that the file does not exist before the test and
@@ -100,7 +98,7 @@ module Coffle
 		# Use this rather than with_test_data if you don't need the directory,
 		# the entries array or the individual entries by name. }}}
 		def with_test_entries(selection=:all) #{{{
-			with_test_data(selection) do |dir, entries|
+			with_test_data(selection) do |dir, entries, by_name|
 				entries.each do |entry|
 					yield entry
 				end
@@ -110,7 +108,7 @@ module Coffle
 
 
 		def test_paths #{{{
-			with_test_data do |dir, entries|
+			with_test_data do |dir, entries, by_name|
 				# The path names must be absolute
 				entries.each do |entry|
 					assert entry.source.absolute?
@@ -120,29 +118,29 @@ module Coffle
 				end
 
 				# The path names must have the correct values
-				assert_equal dir.join("source"                    , "_foo").absolute, @foo.source
-				assert_equal dir.join("source", ".output"         , "_foo").absolute, @foo.output
-				assert_equal dir.join("source", ".output", ".org" , "_foo").absolute, @foo.org
-				assert_equal dir.join("source", ".backup"         , ".foo").absolute, @foo.backup
-				assert_equal dir.join("target"                    , ".foo").absolute, @foo.target
+				assert_equal dir.join("source"                    , "_foo").absolute, by_name[:foo].source
+				assert_equal dir.join("source", ".output"         , "_foo").absolute, by_name[:foo].output
+				assert_equal dir.join("source", ".output", ".org" , "_foo").absolute, by_name[:foo].org
+				assert_equal dir.join("source", ".backup"         , ".foo").absolute, by_name[:foo].backup
+				assert_equal dir.join("target"                    , ".foo").absolute, by_name[:foo].target
 				#assert_match /^#{dir.join("source", ".backups").absolute}\/\d\d\d\d-\d\d-\d\d_\d\d-\d\d-\d\d\/.foo$/,
-				#	                                                                  @foo.backup.to_s
+				#	                                                                  by_name[:foo].backup.to_s
 
-				assert_equal dir.join("source"                    , "_bar").absolute, @bar.source
-				assert_equal dir.join("source", ".output"         , "_bar").absolute, @bar.output
-				assert_equal dir.join("source", ".output", ".org" , "_bar").absolute, @bar.org
-				assert_equal dir.join("source", ".backup"         , ".bar").absolute, @bar.backup
-				assert_equal dir.join("target"                    , ".bar").absolute, @bar.target
+				assert_equal dir.join("source"                    , "_bar").absolute, by_name[:bar].source
+				assert_equal dir.join("source", ".output"         , "_bar").absolute, by_name[:bar].output
+				assert_equal dir.join("source", ".output", ".org" , "_bar").absolute, by_name[:bar].org
+				assert_equal dir.join("source", ".backup"         , ".bar").absolute, by_name[:bar].backup
+				assert_equal dir.join("target"                    , ".bar").absolute, by_name[:bar].target
 				#assert_match /^#{dir.join("source", ".backups").absolute}\/\d\d\d\d-\d\d-\d\d_\d\d-\d\d-\d\d\/.bar$/,
-				#	                                                                  @bar.backup.to_s
+				#	                                                                  by_name[:bar].backup.to_s
 
-				assert_equal dir.join("source"                    , "_bar", "baz").absolute, @baz.source
-				assert_equal dir.join("source", ".output"         , "_bar", "baz").absolute, @baz.output
-				assert_equal dir.join("source", ".output", ".org" , "_bar", "baz").absolute, @baz.org
-				assert_equal dir.join("source", ".backup"         , ".bar", "baz").absolute, @baz.backup
-				assert_equal dir.join("target"                    , ".bar", "baz").absolute, @baz.target
+				assert_equal dir.join("source"                    , "_bar", "baz").absolute, by_name[:baz].source
+				assert_equal dir.join("source", ".output"         , "_bar", "baz").absolute, by_name[:baz].output
+				assert_equal dir.join("source", ".output", ".org" , "_bar", "baz").absolute, by_name[:baz].org
+				assert_equal dir.join("source", ".backup"         , ".bar", "baz").absolute, by_name[:baz].backup
+				assert_equal dir.join("target"                    , ".bar", "baz").absolute, by_name[:baz].target
 				#assert_match /^#{dir.join("source", ".backups").absolute}\/\d\d\d\d-\d\d-\d\d_\d\d-\d\d-\d\d\/.bar\/baz$/,
-				#	                                                                         @baz.backup.to_s
+				#	                                                                         by_name[:baz].backup.to_s
 			end
 		end #}}}
 
@@ -161,19 +159,19 @@ module Coffle
 		end #}}}
 
 		def test_entry_class #{{{
-			with_test_data do |dir, entries|
-				assert_equal FileEntry     , @foo.class
-				assert_equal DirectoryEntry, @bar.class
-				assert_equal FileEntry     , @baz.class
+			with_test_data do |dir, entries, by_name|
+				assert_equal FileEntry     , by_name[:foo].class
+				assert_equal DirectoryEntry, by_name[:bar].class
+				assert_equal FileEntry     , by_name[:baz].class
 			end
 		end #}}}
 
 		def test_link_target #{{{
-			with_test_data do |dir, entries|
+			with_test_data do |dir, entries, by_name|
 				# link_target must return a relative link to the output path
-				assert_equal    "../source/.output/_foo"    , @foo.link_target.to_s
-				assert_equal    "../source/.output/_bar"    , @bar.link_target.to_s
-				assert_equal "../../source/.output/_bar/baz", @baz.link_target.to_s
+				assert_equal    "../source/.output/_foo"    , by_name[:foo].link_target.to_s
+				assert_equal    "../source/.output/_bar"    , by_name[:bar].link_target.to_s
+				assert_equal "../../source/.output/_bar/baz", by_name[:baz].link_target.to_s
 			end
 		end #}}}
 
@@ -346,18 +344,18 @@ module Coffle
 		end #}}}
 
 		def test_build_file_in_nonexistent_directory #{{{
-			with_test_data do |dir, entries|
-				# Building a file (@baz) in a non-existing directory (@bar)
-				assert_not_present @bar.output
-				assert_not_present @bar.org
-				@baz.build
-				assert_proper_directory @bar.output
-				assert_proper_directory @bar.org
+			with_test_data do |dir, entries, by_name|
+				# Building a file (baz) in a non-existing directory (bar)
+				assert_not_present by_name[:bar].output
+				assert_not_present by_name[:bar].org
+				by_name[:baz].build
+				assert_proper_directory by_name[:bar].output
+				assert_proper_directory by_name[:bar].org
 			end
 		end #}}}
 
 		def test_blocked_by? #{{{
-			with_test_data(:files) do |testdir, entries|
+			with_test_data(:files) do |testdir, entries, by_name|
 				dir_entries=DirectoryEntries.new(testdir)
 
 				entries.each do |entry|
@@ -375,7 +373,7 @@ module Coffle
 				end
 			end
 
-			with_test_data(:directories) do |testdir, entries|
+			with_test_data(:directories) do |testdir, entries, by_name|
 				dir_entries=DirectoryEntries.new(testdir)
 
 				entries.each do |entry|
@@ -590,7 +588,7 @@ module Coffle
 
 		# Uninstalling entries: collective regular uninstall {{{
 		def test_uninstall_collective
-			with_test_data do |dir, entries|
+			with_test_data do |dir, entries, by_name|
 				entries        .each do |entry|; assert_equal false           , entry.installed?; end
 				entries        .each do |entry|; entry.install(false); end
 				entries        .each do |entry|; assert_equal !entry.skipped? , entry.installed?; end

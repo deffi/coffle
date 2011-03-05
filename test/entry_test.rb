@@ -226,8 +226,8 @@ module Coffle
 				# After building, the output and org items must exist exactly
 				# if the entry has been skipped
 				entry.build
-				assert_equal !entry.skipped?, entry.output.present?
-				assert_equal !entry.skipped?, entry.org   .present?
+				assert_equal !entry.skipped?, entry.output.present?, "#{entry.path}'s output is not present"
+				assert_equal !entry.skipped?, entry.org   .present?, "#{entry.path}'s org is not present"
 				assert_equal !entry.skipped?, entry.built?
 
 				# If the entry is not skipped, the output and og must have the
@@ -246,6 +246,22 @@ module Coffle
 				end
 			end
 		end #}}}
+
+		def test_built# {{{
+			# If either of org and output are missing, the entry is not built
+			with_test_entries do |entry|
+				entry.build
+
+				unless entry.skipped?
+					assert_equal true, entry.built?
+
+					entry.output.delete; assert_equal false, entry.built?
+					entry.build        ; assert_equal true , entry.built?
+					entry.org.delete   ; assert_equal false, entry.built?
+					entry.build        ; assert_equal true , entry.built?
+				end
+			end
+		end# }}}
 
 		def test_build_outdated #{{{
 			# Test rebuilding of outdated entries, this only applies to
@@ -271,37 +287,40 @@ module Coffle
 			with_test_entries(:files) do |entry|
 				# Build - must be current
 				entry.build
-				assert !entry.outdated?
 
-				# Outdate and modify - must be outdated
-				entry.output.append "x"
-				entry.outdate
-				assert entry.outdated?
-				assert entry.modified?
-
-				# Rebuild - must still be outdated because modified
-				# entries are not overwritten
-				entry.build
-				assert entry.outdated?
-
-				# Rebuild with overwrite - must be current
-				# Note that rebuild is false, it's rebuilt because it's outdated
-				entry.build(false, true)
-				assert !entry.outdated?, "#{entry.path} should not be outdated after rebuilding"
-
-				# Modify only
 				unless entry.skipped?
-					entry.output.append "x"
 					assert !entry.outdated?
-					assert entry.modified?
-				end
 
-				# Rebuild with overwrite - must no longer be modified,
-				# even though it was current before
-				assert !entry.outdated?
-				entry.build(false, true)
-				assert !entry.outdated?
-				assert !entry.modified?
+					# Outdate and modify - must be outdated
+					entry.output.append "x"
+					entry.outdate
+					assert entry.outdated?
+					assert entry.modified?
+
+					# Rebuild - must still be outdated because modified
+					# entries are not overwritten
+					entry.build
+					assert entry.outdated?
+
+					# Rebuild with overwrite - must be current
+					# Note that rebuild is false, it's rebuilt because it's outdated
+					entry.build(false, true)
+					assert !entry.outdated?, "#{entry.path} should not be outdated after rebuilding"
+
+					# Modify only
+					unless entry.skipped?
+						entry.output.append "x"
+						assert !entry.outdated?
+						assert entry.modified?
+					end
+
+					# Rebuild with overwrite - must no longer be modified,
+					# even though it was current before
+					assert !entry.outdated?
+					entry.build(false, true)
+					assert !entry.outdated?
+					assert !entry.modified?
+				end
 			end
 		end #}}}
 
@@ -332,13 +351,15 @@ module Coffle
 			with_test_entries do |entry|
 				entry.build
 
-				if entry.is_a?(DirectoryEntry)
-					assert_equal false, entry.modified?
-				else
-					assert_equal false, entry.modified?
+				unless entry.skipped?
+					if entry.is_a?(DirectoryEntry)
+						assert_equal false, entry.modified?
+					else
+						assert_equal false, entry.modified?
 
-					entry.output.append "x"
-					assert_equal true, entry.modified?
+						entry.output.append "x"
+						assert_equal true, entry.modified?
+					end
 				end
 			end
 		end #}}}
@@ -757,7 +778,7 @@ module Coffle
 
 		# TODO also compare file contents
 		# TODO also test uninstall
-		# TODO also test backup dir
+		# TODO also test backups
 		# TODO include installation into existing symlink directory
 		def test_full
 			with_testdir do |dir|

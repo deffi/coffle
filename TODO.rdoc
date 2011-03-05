@@ -1,49 +1,20 @@
 == Next
 
-Built: output AND org must exist (?), and make test that catches the current
-implementation
+* Full entries test (test_full) TODOs
 
 Improvements:
 * The current interpretation is "process source to output (from where it is
   installed) and copy to org". Better: "process source to (a) and copy to (b)
   (from where it is installed)" - better outdated checks. (a) should be called
   "output".
-* Built should include skipped and (successfully built) (need a name for that)
+* "Built" should include skipped and (successfully built) (need a name for
+  this, or that)
 
 On directory names:
 * the names output/org are bad
 * install and build are already used for the operations
 
 
-With skipped property:
-built? |skipped? |meaning                  |build condition
--------+---------+-------------------------+------------
-false  |false    |not built/output missing |always
-false  |true     |regular skipped          |source newer than timestamp
-true   |false    |regular built            |source newer than org (or timestamp)
-true   |true     |inconsistent             |always
-
-Alternatives:
-* Build into org only, copy to output only on "update"; also, uninstall a
-  skipped entry only on update
-* Recognize missing output files (as opposed to not built) by using a
-  built/built/skipped status
-* Store an installed flag, so we can selectively install files ("manual skip"),
-  "update" (process only the installed files) and automatically
-  uninstall/reinstall on skipped status change.
-
-
-== Status file
-
-On startup, Coffle constructs the entries with their respective properties from
-the status file. at_exit, Coffle collects the properties and writes the status file.
-
-Status file: YAML. Structure:
-* version
-* entries=>
-** entry path=>
-*** {property=>value)}
-* ...
 
 
 
@@ -56,8 +27,6 @@ Status file: YAML. Structure:
 * The preconditions in the specific entries should be checked in the entries,
   or better yet (?), the methods just called and throw an exception/return a
   result if they cannot do that
-* "full" test for backups
-* "full" test: install into symlink directory
 * Should backup filenames really be unescaped?
   => advantage: simple to restore without coffle
   => disadvantage: no housekeeping files possible
@@ -71,7 +40,7 @@ Status file: YAML. Structure:
   => don't resort to "no spec => version 0" so we can recognize a missing spec
 * What happens if a entry is no longer present? how to detect?
   => should be restored
-  => ?
+  => need to uninstall an entry without source file
 * Remove hack @included_messages - why is the file read twice (require should
   only read it once)?
 * Uninstall in reverse direction unless we have hierarchic entries

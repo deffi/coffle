@@ -30,7 +30,7 @@ module Coffle
 		############
 
 		def built?
-			output.proper_file?
+			output.proper_file? and org.proper_file?
 		end
 
 		def blocked_by?(pathname)
@@ -67,8 +67,9 @@ module Coffle
 		# overwriting the changes
 		# Only meaningful if current.
 		def modified?
-			if  !built?
-				# What has not been built cannot be modified
+			if !output.present?
+				false
+			elsif !org.present?
 				false
 			else
 				!output.file_identical?(org)

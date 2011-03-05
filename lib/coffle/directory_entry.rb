@@ -30,7 +30,7 @@ module Coffle
 		############
 
 		def built?
-			output.proper_directory?
+			output.proper_directory? and org.proper_directory?
 		end
 
 		def blocked_by?(pathname)

@@ -1,52 +1,20 @@
 == Next
 
-* Full entries test (test_full) TODOs
-
-Improvements:
-* The current interpretation is "process source to output (from where it is
-  installed) and copy to org". Better: "process source to (a) and copy to (b)
-  (from where it is installed)" - better outdated checks. (a) should be called
-  "output".
-* "Built" should include skipped and (successfully built) (need a name for
-  this, or that)
-
-On directory names:
-* the names output/org are bad
-* install and build are already used for the operations
-
-
-
-
 
 == High priority
 
-* Uninstalling directories:
-  * Need hierarchical entries structure?
-  * Simple approach: remove directory if empty after children uninstalled
-  * Better: remove directory if empty and was created by coffle?
-* The preconditions in the specific entries should be checked in the entries,
-  or better yet (?), the methods just called and throw an exception/return a
-  result if they cannot do that
 * Should backup filenames really be unescaped?
   => advantage: simple to restore without coffle
   => disadvantage: no housekeeping files possible
      => not necessary with coffle files?
-	    => unescape everwhere?
+	    => unescape everwhere (except source)?
 * Should there be a single .coffle directory in source?
   => probably yes, so we can freely add things later
   => where would things like host class definitions go? need further structure?
   => how are coffle source directories marked?
 * Need a directory specification version, so we can add migrations
   => don't resort to "no spec => version 0" so we can recognize a missing spec
-* What happens if a entry is no longer present? how to detect?
-  => should be restored
-  => need to uninstall an entry without source file
-* Remove hack @included_messages - why is the file read twice (require should
-  only read it once)?
-* Uninstall in reverse direction unless we have hierarchic entries
-* Clean: remove org/output, only if not installed
-
-
+* Allow uninstalling entries which are no longer present
 
 
 
@@ -60,6 +28,8 @@ Unit tests:
 * In full_test, also compare file contents
 
 Other:
+* Remove hack @included_messages - why is the file read twice (require should
+  only read it once)?
 * Make it possible to use coffle commands from the output directory (and
   subdirectories), using the actual (unescaped) filenames (allow completion)
 * Whether a target is considered removed or replaced should not be depend on
@@ -125,6 +95,25 @@ Other:
   * a performed flag
   * a success flag
 * Test all test_helper methods, especially assert_tree_equal
-
-
+* Uninstalling directories:
+  * With hierarchical entries structure
+  * Currently, directories are removed if empty after uninstall, and uninstall
+    is done in reverse order so the children are uninstalled first
+  * Directories that were not created by coffle should not be removed
+* The preconditions in the specific entries should be checked in the entries,
+  or better yet (?), the methods just called and throw an exception/return a
+  result if they cannot do that
+* clean operations:
+  * remove org/output, like skipping every entry
+  * uninstall and remove org/output for entries no longer present
+* On directory names:
+  * the names output/org are bad
+  * install and build are already used for the operations
+  * The current interpretation is "process source to output (from where it is
+	installed) and copy to org". Better: "process source to (a) and copy to
+	(b) (from where it is installed)" - better outdated checks. (a) should
+	probably be called "output".
+* "Built" should include skipped and (successfully built) (need a name for
+  this, or that)
+* Autodetect entries which are no longer present (compare source/org)
 

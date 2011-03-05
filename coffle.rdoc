@@ -141,4 +141,6 @@ Alternatives:
 * Store an installed flag, so we can selectively install files ("manual skip"),
   "update" (process only the installed files) and automatically
   uninstall/reinstall on skipped status change.
+* Add a link to the source directory in the target directory and use that link 
+  for linking the entries
 

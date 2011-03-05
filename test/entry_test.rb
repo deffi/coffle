@@ -53,7 +53,7 @@ module Coffle
 		#
 		# Use with_test_entries instead if you do not need the dir or
 		# the entries array }}}
-		def with_test_data #{{{
+		def with_test_data(selection=:all) #{{{
 			with_test_dirs do |dir, source_dir, target_dir|
 				# Create some files/directories
 				source_dir.join("_foo").write("Foo")
@@ -80,23 +80,6 @@ module Coffle
 				# (e. g. files after the directory they're in)
 				entries=[@foo, @bar, @baz, @skip]
 
-				yield dir, entries
-
-				# Don't test the reverse order, because some of the tests
-				# require that the file does not exist before the test and
-				# creating a file also creates the directory it is in.
-
-				# TODO test for individual entries (yield dir, [@baz]), but
-				# have to restore state first
-			end
-		end #}}}
-
-		# Like with_test_data, but only passes each of the entries. {{{
-		# Also, entries can be pre-filtered by type.
-		# Use this rather than with_test_data if you don't need the directory,
-		# the entries array or the individual entries by name. }}}
-		def with_test_entries(selection=:all) #{{{
-			with_test_data do |dir, entries|
 				active_entries=
 					case selection
 					when :all         then entries
@@ -105,7 +88,20 @@ module Coffle
 					else raise ArgumentError, "Invalid selection #{selection.inspect}"
 					end
 
-				active_entries.each do |entry|
+				yield dir, active_entries
+
+				# Don't test the reverse order, because some of the tests
+				# require that the file does not exist before the test and
+				# creating a file also creates the directory it is in.
+			end
+		end #}}}
+
+		# Like with_test_data, but only passes each of the entries. {{{
+		# Use this rather than with_test_data if you don't need the directory,
+		# the entries array or the individual entries by name. }}}
+		def with_test_entries(selection=:all) #{{{
+			with_test_data(selection) do |dir, entries|
+				entries.each do |entry|
 					yield entry
 				end
 			end
@@ -361,11 +357,10 @@ module Coffle
 		end #}}}
 
 		def test_blocked_by? #{{{
-			# TODO add selection by type to with_test_data, or Enumerable.select_by_class
-			with_test_data do |testdir, entries|
+			with_test_data(:files) do |testdir, entries|
 				dir_entries=DirectoryEntries.new(testdir)
 
-				entries.select { |e| e.is_a? FileEntry }.each do |entry|
+				entries.each do |entry|
 					assert_equal false, entry.blocked_by?(dir_entries.missing  )
 					assert_equal false, entry.blocked_by?(dir_entries.file     )
 					assert_equal true , entry.blocked_by?(dir_entries.directory)
@@ -378,8 +373,12 @@ module Coffle
 					assert_equal false, entry.blocked_by?(dir_entries.file_link_link     )
 					assert_equal false, entry.blocked_by?(dir_entries.directory_link_link)
 				end
+			end
 
-				entries.select { |e| e.is_a? DirectoryEntry }.each do |entry|
+			with_test_data(:directories) do |testdir, entries|
+				dir_entries=DirectoryEntries.new(testdir)
+
+				entries.each do |entry|
 					assert_equal false , entry.blocked_by?(dir_entries.missing  )
 					assert_equal true  , entry.blocked_by?(dir_entries.file     )
 					assert_equal false , entry.blocked_by?(dir_entries.directory)

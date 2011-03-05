@@ -1,44 +1,14 @@
 == Next
 
+Built: output AND org must exist (?), and make test that catches the current
+implementation
+
 Improvements:
 * The current interpretation is "process source to output (from where it is
   installed) and copy to org". Better: "process source to (a) and copy to (b)
   (from where it is installed)" - better outdated checks. (a) should be called
   "output".
 * Built should include skipped and (successfully built) (need a name for that)
-
-Skipping:
-* We do not want to rebuild a skipped entry if the source has not changed.
-  However, we need to build an entry that is not yet built. Both "skipped" and
-  "not built" have no existing output file. In order to distinguish between
-  these two states, a "skipped" property is required.
-* The "skipped" property could be stored in a status file or as tag files.  In
-* order to determine when to rebuild a skipped entry, a timestamp is required
-  for skipped files as well as for built entries.
-* If the skipped property is not present, it is treated as false.
-* If skipped is false and the output does not exist, the entry is treated as
-  not yet built and is rebuilt.
-* If skipped is true, but the output exists, the entry is inconsistent and is
-  rebuilt.
-* After building, the skipped property is updated.
-* The skipped flag (also the built status) is only meaningful if the entry is
-  current.
-
-Open questions:
-* if we store the timestamp for skipped entries in a status file, do we want to
-  use it for built entries as well, or do we use the timestamp of the org file
-  in this case?
-  We need to consider the timestamps of the source and output files in any
-  case.
-* do we want to use a status file or tag files for the skipped flag?
-* When do we uninstall a newly skipped entry? Note that it can't be
-  automatically reinstalled if it's newly non-skipped without tracking the
-  install status.
-
-Answers:
-* use the timestamp of the file
-* uninstalling is done immediately; for reinstalling, the user has to perform
-  "install" again
 
 On directory names:
 * the names output/org are bad
@@ -52,8 +22,6 @@ false  |false    |not built/output missing |always
 false  |true     |regular skipped          |source newer than timestamp
 true   |false    |regular built            |source newer than org (or timestamp)
 true   |true     |inconsistent             |always
-
-Built: output AND org must exist (?)
 
 Alternatives:
 * Build into org only, copy to output only on "update"; also, uninstall a
@@ -185,6 +153,7 @@ Other:
   * a message
   * a performed flag
   * a success flag
+* Test all test_helper methods, especially assert_tree_equal
 
 
 

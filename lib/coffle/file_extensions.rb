@@ -1,6 +1,4 @@
 class File
-	# TODO test for this
-
 	def File.present?(path)
 		File.exist?(path) || File.symlink?(path)
 	end

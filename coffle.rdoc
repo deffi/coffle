@@ -30,10 +30,35 @@ Skipped means:
 * do not install the file
 * if the file is already installed, uninstall it
 
-How to mark a file as skipped:
-* in a YAML status file
-* with tag files
-* need a time stamp so we can detect if it's changed
+Notes:
+* We do not want to rebuild a skipped entry if the source has not changed.
+  However, we need to build an entry that is not yet built. Both "skipped" and
+  "not built" have no existing output file. In order to distinguish between
+  these two states, a "skipped" property is required.
+* The "skipped" property could be stored in a status file or as tag files.  In
+* order to determine when to rebuild a skipped entry, a timestamp is required
+  for skipped files as well as for built entries.
+* If the skipped property is not present, it is treated as false.
+* If skipped is false and the output does not exist, the entry is treated as
+  not yet built and is rebuilt.
+* If skipped is true, but the output exists, the entry is inconsistent and is
+  rebuilt.
+* After building, the skipped property is updated.
+* The skipped flag (also the built status) is only meaningful if the entry is
+  current.
+
+Open questions:
+* Is it better to also use the timestamp in the build file for built entries
+  rather than the timetamp of the output/org file?
+  
+With skipped property:
+built? |skipped? |meaning         |build condition
+-------+---------+----------------+------------
+false  |false    |not built       |always
+false  |true     |regular skipped |source newer than timestamp
+true   |false    |regular built   |source newer than org (or timestamp)
+true   |true     |inconsistent    |always
+
 
 
 == Backups
@@ -89,4 +114,31 @@ other     |none    ||-             |-             |not installed (or: replaced a
 
 Note:
 * the backup must be removed, or the entry will be treated as removed (by the user)
+
+
+== Status file
+
+On startup, Coffle constructs the entries with their respective properties from
+the status file. at_exit, Coffle collects the properties and writes the status file.
+
+Status file: YAML. Structure:
+* version
+* entries=>
+** entry path=>
+*** {property=>value)}
+* ...
+
+Entries with no properties store nil rather than {}, it makes the YAML file
+more concise.
+
+== Alternatives
+
+Alternatives:
+* Build into org only, copy to output only on "update"; also, uninstall a
+  skipped entry only on update
+* Recognize missing output files (as opposed to not built) by using a
+  built/built/skipped status
+* Store an installed flag, so we can selectively install files ("manual skip"),
+  "update" (process only the installed files) and automatically
+  uninstall/reinstall on skipped status change.
 

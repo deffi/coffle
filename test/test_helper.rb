@@ -170,7 +170,6 @@ module Coffle
 			end
 		end
 
-		# TODO test this and other test_helper methods
 		def assert_tree_equal(expected, actual)
 			# Iterate over existing files
 			actual.find { |actual_path|

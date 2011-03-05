@@ -71,15 +71,15 @@ class Pathname
 	# This is only different from exist? for symlinks that cannot be resolved
 	# (including symlinks to symlinks to missing entries)
 	def present?
-		exist? or symlink?
+		File.present?(@path)
 	end
 
 	def proper_directory?
-		directory? and not symlink?
+		File.proper_directory?(@path)
 	end
 
 	def proper_file?
-		file? and not symlink?
+		File.proper_file?(@path)
 	end
 
 	def empty?

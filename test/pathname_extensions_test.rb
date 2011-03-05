@@ -45,24 +45,46 @@ module Coffle
 
 		def test_identical
 			with_testdir do |dir|
+				contents="foo\nbar"
+
 				file1=dir.join("file1")
 				file2=dir.join("file2")
-				contents="foo\nbar"
+				dir1=dir.join("dir1")
+				dir2=dir.join("dir2")
+				symlink1=dir.join("symlink1")
+				symlink2=dir.join("symlink2")
+
+				dir1.mkpath
+				dir2.mkpath
+				symlink1.make_symlink("file1")
+				symlink2.make_symlink("file2")
 
 				file1.write(contents)
 				file2.write(contents)
+				# File/file
 				assert_equal true, file1.file_identical?(file2)
 				assert_equal true, file2.file_identical?(file1)
+				# File/link
+				assert_equal true, file1.file_identical?(symlink1)
+				assert_equal true, file1.file_identical?(symlink2)
+				# Link/link
+				assert_equal true, symlink1.file_identical?(symlink2)
 
 				file2.write(contents+" ")
+				# File/file
 				assert_equal false, file1.file_identical?(file2)
 				assert_equal false, file2.file_identical?(file1)
+				# File/link
+				assert_equal true, file1.file_identical?(symlink1)
+				assert_equal false, file1.file_identical?(symlink2)
+				# Link/link
+				assert_equal false, symlink1.file_identical?(symlink2)
 
-				# TODO test
-				# * file vs. dir (false)
-				# * dir vs. dir (false)
-				# * symlink vs. file (true/false)
-				# * symlink vs. symlink (true/false)
+
+				# Directory comparisons, all false
+				assert_equal false, dir1.file_identical?(dir2)
+				assert_equal false, file1.file_identical?(dir1)
+				assert_equal false, dir1.file_identical?(file1)
 			end
 
 		end
@@ -75,8 +97,6 @@ module Coffle
 			abs=rel.absolute
 			assert_equal true , abs.absolute?
 			assert_equal false, abs.relative?
-
-			# TODO assert that they refer to the same target
 		end
 
 		def test_copy_file

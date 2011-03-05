@@ -1,4 +1,5 @@
 require 'socket'
+require 'etc'
 
 module Coffle
 	module TemplateMethods
@@ -17,8 +18,7 @@ end
 		end
 
 		def username
-			# TODO use Etc.getlogin
-			ENV['USERNAME']
+			Etc.getlogin
 		end
 
 		def hostname

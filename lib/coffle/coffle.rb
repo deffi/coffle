@@ -88,19 +88,27 @@ module Coffle
 			# Files
 			@status_file=@source.join(".status.yaml").absolute
 			raise "Status file #{backup} is not a file" if @status_file.present? && !@status_file.file? # Must not be a non-file
+
+			read_status
 		end
 
 		def entries
-			@entries ||= Dir["#{@source}/**/*"].reject { |dir|
-				# Reject entries beginning with .
-				dir =~ /^\./
-			}.map { |dir|
-				# Remove the source and any slashes from the beginning
-				dir.gsub(/^#{@source}/, '').gsub(/^\/*/, '')
-			}.map { |dir|
-				# Create an entry with the (relative) pathname
-				Entry.create(self, Pathname.new(dir), {}, :verbose=>@verbose)
-			}
+			if !@entries
+				entries_status=@status_hash["entries"] || {}
+
+				@entries = Dir["#{@source}/**/*"].reject { |dir|
+					# Reject entries beginning with .
+					dir =~ /^\./
+				}.map { |dir|
+					# Remove the source and any slashes from the beginning
+					dir.gsub(/^#{@source}/, '').gsub(/^\/*/, '')
+				}.map { |dir|
+					# Create an entry with the (relative) pathname
+					path=Pathname.new(dir)
+					entry_status=entries_status[path.to_s]
+					Entry.create(self, path, entry_status || {}, :verbose=>@verbose)
+				}
+			end
 
 			@entries
 		end
@@ -111,6 +119,14 @@ module Coffle
 			rescue Exceptions::DirectoryIsNoCoffleSource => ex
 				puts "#{source} is not a coffle source directory."
 				puts "coffle source directories must contain a .coffle directory."
+			end
+		end
+
+		def read_status
+			if status_file.exist?
+				@status_hash=YAML.load_file(status_file)
+			else
+				@status_hash={}
 			end
 		end
 

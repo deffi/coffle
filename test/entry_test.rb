@@ -738,8 +738,15 @@ module Coffle
 
 				# Now, change the entry source contents so it will be skipped and rebuild it
 				entry.source.write "moo <% skip! %>"
-				entry.outdate
+				entry.outdate # Need to do this because it's probably the same second
 				entry.build(true)
+				assert_equal true , entry.skipped?
+				assert_equal false, entry.installed?
+				assert_equal true , entry.target.exist? # The restored original file
+				assert_equal false, entry.backup.exist?
+
+				# Nothing changes when the entry is reinstalled (because it isn't)
+				entry.install(true)
 				assert_equal true , entry.skipped?
 				assert_equal false, entry.installed?
 				assert_equal true , entry.target.exist? # The restored original file

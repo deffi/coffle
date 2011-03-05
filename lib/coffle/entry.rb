@@ -23,7 +23,7 @@ module Coffle
 		attr_reader :link_target
 
 		# Status
-		def skipped?; @skipped; end # TODO attr?_reader
+		def skipped?; @skipped; end
 		attr_reader :timestamp
 
 
@@ -100,6 +100,7 @@ module Coffle
 			# yes    | yes    | yes || Built
 
 			if    !source.exist? ; return "Error"
+			elsif skipped?       ; return "Skipped"
 			elsif !output.exist? ; return "Not built"
 			elsif !org   .exist? ; return "org missing"
 			# Otherwise: built. Check if current.
@@ -161,9 +162,9 @@ module Coffle
 			# Note that if the entry is modified and overwrite is true, it
 			# is rebuilt even if it is current.
 
-			if !built?
-				do_build
-			elsif modified?
+			# Note that we do not check for built? - if the file is neither
+			# built nor skipped, it will be caught by oudated?
+			if modified?
 				# Output modified by the user
 				if overwrite
 					# Overwrite the modifications

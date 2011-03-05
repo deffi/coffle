@@ -3,9 +3,36 @@
 require File.dirname(__FILE__) + '/test_helper.rb'
 
 module Coffle
-	class FilenameTest <Test::Unit::TestCase
+	class EntryTest <Test::Unit::TestCase
 		include TestHelper
 
+		def with_test_dirs# {{{
+			with_testdir do |dir|
+				source_dir=dir.join("source")
+				target_dir=dir.join("target")
+
+				# Create and initialize the source directory
+				source_dir.mkdir
+				Coffle.initialize_source_directory(source_dir)
+
+				yield dir, source_dir, target_dir
+			end
+		end# }}}
+
+		def with_single_entry
+			with_test_dirs do |dir, source_dir, target_dir|
+				source_file=source_dir.join("entry")
+				source_file.touch
+
+				# Create the coffle (also creates the target directory)
+				coffle=Coffle.new(source_dir, target_dir)
+				entries=coffle.entries
+				assert_equal 1, entries.size
+				entry=entries[0]
+
+				yield entry
+			end
+		end
 
 		# Create some test data in a test directory {{{
 		# The directory name will be passed to the block.
@@ -27,35 +54,31 @@ module Coffle
 		# Use with_test_entries instead if you do not need the dir or
 		# the entries array }}}
 		def with_test_data #{{{
-			with_testdir do |dir|
-				source_dir=dir.join("source")
-				target_dir=dir.join("target")
-
-				# Create and initialize the source directory
-				source_dir.mkdir
-				Coffle.initialize_source_directory(source_dir)
-
+			with_test_dirs do |dir, source_dir, target_dir|
 				# Create some files/directories
 				source_dir.join("_foo").write("Foo")
 				source_dir.join("_bar").mkdir
 				source_dir.join("_bar", "baz").write("Baz")
+				source_dir.join("_skip").write("<% skip! %>")
 
 				# Create the coffle (also creates the target directory)
 				coffle=Coffle.new(source_dir, target_dir)
 				entries=coffle.entries
 
 				# Extract the entries by name and make sure they are found
-				@foo=entries.find { |entry| entry.path.to_s=="_foo" }
-				@bar=entries.find { |entry| entry.path.to_s=="_bar" }
-				@baz=entries.find { |entry| entry.path.to_s=="_bar/baz" }
+				@foo =entries.find { |entry| entry.path.to_s=="_foo" }
+				@bar =entries.find { |entry| entry.path.to_s=="_bar" }
+				@baz =entries.find { |entry| entry.path.to_s=="_bar/baz" }
+				@skip=entries.find { |entry| entry.path.to_s=="_skip" }
 
 				assert_not_nil @foo
 				assert_not_nil @bar
 				assert_not_nil @baz
+				assert_not_nil @skip
 
 				# Sort the entries: contained entries after containing entries
 				# (e. g. files after the directory they're in)
-				entries=[@foo, @bar, @baz]
+				entries=[@foo, @bar, @baz, @skip]
 
 				yield dir, entries
 
@@ -206,25 +229,26 @@ module Coffle
 				assert_not_present entry.org
 				assert !entry.built?
 
-				# After building, the output and org items must exist and be identical
+				# After building, the output and org items must exist exactly
+				# if the entry has been skipped
 				entry.build
-				assert_present entry.output
-				assert_present entry.org
-				assert entry.built?
+				assert_equal !entry.skipped?, entry.output.present?
+				assert_equal !entry.skipped?, entry.org   .present?
+				assert_equal !entry.skipped?, entry.built?
 
-				if entry.is_a?(DirectoryEntry)
-					assert_tree_equal(entry.output, entry.org)
-				else
-					assert_file_equal(entry.output, entry.org)
-				end
-
-				# For directory entries, the built file must be a directory
-				if entry.is_a?(DirectoryEntry)
-					assert_proper_directory entry.output
-					assert_proper_directory entry.org
-				else
-					assert_proper_file entry.output
-					assert_proper_file entry.org
+				# If the entry is not skipped, the output and og must have the
+				# correct type and be identical.
+				unless entry.skipped?
+					# For directory entries, the output and org must be a directory
+					if entry.is_a?(DirectoryEntry)
+						assert_proper_directory entry.output
+						assert_proper_directory entry.org
+						assert_tree_equal(entry.output, entry.org)
+					else
+						assert_proper_file entry.output
+						assert_proper_file entry.org
+						assert_file_equal(entry.output, entry.org)
+					end
 				end
 			end
 		end #}}}
@@ -238,7 +262,7 @@ module Coffle
 				assert !entry.outdated?
 
 				# Outdate - must be outdated
-				entry.output.set_older(entry.source)
+				entry.outdate
 				assert entry.outdated?
 
 				# Rebuild - must be current
@@ -257,7 +281,7 @@ module Coffle
 
 				# Outdate and modify - must be outdated
 				entry.output.append "x"
-				entry.output.set_older(entry.source)
+				entry.outdate
 				assert entry.outdated?
 				assert entry.modified?
 
@@ -267,13 +291,16 @@ module Coffle
 				assert entry.outdated?
 
 				# Rebuild with overwrite - must be current
+				# Note that rebuild is false, it's rebuilt because it's outdated
 				entry.build(false, true)
-				assert !entry.outdated?
+				assert !entry.outdated?, "#{entry.path} should not be outdated after rebuilding"
 
 				# Modify only
-				entry.output.append "x"
-				assert !entry.outdated?
-				assert entry.modified?
+				unless entry.skipped?
+					entry.output.append "x"
+					assert !entry.outdated?
+					assert entry.modified?
+				end
 
 				# Rebuild with overwrite - must no longer be modified,
 				# even though it was current before
@@ -294,10 +321,10 @@ module Coffle
 				entry.build
 				assert !entry.outdated?
 
-				# If the output file is older than the source file,
+				# If the org file is older than the source file,
 				# outdated? must return true, except for directores,
 				# which are never outdated
-				entry.output.set_older(entry.source)
+				entry.outdate
 				assert  entry.outdated?                                     if !entry.is_a?(DirectoryEntry)
 				assert !entry.outdated?, "A directory must not be outdated" if  entry.is_a?(DirectoryEntry)
 
@@ -373,11 +400,15 @@ module Coffle
 		# Installing entries: regular install {{{
 		def test_install_regular
 			with_test_entries do |entry|
-				# Target does not exist before - must be installed, no backup
-				# made
+				# Target does not exist before
 				result=entry.install(false)
 				assert_equal true, result           # Operation succeeded
-				assert_equal true, entry.installed? # Entry is installed
+
+				# The entry is installed exactly if not skipped
+				assert_equal !entry.skipped?, entry.installed?    # Entry is installed
+				assert_equal !entry.skipped?, entry.target.exist? # Target must exist (and be valid symlink)
+
+				# In no case is a backup made
 				assert_not_present entry.backup     # Backup was not made
 			end
 		end #}}}
@@ -390,9 +421,9 @@ module Coffle
 
 				# Target is already installed - no backup made
 				result=entry.install(false)
-				assert_equal true, result           # Operation succeeded
-				assert_equal true, entry.installed? # Entry is installed
-				assert_not_present entry.backup     # Backup was not made
+				assert_equal true, result                      # Operation succeeded
+				assert_equal !entry.skipped?, entry.installed? # Entry is installed (unless skipped)
+				assert_not_present entry.backup                # Backup was not made
 			end
 
 		end #}}}
@@ -407,7 +438,7 @@ module Coffle
 
 				# Without overwriting
 				result=entry.install(false)
-				assert_equal false, result                        # Operation did not succeed
+				assert_equal entry.skipped?, result               # Operation did not succeed (unless skipped)
 				assert_equal false, entry.installed?              # Entry is not installed
 				assert_not_present entry.backup                   # Backup was not made
 				assert_equal existing_contents, entry.target.read # Target contents are not touched
@@ -415,9 +446,14 @@ module Coffle
 				# With overwriting
 				result=entry.install(true)
 				assert_equal true, result                         # Operation succeeded
-				assert_equal true, entry.installed?               # Entry is not installed
-				assert_present entry.backup                       # Backup was not made
-				assert_equal existing_contents, entry.backup.read # Backup contents are correct
+				if entry.skipped?
+					assert_equal false, entry.installed? # Entry is not installed
+					assert_not_present entry.backup      # Backup was not made
+				else
+					assert_equal true, entry.installed?               # Entry is installed
+					assert_present entry.backup                       # Backup was made
+					assert_equal existing_contents, entry.backup.read # Backup contents are correct
+				end
 			end
 		end #}}}
 
@@ -455,15 +491,18 @@ module Coffle
 				# Create a directory where we want to install the entry
 				entry.target.mkpath
 
+				# Build before installing
+				entry.build
+
 				# Without overwriting
 				result=entry.install(false)
-				assert_equal false, result           # Operation did not succeed
+				assert_equal entry.skipped?, result  # Operation did not succeed (unless skipped)
 				assert_equal false, entry.installed? # Entry is not installed
 				assert_not_present entry.backup      # Backup was not made
 
 				# With overwriting
 				result=entry.install(true)
-				assert_equal false, result           # Operation did not succeed
+				assert_equal entry.skipped?, result  # Operation did not succeed (unless skipped)
 				assert_equal false, entry.installed? # Entry is not installed
 				assert_not_present entry.backup      # Backup was not made
 			end
@@ -501,31 +540,35 @@ module Coffle
 			# file or replaced with a directory
 			[:none, :file, :directory].each do |replace_option|
 				with_test_entries(:files) do |entry|
-					# Make the target already exist, so a backup will be created
-					# Use a symlink because they might not be recognized as
-					# existing if they are invalid in the backup.
-					entry.target.dirname.mkpath
-					entry.target.make_symlink("invalid")
-					assert_equal false, entry.installed? # Not installed
+					entry.build
 
-					# Install, overwriting the target
-					result=entry.install(true)
-					assert_equal true, result
-					assert_equal true, entry.installed? # Installed
+					unless entry.skipped?
+						# Make the target already exist, so a backup will be created
+						# Use a symlink because they might not be recognized as
+						# existing if they are invalid in the backup.
+						entry.target.dirname.mkpath
+						entry.target.make_symlink("invalid")
+						assert_equal false, entry.installed? # Not installed
 
-					# Remove or replace the target (bad user!)
-					replace_with replace_option, entry.target
+						# Install, overwriting the target
+						result=entry.install(true)
+						assert_equal true, result
+						assert_equal true, entry.installed? # Installed
 
-					# Try to install (without overwriting)
-					result=entry.install(false)
-					assert_equal false, result                    # Operation did not succeed
-					assert_equal false, entry.installed?          # Entry is not installed
-					assert_file_type replace_option, entry.target # Target still has the correct type
+						# Remove or replace the target (bad user!)
+						replace_with replace_option, entry.target
 
-					# Try to install (with overwriting)
-					assert_equal false, result                    # Operation did not succeed
-					assert_equal false, entry.installed?          # Entry is not installed
-					assert_file_type replace_option, entry.target # Target still has the correct type
+						# Try to install (without overwriting)
+						result=entry.install(false)
+						assert_equal false, result                    # Operation did not succeed
+						assert_equal false, entry.installed?          # Entry is not installed
+						assert_file_type replace_option, entry.target # Target still has the correct type
+
+						# Try to install (with overwriting)
+						assert_equal false, result                    # Operation did not succeed
+						assert_equal false, entry.installed?          # Entry is not installed
+						assert_file_type replace_option, entry.target # Target still has the correct type
+					end
 				end
 			end
 		end #}}}
@@ -538,7 +581,7 @@ module Coffle
 				assert_equal false, entry.installed?
 
 				entry.install(false)
-				assert_equal true, entry.installed?
+				assert_equal !entry.skipped?, entry.installed?
 
 				entry.uninstall
 				assert_equal false, entry.installed?
@@ -549,11 +592,11 @@ module Coffle
 		# Uninstalling entries: collective regular uninstall {{{
 		def test_uninstall_collective
 			with_test_data do |dir, entries|
-				entries        .each do |entry|; assert_equal false, entry.installed?; end
-				entries        .each do |entry|; entry.install(false)                ; end
-				entries        .each do |entry|; assert_equal true , entry.installed?; end
-				entries.reverse.each do |entry|; entry.uninstall                     ; end
-				entries        .each do |entry|; assert_equal false, entry.installed?; end
+				entries        .each do |entry|; assert_equal false           , entry.installed?; end
+				entries        .each do |entry|; entry.install(false); end
+				entries        .each do |entry|; assert_equal !entry.skipped? , entry.installed?; end
+				entries.reverse.each do |entry|; entry.uninstall     ; end
+				entries        .each do |entry|; assert_equal false           , entry.installed?; end
 			end
 		end
 		#}}}
@@ -577,11 +620,19 @@ module Coffle
 
 				# Install the entry (overwriting)
 				result=entry.install(true)
-				assert_equal true, result
-				assert_equal true, entry.installed?
-				assert_equal true, entry.target.present?
-				assert_equal true, entry.backup.present?
-				assert_equal original_contents, entry.backup.read
+				if entry.skipped?
+					assert_equal true , result
+					assert_equal false, entry.installed?
+					assert_equal true , entry.target.present? # the original file
+					assert_equal false, entry.backup.present?
+					assert_equal original_contents, entry.target.read
+				else
+					assert_equal true, result
+					assert_equal true, entry.installed?
+					assert_equal true, entry.target.present? # the installed symlink
+					assert_equal true, entry.backup.present?
+					assert_equal original_contents, entry.backup.read
+				end
 
 				# Uninstall the entry
 				result=entry.uninstall
@@ -638,30 +689,66 @@ module Coffle
 				with_test_entries(:files) do |entry|
 					original_contents="original_contents"
 
-					# Make the target already exist
-					entry.target.dirname.mkpath
-					entry.target.write original_contents
-					assert_equal false, entry.installed? # Not installed
+					entry.build
 
-					# Install, overwriting the target
-					result=entry.install(true)
-					assert_equal true, entry.installed?
-					assert_equal true, entry.backup.present?
+					unless entry.skipped?
+						# Make the target already exist
+						entry.target.dirname.mkpath
+						entry.target.write original_contents
+						assert_equal false, entry.installed? # Not installed
 
-					# Remove or replace the target (bad user!)
-					replace_with replace_option, entry.target
-					assert_equal false, entry.installed?
+						# Install, overwriting the target
+						result=entry.install(true)
+						assert_equal true, entry.installed?
+						assert_equal true, entry.backup.present?
 
-					# Try to uninstall
-					result=entry.uninstall
-					assert_equal false, result
-					assert_equal false, entry.installed?
-					assert_equal true, entry.backup.present?
-					assert_file_type replace_option, entry.target # Target still has the correct type
+						# Remove or replace the target (bad user!)
+						replace_with replace_option, entry.target
+						assert_equal false, entry.installed?
+
+						# Try to uninstall
+						result=entry.uninstall
+						assert_equal false, result
+						assert_equal false, entry.installed?
+						assert_equal true, entry.backup.present?
+						assert_file_type replace_option, entry.target # Target still has the correct type
+					end
 				end
 			end
 		end
 		#}}}
+
+
+		# Skipped entries: change to skipped {{{
+		def test_change_to_skipped
+			with_single_entry do |entry|
+				# Make the target already exist
+				original_contents="original"
+				entry.target.write original_contents
+				assert_equal true, entry.target.exist? # The original file
+
+				# First, install a regular entry, overwriting the original file
+				entry.source.write "moo"
+				entry.build
+				assert_equal false, entry.skipped?
+				entry.install(true)
+				assert_equal true, entry.installed?
+				assert_equal true, entry.target.exist?
+				assert_equal true, entry.backup.exist?
+
+				# Now, change the entry source contents so it will be skipped and rebuild it
+				entry.source.write "moo <% skip! %>"
+				entry.outdate
+				entry.build(true)
+				assert_equal true , entry.skipped?
+				assert_equal false, entry.installed?
+				assert_equal true , entry.target.exist? # The restored original file
+				assert_equal false, entry.backup.exist?
+			end
+		end
+		#}}}
+
+		
 
 
 		# TODO also compare file contents

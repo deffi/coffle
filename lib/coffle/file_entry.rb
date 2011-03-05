@@ -41,26 +41,32 @@ module Coffle
 
 		def installed?
 			# File entry: the target must be a symlink to the correct location
+			# Regardless of whether that location exists
 			target.symlink? && target.readlink==link_target
 		end
 
 		# The source has to be rebuilt (because it has been modified after it
 		# was last built, or it doesn't exist)
 		def outdated?
-			if !built?
-				# Does not exist
-				true
-			else
+			built=built?
+			skipped=skipped?
+
+			if built and not skipped
 				# Is not current
-				# FIXME must check against org - should have been caught by test
-				!output.current?(source)
+				!org.current?(source)
+			elsif skipped and not built
+				source.mtime>@timestamp
+			else
+				# Neither built nor skipped (not built), or both built and
+				# skipped (inconsistent) - always outdated
+				true
 			end
 		end
 
 		# The built file has been modified, i. e. we cannot rebuild it without
 		# overwriting the changes
+		# Only meaningful if current.
 		def modified?
-			# TODO skipped
 			if  !built?
 				# What has not been built cannot be modified
 				false
@@ -86,9 +92,19 @@ module Coffle
 			output.dirname.mkpath
 			org   .dirname.mkpath
 
-			# TODO test dereferencing
-			skipped=!Builder.build(source, output)
-			output.copy_file org unless skipped
+			builder=Builder.new(self)
+			result=builder.process(source.read)
+
+			if builder.skipped?
+				output.delete if output.present?
+				org   .delete if org   .present?
+			else
+				output.write result
+				org   .write result
+			end
+
+			@skipped  =builder.skipped?
+			@timestamp=(Time.now if skipped?)
 		end
 		
 		# Create the target (which must not exist)

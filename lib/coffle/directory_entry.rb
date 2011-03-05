@@ -48,7 +48,6 @@ module Coffle
 		# The source has to be rebuilt (because it has been modified after it
 		# was last built, or it doesn't exist)
 		def outdated?
-			# TODO skipped
 			# Existing directories are never outdated
 			!built?
 		end
@@ -56,7 +55,6 @@ module Coffle
 		# The built file has been modified, i. e. we cannot rebuild it without
 		# overwriting the changes
 		def modified?
-			# TODO skipped
 			# Directories are never modified
 			false
 		end
@@ -76,6 +74,10 @@ module Coffle
 		def build!
 			output.mkpath
 			org   .mkpath
+
+			# Directories are never skipped
+			@skipped  =false
+			@timestamp=nil
 		end
 
 		# Create the target (which must not exist)

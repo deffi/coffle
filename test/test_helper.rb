@@ -107,10 +107,29 @@ module Coffle
 			end
 		end
 
-		def assert_present(path, message = nil)
+		def assert_exist(path, message = nil)
 			path=path.to_s unless path.is_a? String
 
 			message=build_message message, '<?> does not exist.', path
+			assert_block message do
+				File.exist?(path)
+			end
+		end
+
+		def assert_not_exist(path, message = nil)
+			path=path.to_s unless path.is_a? String
+
+			message=build_message message, '<?> exists.', path
+			assert_block message do
+				!File.exist?(path)
+			end
+		end
+
+
+		def assert_present(path, message = nil)
+			path=path.to_s unless path.is_a? String
+
+			message=build_message message, '<?> is not present.', path
 			assert_block message do
 				File.present?(path)
 			end
@@ -119,7 +138,7 @@ module Coffle
 		def assert_not_present(path, message = nil)
 			path=path.to_s unless path.is_a? String
 
-			message=build_message message, '<?> exists.', path
+			message=build_message message, '<?> is present.', path
 			assert_block message do
 				!File.present?(path)
 			end

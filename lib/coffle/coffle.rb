@@ -1,5 +1,6 @@
 require 'pathname'
 require 'optparse'
+require 'yaml'
 
 require 'coffle/filenames'
 
@@ -13,6 +14,7 @@ module Coffle
 
 		# Absolute
 		attr_reader :source, :output, :org, :target, :backup
+		attr_reader :status_file
 
 		# Calls path.mkpath and outputs a message if it did not exist before
 		def create_directory (path)
@@ -82,10 +84,14 @@ module Coffle
 			raise "Output location #{output} is not a directory" if !@output.directory?                     # Has been created
 			raise "Target location #{target} is not a directory" if !@target.directory?                     # Has been created
 			raise "Backup location #{backup} is not a directory" if @backup.present? && !@backup.directory? # Must not be a non-directory
+
+			# Files
+			@status_file=@source.join(".status.yaml").absolute
+			raise "Status file #{backup} is not a file" if @status_file.present? && !@status_file.file? # Must not be a non-file
 		end
 
 		def entries
-			Dir["#{@source}/**/*"].reject { |dir|
+			@entries ||= Dir["#{@source}/**/*"].reject { |dir|
 				# Reject entries beginning with .
 				dir =~ /^\./
 			}.map { |dir|
@@ -93,8 +99,10 @@ module Coffle
 				dir.gsub(/^#{@source}/, '').gsub(/^\/*/, '')
 			}.map { |dir|
 				# Create an entry with the (relative) pathname
-				Entry.create(self, Pathname.new(dir), :verbose=>@verbose)
+				Entry.create(self, Pathname.new(dir), {}, :verbose=>@verbose)
 			}
+
+			@entries
 		end
 
 		def self.run(source, target, options)
@@ -104,6 +112,21 @@ module Coffle
 				puts "#{source} is not a coffle source directory."
 				puts "coffle source directories must contain a .coffle directory."
 			end
+		end
+
+		def make_status
+			entries_hash={}
+			entries.each { |entry|
+				entry_status_hash=entry.status_hash
+				entries_hash[entry.path.to_s]=entry_status_hash
+			}
+
+			{"version"=>1, "entries"=>entries_hash}
+		end
+
+		def write_status
+			status=make_status
+			status_file.write status.to_yaml
 		end
 
 		def run
@@ -145,6 +168,8 @@ module Coffle
 			when "diff"     : diff!    options
 			else puts opts # Output the options help message
 			end
+
+			write_status
 		end
 
 		def build! (options={})

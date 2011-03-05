@@ -109,6 +109,12 @@ module Coffle
 				file2.set_same_time(file1)
 				assert_equal true, (file2.mtime==file1.mtime)
 				assert_equal true, (file2.atime==file1.atime)
+
+				t=Time.now
+				file1.set_time t+1
+				file2.set_time t+2
+				assert_equal true, (file2.mtime>file1.mtime)
+				assert_equal true, (file2.atime>file1.atime)
 			end
 		end
 

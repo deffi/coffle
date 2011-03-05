@@ -1,5 +1,16 @@
 == Next
 
+Read properties
+
+
+
+Improvements:
+* The current interpretation is "process source to output (from where it is
+  installed) and copy to org". Better: "process source to (a) and copy to (b)
+  (from where it is installed)" - better outdated checks. (a) should be called
+  "output".
+* Built should include skipped and (successfully built) (need a name for that)
+
 Skipping:
 * We do not want to rebuild a skipped entry if the source has not changed.
   However, we need to build an entry that is not yet built. Both "skipped" and
@@ -28,9 +39,8 @@ Open questions:
   automatically reinstalled if it's newly non-skipped without tracking the
   install status.
 
-Pragmatic approach:
-* use tag files for skipped entries (no status file)
-* use the timestamp of the respective file
+Answers:
+* use the timestamp of the file
 * uninstalling is done immediately; for reinstalling, the user has to perform
   "install" again
 

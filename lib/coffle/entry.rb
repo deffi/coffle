@@ -4,6 +4,7 @@ require 'coffle/filenames'
 require 'coffle/messages'
 
 module Coffle
+	# An entry can either be built or skipped. Everything else is inconsistent.
 	class Entry
 		include Filenames
 		include Messages
@@ -21,6 +22,10 @@ module Coffle
 		# Relative link target from target to output
 		attr_reader :link_target
 
+		# Status
+		def skipped?; @skipped; end # TODO attr?_reader
+		attr_reader :timestamp
+
 
 		##################
 		## Construction ##
@@ -29,8 +34,11 @@ module Coffle
 		# Options:
 		# * :verbose: print messages; recommended for interactive applications
 		# TODO can we make the constructor protected?
-		def initialize(coffle, path, options={})
+		def initialize(coffle, path, status, options)
 			@path=path
+
+			@skipped=status["skipped"]
+			@timestamp=status["timestamp"]
 
 			@verbose = options.fetch :verbose, false
 
@@ -45,11 +53,11 @@ module Coffle
 		end
 
 		# Entry factory method
-		def Entry.create(coffle, path, options={})
+		def Entry.create(coffle, path, status, options)
 			source_path=coffle.source.join(path) # TODO code duplication
 
-			if    source_path.proper_file?     ; FileEntry     .new(coffle, path, options)
-			elsif source_path.proper_directory?; DirectoryEntry.new(coffle, path, options)
+			if    source_path.proper_file?     ; FileEntry     .new(coffle, path, status, options)
+			elsif source_path.proper_directory?; DirectoryEntry.new(coffle, path, status, options)
 			else  nil
 			end
 		end
@@ -59,6 +67,24 @@ module Coffle
 		############
 		## Status ##
 		############
+
+		def status_hash
+			result={}
+			result["skipped"  ]=true       if @skipped
+			result["timestamp"]=@timestamp if @timestamp
+			result unless result.empty?
+		end
+
+		# Only valid if built
+		#def effective_timestamp
+		#	if built?
+		#		org.mtime
+		#	elsif skipped
+		#		@timestamp
+		#	else
+		#		raise "inconsistent"
+		#	end
+		#end
 
 		def output_status
 			# TODO test
@@ -119,28 +145,36 @@ module Coffle
 		## Front-end actions ##
 		#######################
 
+		def do_build
+			build!
+
+			if skipped?
+				message "#{MSkipped} #{output}"
+				uninstall if installed?
+			else
+				message "#{MBuilt} #{output}"
+			end
+		end
+
 		# Build the entry, that is, create the output in the output directory
 		def build(rebuild=false, overwrite=false)
 			# Note that if the entry is modified and overwrite is true, it
 			# is rebuilt even if it is current.
 
 			if !built?
-				message "#{MBuild} #{output}"
-				build!
+				do_build
 			elsif modified?
 				# Output modified by the user
 				if overwrite
 					# Overwrite the modifications
-					message "#{MBuild} #{output}"
-					build!
+					do_build
 				else
 					# Do not overwrite
 					message "#{MModified} #{output}"
 				end
 			elsif outdated? || rebuild
 				# Outdated (source changed), or forced rebuild
-				message "#{MBuild} #{output}"
-				build!
+				do_build
 			else
 				# Current
 				message "#{MCurrent} #{output}"
@@ -155,7 +189,11 @@ module Coffle
 		def install(overwrite)
 			build # non-rebuilding, non-overwriting
 
-			if installed?
+			if skipped?
+				# Skipped entries are not installed
+				message "#{MSkipped} #{target}"
+				true
+			elsif installed?
 				# Nothing to do
 				message "#{MCurrent} #{target}"
 				true
@@ -218,6 +256,12 @@ module Coffle
 			end
 		end
 
+		# TODO test for this
+		def outdate
+			@timestamp=source.mtime-1 if @timestamp
+			output.set_older source if output.present?
+			org   .set_older source if org   .present?
+		end
 
 
 		##########

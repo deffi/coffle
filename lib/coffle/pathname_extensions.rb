@@ -52,6 +52,10 @@ class Pathname
 		dirname.mkpath
 	end
 
+	def set_time(time)
+		self.utime time, time
+	end
+
 	def set_same_time(other)
 		self.utime other.atime, other.mtime
 	end

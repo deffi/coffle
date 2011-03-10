@@ -1,52 +1,22 @@
 == Next
 
 Source directory structure
-* single work directory containing output, org, backup that can be ignore by vc
-* unescaped filenames everywhere (potentially except source)
-* version specification
+* single coffle directory
+* single work directory in coffle directory (output, org, backup; ignored)
+* unescaped filenames everywhere (except source)
 
-Open questions:
-* Layout
-  * config files in main directory, with a .coffle directory? (must be escaped)
-  * config files in a source subdirectory?
-    * escaped or unescaped?
-
-In main directory:
-source_directory
-|-_profile
-|-_ssh
-| |-config
-| '-authorized_keys
-|-...
-'-.coffle
-  |-coffle.yaml
-  |-host_classes.yaml/rb
-  |-...
-  '-work    <---- ignore for version control
-    |-output -> unescaped
-	|-org    -> unescaped
-	'-backup -> unescaped
-
-In subdirectory:
-source_directory
-|-coffle.yaml
-|-source
-| |-.profile
-| '-.ssh
-|   |-config
-|   '-authorized_keys
-'-work
-  |-output -> unescaped
-  |-org    -> unescaped
-  '-backup -> unescaped
 
 coffle_source.yaml:
 * version => 1
 
 
+
 == High priority
 
 * Allow uninstalling entries which are no longer present
+* Use .coffle_target link in target?
+  * simplifies link targets
+  * useful for access from target directory (future extension)
 
 
 

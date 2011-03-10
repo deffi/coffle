@@ -22,6 +22,7 @@ Notes on backups of directories (in case we want to make them one day):
 
 
 
+
 == Skipping
 
 Skipped means:
@@ -59,6 +60,38 @@ false  |true     |regular skipped |source newer than timestamp
 true   |false    |regular built   |source newer than org (or timestamp)
 true   |true     |inconsistent    |always
 
+
+== Source layout
+
+We keep the configuration file templates in the top level directory, with
+escaped names, and the coffle related files in a dotdir (see the notes on
+filename escaping below):
+.
+|-_config file templates   <---- escaped file names
+|-.coffle.yaml
+'-.coffle
+  |-coffle files
+  |-...
+  '-work                   <---- ignore for version control
+    |-output -> unescaped  <---- links point here
+	|-org    -> unescaped
+	'-backup -> unescaped
+
+We could also keep the source files in a subdirectory:
+.
+|-[.]coffle.yaml
+|-source
+| |-_config file templates
+| '-...
+'-work
+  |-output -> unescaped
+  |-org    -> unescaped
+  '-backup -> unescaped
+
+In any case, we need to escape the filenames so we can use dotfiles for
+bookkeeping (e. g. .coffleignore, or local settings) or other purposes, like
+version control (we could potentially get around this by using a global
+ignore pattern).
 
 
 == Backups

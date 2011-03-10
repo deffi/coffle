@@ -44,19 +44,21 @@ module Coffle
 				# Create the Coffle
 				coffle=Coffle.new("#{dir}/source", "#{dir}/target")
 
-				# The output and target directories must exist now
-				assert_proper_directory dir.join("source/.output")
-				assert_proper_directory dir.join("source/.output/.org")
-				assert_directory        dir.join("target")
-
 				# Absolute paths
-				assert_equal "#{dir.absolute}/source"             , coffle.source.to_s
-				assert_equal "#{dir.absolute}/source/.output"     , coffle.output.to_s
-				assert_equal "#{dir.absolute}/source/.output/.org", coffle.org   .to_s
-				assert_equal "#{dir.absolute}/source/.backup"     , coffle.backup.to_s
-				assert_equal "#{dir.absolute}/target"             , coffle.target.to_s
+				assert_equal "#{dir.absolute}/source"                     , coffle.source.to_s
+				assert_equal "#{dir.absolute}/source/.coffle/work/output" , coffle.output.to_s
+				assert_equal "#{dir.absolute}/source/.coffle/work/org"    , coffle.org   .to_s
+				assert_equal "#{dir.absolute}/source/.coffle/work/backup" , coffle.backup.to_s
+				assert_equal "#{dir.absolute}/target"                     , coffle.target.to_s
 				#assert_match /^#{dir.absolute}\/source\/.backups\/\d\d\d\d-\d\d-\d\d_\d\d-\d\d-\d\d$/,
 				#	                                                coffle.backup.to_s
+
+				# The output and target directories must exist now (backup may not exist)
+				assert_proper_directory dir.join("source/.coffle")
+				assert_proper_directory dir.join("source/.coffle/work")
+				assert_proper_directory dir.join("source/.coffle/work/output")
+				assert_proper_directory dir.join("source/.coffle/work/org")
+				assert_directory        dir.join("target")
 
 				# The backup direcory must not exist (only created when used)
 				assert_not_present coffle.backup

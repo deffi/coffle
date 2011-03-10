@@ -58,10 +58,11 @@ module Coffle
 
 			self.class.assert_source_directory @source
 
-			#@backup=@source.join(".backups/#{Time.now.strftime("%Y-%m-%d_%H-%M-%S")}")
-			@backup=@source.join(".backup")
-			@output=@source.join(".output")
-			@org   =@output.join(".org")
+			@coffle_dir=@source    .join(".coffle")
+			@work_dir  =@coffle_dir.join("work")
+			@output=@work_dir.join("output")
+			@org   =@work_dir.join("org")
+			@backup=@work_dir.join("backup")
 
 			# Make sure the source directory exists
 			raise "Source directory #{@source} does not exist" if !@source.exist?

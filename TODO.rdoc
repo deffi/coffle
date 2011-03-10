@@ -10,7 +10,9 @@
 == High priority
 
 * Allow uninstalling entries which are no longer present
-* Use .coffle_target link in target?
+* Use .coffle_target link in target
+  * allows moving a source without breaking the link by copying, changing the
+    link, and deleting the old copy
   * simplifies link targets
   * useful for access from target directory (future extension)
 
@@ -25,7 +27,7 @@ Operations:
   * should uninstall do this?
 * uninstall all entries no longer present
 * diff (show difference between output and org)
-* import (???)
+* import (existierende Konfigurationsdatei in source kopieren, escapen)
 
 Unit tests:
 * Use TestEntry whereever useful (especially in entry_test)

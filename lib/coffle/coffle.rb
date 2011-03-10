@@ -13,7 +13,7 @@ module Coffle
 		include Filenames
 
 		# Absolute
-		attr_reader :source, :output, :org, :target, :backup
+		attr_reader :source_dir, :coffle_dir, :work_dir, :output_dir, :org_dir, :target_dir, :backup_dir
 		attr_reader :status_file
 
 		# Calls path.mkpath and outputs a message if it did not exist before
@@ -49,47 +49,49 @@ module Coffle
 		def initialize (source, target, options={})
 			@verbose = options.fetch :verbose, false
 
-			@source=source.dup
-			@target=target.dup
+			@source_dir=source.dup
+			@target_dir=target.dup
 
 			# Convert to Pathname
-			@source=Pathname.new(@source) unless @source.is_a?(Pathname)
-			@target=Pathname.new(@target) unless @target.is_a?(Pathname)
+			@source_dir=Pathname.new(@source_dir) unless @source_dir.is_a?(Pathname)
+			@target_dir=Pathname.new(@target_dir) unless @target_dir.is_a?(Pathname)
 
-			self.class.assert_source_directory @source
+			self.class.assert_source_directory @source_dir
 
-			@coffle_dir=@source    .join(".coffle")
+			@coffle_dir=@source_dir.join(".coffle")
 			@work_dir  =@coffle_dir.join("work")
-			@output=@work_dir.join("output")
-			@org   =@work_dir.join("org")
-			@backup=@work_dir.join("backup")
+			@output_dir=@work_dir.join("output")
+			@org_dir   =@work_dir.join("org")
+			@backup_dir=@work_dir.join("backup")
 
 			# Make sure the source directory exists
-			raise "Source directory #{@source} does not exist" if !@source.exist?
+			raise "Source directory #{@source_dir} does not exist" if !@source_dir.exist?
 
 			# Create the output and target directories if they don't exist
-			create_directory @output
-			create_directory @org
-			create_directory @target
+			create_directory @output_dir
+			create_directory @org_dir
+			create_directory @target_dir
 
 			# Convert to absolute (the backup path need not exist, it
 			# will be created when first used)
 			# Not using realpath - backup need not exist
-			@source=@source.absolute
-			@output=@output.absolute
-			@org   =@org   .absolute
-			@target=@target.absolute
-			@backup=@backup.absolute
+			@coffle_dir=@coffle_dir.absolute
+			@work_dir  =@work_dir  .absolute
+			@source_dir=@source_dir.absolute
+			@output_dir=@output_dir.absolute
+			@org_dir   =@org_dir   .absolute
+			@target_dir=@target_dir.absolute
+			@backup_dir=@backup_dir.absolute
 
 			# Make sure they are directories
-			raise "Source location #{source} is not a directory" if !@source.directory?                     # Must exist
-			raise "Output location #{output} is not a directory" if !@output.directory?                     # Has been created
-			raise "Target location #{target} is not a directory" if !@target.directory?                     # Has been created
-			raise "Backup location #{backup} is not a directory" if @backup.present? && !@backup.directory? # Must not be a non-directory
+			raise "Source location #{@source_dir} is not a directory" if !@source_dir.directory?                     # Must exist
+			raise "Output location #{@output_dir} is not a directory" if !@output_dir.directory?                     # Has been created
+			raise "Target location #{@target_dir} is not a directory" if !@target_dir.directory?                     # Has been created
+			raise "Backup location #{@backup_dir} is not a directory" if @backup_dir.present? && !@backup_dir.directory? # Must not be a non-directory
 
 			# Files
-			@status_file=@source.join(".status.yaml").absolute
-			raise "Status file #{backup} is not a file" if @status_file.present? && !@status_file.file? # Must not be a non-file
+			@status_file=@source_dir.join(".status.yaml").absolute
+			raise "Status file #{backup_dir} is not a file" if @status_file.present? && !@status_file.file? # Must not be a non-file
 
 			read_status
 		end
@@ -98,12 +100,12 @@ module Coffle
 			if !@entries
 				entries_status=@status_hash["entries"] || {}
 
-				@entries = Dir["#{@source}/**/*"].reject { |dir|
+				@entries = Dir["#{@source_dir}/**/*"].reject { |dir|
 					# Reject entries beginning with .
 					dir =~ /^\./
 				}.map { |dir|
 					# Remove the source and any slashes from the beginning
-					dir.gsub(/^#{@source}/, '').gsub(/^\/*/, '')
+					dir.gsub(/^#{@source_dir}/, '').gsub(/^\/*/, '')
 				}.map { |dir|
 					# Create an entry with the (relative) pathname
 					path=Pathname.new(dir)
@@ -197,7 +199,7 @@ module Coffle
 			rebuilding =(rebuild  )?"rebuilding" :"non-rebuilding"
 			overwriting=(overwrite)?"overwriting":"non-overwriting"
 
-			puts "Building in #{@output} (#{rebuilding}, #{overwriting})" if @verbose
+			puts "Building in #{@output_dir} (#{rebuilding}, #{overwriting})" if @verbose
 
 			entries.each { |entry| entry.build rebuild, overwrite }
 		end
@@ -205,24 +207,24 @@ module Coffle
 		def install! (options={})
 			overwrite=options[:overwrite]
 
-			puts "Installing to #{@target} (#{(overwrite)?"overwriting":"non-overwriting"})" if @verbose
+			puts "Installing to #{@target_dir} (#{(overwrite)?"overwriting":"non-overwriting"})" if @verbose
 
 			entries.each { |entry| entry.install overwrite }
 		end
 
 		def uninstall! (options={})
-			puts "Uninstalling from #{@target}" if @verbose
+			puts "Uninstalling from #{@target_dir}" if @verbose
 
 			entries.reverse.each { |entry| entry.uninstall }
 		end
 
 		def info! (options={})
-			puts "Source: #{@source}"
-			puts "Target: #{@target}"
+			puts "Source: #{@source_dir}"
+			puts "Target: #{@target_dir}"
 			puts
-			puts "Output: #{@output}"
-			puts "Org:    #{@org}"
-			puts "Backup: #{@backup}"
+			puts "Output: #{@output_dir}"
+			puts "Org:    #{@org_dir}"
+			puts "Backup: #{@backup_dir}"
 		end
 
 		def status! (options={})

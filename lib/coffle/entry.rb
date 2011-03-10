@@ -41,11 +41,11 @@ module Coffle
 
 			@verbose = options.fetch :verbose, false
 
-			@source=coffle.source.join @path # The absolute path to the source (i. e. the template)
-			@output=coffle.output.join @path # The absolute path to the built file
-			@org   =coffle.org   .join @path # The absolute path to the original of the built file
-			@target=coffle.target.join unescape_path(@path) # The absolute path to the target (i. e. the config file location)
-			@backup=coffle.backup.join unescape_path(@path) # The absolute path to the backup file
+			@source=coffle.source_dir.join @path # The absolute path to the source (i. e. the template)
+			@output=coffle.output_dir.join @path # The absolute path to the built file
+			@org   =coffle.org_dir   .join @path # The absolute path to the original of the built file
+			@target=coffle.target_dir.join unescape_path(@path) # The absolute path to the target (i. e. the config file location)
+			@backup=coffle.backup_dir.join unescape_path(@path) # The absolute path to the backup file
 
 			# The target the link should point to
 			@link_target=output.relative_path_from(target.dirname)
@@ -58,7 +58,7 @@ module Coffle
 
 		# Entry factory method
 		def Entry.create(coffle, path, status, options)
-			source_path=coffle.source.join(path)
+			source_path=coffle.source_dir.join(path)
 
 			if    source_path.proper_file?     ; FileEntry     .new(coffle, path, status, options)
 			elsif source_path.proper_directory?; DirectoryEntry.new(coffle, path, status, options)

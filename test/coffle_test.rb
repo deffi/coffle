@@ -45,23 +45,26 @@ module Coffle
 				coffle=Coffle.new("#{dir}/source", "#{dir}/target")
 
 				# Absolute paths
-				assert_equal "#{dir.absolute}/source"                     , coffle.source.to_s
-				assert_equal "#{dir.absolute}/source/.coffle/work/output" , coffle.output.to_s
-				assert_equal "#{dir.absolute}/source/.coffle/work/org"    , coffle.org   .to_s
-				assert_equal "#{dir.absolute}/source/.coffle/work/backup" , coffle.backup.to_s
-				assert_equal "#{dir.absolute}/target"                     , coffle.target.to_s
+				assert_equal "#{dir.absolute}/source"                     , coffle.source_dir.to_s
+				assert_equal "#{dir.absolute}/source/.coffle"             , coffle.coffle_dir.to_s
+				assert_equal "#{dir.absolute}/source/.coffle/work"        , coffle.work_dir  .to_s
+				assert_equal "#{dir.absolute}/source/.coffle/work/output" , coffle.output_dir.to_s
+				assert_equal "#{dir.absolute}/source/.coffle/work/org"    , coffle.org_dir   .to_s
+				assert_equal "#{dir.absolute}/source/.coffle/work/backup" , coffle.backup_dir.to_s
+				assert_equal "#{dir.absolute}/target"                     , coffle.target_dir.to_s
 				#assert_match /^#{dir.absolute}\/source\/.backups\/\d\d\d\d-\d\d-\d\d_\d\d-\d\d-\d\d$/,
 				#	                                                coffle.backup.to_s
 
-				# The output and target directories must exist now (backup may not exist)
-				assert_proper_directory dir.join("source/.coffle")
-				assert_proper_directory dir.join("source/.coffle/work")
-				assert_proper_directory dir.join("source/.coffle/work/output")
-				assert_proper_directory dir.join("source/.coffle/work/org")
-				assert_directory        dir.join("target")
+				# The output and target directories must exist now (backup need not exist)
+				assert_proper_directory coffle.source_dir
+				assert_proper_directory coffle.coffle_dir
+				assert_proper_directory coffle.work_dir
+				assert_proper_directory coffle.output_dir
+				assert_proper_directory coffle.org_dir
+				assert_directory        coffle.target_dir
 
 				# The backup direcory must not exist (only created when used)
-				assert_not_present coffle.backup
+				assert_not_present coffle.backup_dir
 			end
 		end
 

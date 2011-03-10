@@ -16,6 +16,11 @@ module Coffle
 		attr_reader :source_dir, :coffle_dir, :work_dir, :output_dir, :org_dir, :target_dir, :backup_dir
 		attr_reader :status_file
 
+		class <<self
+			attr_reader :source_version
+		end
+		@source_version=1
+
 		# Calls path.mkpath and outputs a message if it did not exist before
 		def create_directory (path)
 			if !path.present?
@@ -24,12 +29,12 @@ module Coffle
 			end
 		end
 
-		def self.coffle_directory(directory)
-			directory.join(".coffle")
+		def self.source_configuration_file(directory)
+			directory.join(".coffle_source.yaml")
 		end
 
 		def self.coffle_source_directory?(directory)
-			coffle_directory(directory).directory? # Hehe
+			source_configuration_file(directory).file?
 		end
 
 		def self.assert_source_directory(directory, msg=nil)
@@ -39,8 +44,12 @@ module Coffle
 			end
 		end
 
-		def self.initialize_source_directory(directory)
-			coffle_directory(directory).mkpath
+		def self.initialize_source_directory!(directory)
+			configuration={"version"=>source_version}
+
+			file=source_configuration_file(directory)
+			file.dirname.mkpath
+			file.write(configuration.to_yaml)
 		end
 
 
@@ -56,16 +65,18 @@ module Coffle
 			@source_dir=Pathname.new(@source_dir) unless @source_dir.is_a?(Pathname)
 			@target_dir=Pathname.new(@target_dir) unless @target_dir.is_a?(Pathname)
 
+			# Make sure that the specified source directory is actually a
+			# coffle source directory
 			self.class.assert_source_directory @source_dir
+
+			# Read the configuration
+			@source_configuration=YAML.load(self.class.source_configuration_file(@source_dir).read)
 
 			@coffle_dir=@source_dir.join(".coffle")
 			@work_dir  =@coffle_dir.join("work")
 			@output_dir=@work_dir.join("output")
 			@org_dir   =@work_dir.join("org")
 			@backup_dir=@work_dir.join("backup")
-
-			# Make sure the source directory exists
-			raise "Source directory #{@source_dir} does not exist" if !@source_dir.exist?
 
 			# Create the output and target directories if they don't exist
 			create_directory @output_dir
@@ -122,7 +133,7 @@ module Coffle
 				Coffle.new(source, target, options).run
 			rescue Exceptions::DirectoryIsNoCoffleSource => ex
 				puts "#{source} is not a coffle source directory."
-				puts "coffle source directories must contain a .coffle directory."
+				puts "Use \"coffle init\" to initialize the directory."
 			end
 		end
 

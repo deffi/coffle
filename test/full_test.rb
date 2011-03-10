@@ -17,7 +17,8 @@ module Coffle
 
 				##### Create the coffle (also creates the output and target directories)
 				actual.join("source", ".coffle").mkpath
-				coffle=Coffle.new("#{dir}/actual/source", "#{dir}/actual/target")
+				Coffle.initialize_source_directory!(dir.join("actual", "source"))
+				coffle=Coffle.new(dir.join("actual", "source"), dir.join("actual", "target"))
 
 
 				##### Create the actual directory

@@ -1,9 +1,9 @@
 == Next
 
-* coffle source directory is marked by .coffle_source.yaml
+* coffle init
 
-coffle_source.yaml:
-* version => 1
+* on startup, make sure our version is current (and unit test)
+
 
 
 

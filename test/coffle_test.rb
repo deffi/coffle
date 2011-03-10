@@ -24,7 +24,7 @@ module Coffle
 				assert_raise(Exceptions::DirectoryIsNoCoffleSource) { Coffle.new(source_dir, target_dir) }
 
 				# Make it a coffle source directory
-				Coffle.initialize_source_directory(source_dir)
+				Coffle.initialize_source_directory!(source_dir)
 
 				assert_equal true, Coffle.coffle_source_directory?(source_dir)
 				assert_nothing_raised { Coffle.assert_source_directory(source_dir) }
@@ -39,7 +39,7 @@ module Coffle
 				# Create and initialize the source directory
 				source_dir=dir.join("source")
 				source_dir.mkdir
-				Coffle.initialize_source_directory(source_dir)
+				Coffle.initialize_source_directory!(source_dir)
 
 				# Create the Coffle
 				coffle=Coffle.new("#{dir}/source", "#{dir}/target")
@@ -73,7 +73,7 @@ module Coffle
 				source_dir=dir.join("source")
 
 				source_dir.mkdir
-				Coffle.initialize_source_directory(source_dir)
+				Coffle.initialize_source_directory!(source_dir)
 
 				source_dir.join("_foo").touch
 				source_dir.join("_bar").mkdir

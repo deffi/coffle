@@ -13,7 +13,7 @@ module Coffle
 
 				# Create and initialize the source directory
 				source_dir.mkdir
-				Coffle.initialize_source_directory(source_dir)
+				Coffle.initialize_source_directory!(source_dir)
 
 				yield dir, source_dir, target_dir
 			end

@@ -19,7 +19,7 @@ module Coffle
 			end
 		end# }}}
 
-		def with_single_entry
+		def with_single_entry# {{{
 			with_test_dirs do |dir, source_dir, target_dir|
 				source_file=source_dir.join("entry")
 				source_file.touch
@@ -32,7 +32,7 @@ module Coffle
 
 				yield entry
 			end
-		end
+		end# }}}
 
 		# Create some test data in a test directory {{{
 		# The directory name will be passed to the block.
@@ -119,24 +119,24 @@ module Coffle
 
 				# The path names must have the correct values
 				assert_equal dir.join("source"                             , "_foo").absolute, by_name[:foo].source
-				assert_equal dir.join("source", ".coffle", "work", "output", "_foo").absolute, by_name[:foo].output
-				assert_equal dir.join("source", ".coffle", "work", "org"   , "_foo").absolute, by_name[:foo].org
+				assert_equal dir.join("source", ".coffle", "work", "output", ".foo").absolute, by_name[:foo].output
+				assert_equal dir.join("source", ".coffle", "work", "org"   , ".foo").absolute, by_name[:foo].org
 				assert_equal dir.join("source", ".coffle", "work", "backup", ".foo").absolute, by_name[:foo].backup
 				assert_equal dir.join("target"                             , ".foo").absolute, by_name[:foo].target
 				#assert_match /^#{dir.join("source", ".backups").absolute}\/\d\d\d\d-\d\d-\d\d_\d\d-\d\d-\d\d\/.foo$/,
 				#	                                                                  by_name[:foo].backup.to_s
 
 				assert_equal dir.join("source"                              , "_bar").absolute, by_name[:bar].source
-				assert_equal dir.join("source", ".coffle", "work", "output" , "_bar").absolute, by_name[:bar].output
-				assert_equal dir.join("source", ".coffle", "work", "org"    , "_bar").absolute, by_name[:bar].org
+				assert_equal dir.join("source", ".coffle", "work", "output" , ".bar").absolute, by_name[:bar].output
+				assert_equal dir.join("source", ".coffle", "work", "org"    , ".bar").absolute, by_name[:bar].org
 				assert_equal dir.join("source", ".coffle", "work", "backup" , ".bar").absolute, by_name[:bar].backup
 				assert_equal dir.join("target"                              , ".bar").absolute, by_name[:bar].target
 				#assert_match /^#{dir.join("source", ".backups").absolute}\/\d\d\d\d-\d\d-\d\d_\d\d-\d\d-\d\d\/.bar$/,
 				#	                                                                  by_name[:bar].backup.to_s
 
 				assert_equal dir.join("source"                              , "_bar", "baz").absolute, by_name[:baz].source
-				assert_equal dir.join("source", ".coffle", "work", "output" , "_bar", "baz").absolute, by_name[:baz].output
-				assert_equal dir.join("source", ".coffle", "work", "org"    , "_bar", "baz").absolute, by_name[:baz].org
+				assert_equal dir.join("source", ".coffle", "work", "output" , ".bar", "baz").absolute, by_name[:baz].output
+				assert_equal dir.join("source", ".coffle", "work", "org"    , ".bar", "baz").absolute, by_name[:baz].org
 				assert_equal dir.join("source", ".coffle", "work", "backup" , ".bar", "baz").absolute, by_name[:baz].backup
 				assert_equal dir.join("target"                              , ".bar", "baz").absolute, by_name[:baz].target
 				#assert_match /^#{dir.join("source", ".backups").absolute}\/\d\d\d\d-\d\d-\d\d_\d\d-\d\d-\d\d\/.bar\/baz$/,
@@ -169,9 +169,9 @@ module Coffle
 		def test_link_target #{{{
 			with_test_data do |dir, entries, by_name|
 				# link_target must return a relative link to the output path
-				assert_equal    "../source/.coffle/work/output/_foo"    , by_name[:foo].link_target.to_s
-				assert_equal    "../source/.coffle/work/output/_bar"    , by_name[:bar].link_target.to_s
-				assert_equal "../../source/.coffle/work/output/_bar/baz", by_name[:baz].link_target.to_s
+				assert_equal    "../source/.coffle/work/output/.foo"    , by_name[:foo].link_target.to_s
+				assert_equal    "../source/.coffle/work/output/.bar"    , by_name[:bar].link_target.to_s
+				assert_equal "../../source/.coffle/work/output/.bar/baz", by_name[:baz].link_target.to_s
 			end
 		end #}}}
 

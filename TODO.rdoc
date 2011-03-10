@@ -1,10 +1,6 @@
 == Next
 
-Source directory structure
-* single coffle directory
-* single work directory in coffle directory (output, org, backup; ignored)
-* unescaped filenames everywhere (except source)
-
+* coffle source directory is marked by .coffle_source.yaml
 
 coffle_source.yaml:
 * version => 1

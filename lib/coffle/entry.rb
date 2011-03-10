@@ -42,8 +42,8 @@ module Coffle
 			@verbose = options.fetch :verbose, false
 
 			@source=coffle.source_dir.join @path # The absolute path to the source (i. e. the template)
-			@output=coffle.output_dir.join @path # The absolute path to the built file
-			@org   =coffle.org_dir   .join @path # The absolute path to the original of the built file
+			@output=coffle.output_dir.join unescape_path(@path) # The absolute path to the built file
+			@org   =coffle.org_dir   .join unescape_path(@path) # The absolute path to the original of the built file
 			@target=coffle.target_dir.join unescape_path(@path) # The absolute path to the target (i. e. the config file location)
 			@backup=coffle.backup_dir.join unescape_path(@path) # The absolute path to the backup file
 

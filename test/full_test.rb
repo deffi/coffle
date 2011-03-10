@@ -53,25 +53,25 @@ module Coffle
 
 				# Output
 				expected_install.join("source", ".coffle", "work", "output").mkpath
-				expected_install.join("source", ".coffle", "work", "output", "_reg_file"            ).touch
-				expected_install.join("source", ".coffle", "work", "output", "_reg_dir"             ).mkdir
-				expected_install.join("source", ".coffle", "work", "output", "_reg_dir", "reg_file" )  .touch
-				expected_install.join("source", ".coffle", "work", "output", "_ex_file"             ).touch
-				expected_install.join("source", ".coffle", "work", "output", "_ex_dir"              ).mkdir
-				expected_install.join("source", ".coffle", "work", "output", "_ex_dir", "ex_file"   )  .touch
-				expected_install.join("source", ".coffle", "work", "output", "_link_dir"            ).mkdir
-				expected_install.join("source", ".coffle", "work", "output", "_link_dir", "ex_file" )  .touch
+				expected_install.join("source", ".coffle", "work", "output", ".reg_file"            ).touch
+				expected_install.join("source", ".coffle", "work", "output", ".reg_dir"             ).mkdir
+				expected_install.join("source", ".coffle", "work", "output", ".reg_dir", "reg_file" )  .touch
+				expected_install.join("source", ".coffle", "work", "output", ".ex_file"             ).touch
+				expected_install.join("source", ".coffle", "work", "output", ".ex_dir"              ).mkdir
+				expected_install.join("source", ".coffle", "work", "output", ".ex_dir", "ex_file"   )  .touch
+				expected_install.join("source", ".coffle", "work", "output", ".link_dir"            ).mkdir
+				expected_install.join("source", ".coffle", "work", "output", ".link_dir", "ex_file" )  .touch
 
 				# Org
 				expected_install.join("source", ".coffle", "work", "org").mkpath
-				expected_install.join("source", ".coffle", "work", "org", "_reg_file"            ).touch
-				expected_install.join("source", ".coffle", "work", "org", "_reg_dir"             ).mkdir
-				expected_install.join("source", ".coffle", "work", "org", "_reg_dir", "reg_file" )  .touch
-				expected_install.join("source", ".coffle", "work", "org", "_ex_file"             ).touch
-				expected_install.join("source", ".coffle", "work", "org", "_ex_dir"              ).mkdir
-				expected_install.join("source", ".coffle", "work", "org", "_ex_dir", "ex_file"   )  .touch
-				expected_install.join("source", ".coffle", "work", "org", "_link_dir"            ).mkdir
-				expected_install.join("source", ".coffle", "work", "org", "_link_dir", "ex_file" )  .touch
+				expected_install.join("source", ".coffle", "work", "org", ".reg_file"            ).touch
+				expected_install.join("source", ".coffle", "work", "org", ".reg_dir"             ).mkdir
+				expected_install.join("source", ".coffle", "work", "org", ".reg_dir", "reg_file" )  .touch
+				expected_install.join("source", ".coffle", "work", "org", ".ex_file"             ).touch
+				expected_install.join("source", ".coffle", "work", "org", ".ex_dir"              ).mkdir
+				expected_install.join("source", ".coffle", "work", "org", ".ex_dir", "ex_file"   )  .touch
+				expected_install.join("source", ".coffle", "work", "org", ".link_dir"            ).mkdir
+				expected_install.join("source", ".coffle", "work", "org", ".link_dir", "ex_file" )  .touch
 
 				# Backup
 				expected_install.join("source", ".coffle", "work", "backup").mkpath
@@ -83,16 +83,16 @@ module Coffle
  
 				# Target
 				expected_install.join("target").mkpath
-				expected_install.join("target", ".reg_file"                     ).make_symlink("../source/.coffle/work/output/_reg_file")
+				expected_install.join("target", ".reg_file"                     ).make_symlink("../source/.coffle/work/output/.reg_file")
 				expected_install.join("target", ".reg_dir"                      ).mkdir
-				expected_install.join("target", ".reg_dir", "reg_file"          )  .make_symlink("../../source/.coffle/work/output/_reg_dir/reg_file")
-				expected_install.join("target", ".ex_file"                      ).make_symlink("../source/.coffle/work/output/_ex_file")
+				expected_install.join("target", ".reg_dir", "reg_file"          )  .make_symlink("../../source/.coffle/work/output/.reg_dir/reg_file")
+				expected_install.join("target", ".ex_file"                      ).make_symlink("../source/.coffle/work/output/.ex_file")
 				expected_install.join("target", ".ex_dir"                       ).mkdir
-				expected_install.join("target", ".ex_dir", "ex_file"            )  .make_symlink("../../source/.coffle/work/output/_ex_dir/ex_file")
+				expected_install.join("target", ".ex_dir", "ex_file"            )  .make_symlink("../../source/.coffle/work/output/.ex_dir/ex_file")
 				expected_install.join("target", ".ex_dir", "other_file"         )  .touch
 				expected_install.join("target", ".link_dir"                     ).make_symlink(".link_dir_target")
 				expected_install.join("target", ".link_dir_target"              ).mkpath
-				expected_install.join("target", ".link_dir_target", "ex_file"   )  .make_symlink("../../source/.coffle/work/output/_link_dir/ex_file")
+				expected_install.join("target", ".link_dir_target", "ex_file"   )  .make_symlink("../../source/.coffle/work/output/.link_dir/ex_file")
 				expected_install.join("target", ".link_dir_target", "other_file")  .touch
 
 

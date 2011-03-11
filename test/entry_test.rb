@@ -414,11 +414,6 @@ module Coffle
 		end #}}}
 
 
-		def test_status_file
-			with_test_entries do |coffle, entry|
-
-			end
-		end
 
 		# Installing entries: regular install {{{
 		def test_install_regular
@@ -766,6 +761,7 @@ module Coffle
 		#}}}
 
 
+
 		# Skipped entries: change to skipped {{{
 		def test_change_to_skipped
 			with_single_entry do |coffle, entry|
@@ -802,9 +798,42 @@ module Coffle
 		end
 		#}}}
 
-		
 
 
+		# Status file# {{{
+		def test_status_file
+			with_test_data do |dir, coffle, entries, by_name|
+				coffle.install!
+				coffle.write_status
+
+				status=YAML.load_file(coffle.status_file)
+				assert status.is_a?(Hash)
+				assert status.has_key?("entries")
+
+				entries_status=status["entries"]
+				assert entries_status.is_a?(Hash)
+
+				entries.each do |entry|
+					# The status for the entry must exist
+					assert entries_status.has_key?(entry.path.to_s), entry.path
+					entry_status=entries_status[entry.path.to_s]
+
+					if entry.skipped?
+						assert entry_status.has_key?("timestamp")
+						assert entry_status["timestamp"].is_a? Time
+
+						assert entry_status.has_key?("skipped")
+						assert_equal true, entry_status["skipped"]
+					else
+						# For non-skipped files, one of the following must be true:
+						assert(
+							!entry_status                     || # The status for the entry is nil
+							!entry_status.has_key?("skipped") || # It has no skipped value
+							entry_status["skipped"]==false)      # The skipped value is false
+					end
+				end
+			end
+		end# }}}
 	end
 end
 

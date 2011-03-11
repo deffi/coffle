@@ -1,10 +1,10 @@
 == Next
 
-* Test status file
-** contents in entry_test
-
 * coffle init
+
 * Test source configuration error messages (manually)
+
+* Unescaped paths in status file?
 
 
 

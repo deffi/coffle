@@ -1,8 +1,6 @@
 == Next
 
 * Test status file
-** path
-** written after actions
 ** in full_test
 
 * coffle init

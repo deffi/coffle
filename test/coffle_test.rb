@@ -55,6 +55,8 @@ module Coffle
 				#assert_match /^#{dir.absolute}\/source\/.backups\/\d\d\d\d-\d\d-\d\d_\d\d-\d\d-\d\d$/,
 				#	                                                coffle.backup.to_s
 
+				assert_equal "#{dir.absolute}/source/.coffle/work/status.yaml", coffle.status_file.to_s
+
 				# The output and target directories must exist now (backup need not exist)
 				assert_proper_directory coffle.source_dir
 				assert_proper_directory coffle.coffle_dir
@@ -65,6 +67,13 @@ module Coffle
 
 				# The backup direcory must not exist (only created when used)
 				assert_not_present coffle.backup_dir
+
+				# Writing of the status file
+				# Note that the status file is written by run rather than the
+				# individual actions (like install)
+				assert_not_present coffle.status_file
+				coffle.write_status
+				assert_proper_file coffle.status_file
 			end
 		end
 

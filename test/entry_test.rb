@@ -30,7 +30,7 @@ module Coffle
 				assert_equal 1, entries.size
 				entry=entries[0]
 
-				yield entry
+				yield coffle, entry
 			end
 		end# }}}
 
@@ -86,7 +86,7 @@ module Coffle
 					else raise ArgumentError, "Invalid selection #{selection.inspect}"
 					end
 
-				yield dir, active_entries, by_name
+				yield dir, coffle, active_entries, by_name
 
 				# Don't test the reverse order, because some of the tests
 				# require that the file does not exist before the test and
@@ -98,9 +98,9 @@ module Coffle
 		# Use this rather than with_test_data if you don't need the directory,
 		# the entries array or the individual entries by name. }}}
 		def with_test_entries(selection=:all) #{{{
-			with_test_data(selection) do |dir, entries, by_name|
+			with_test_data(selection) do |dir, coffle, entries, by_name|
 				entries.each do |entry|
-					yield entry
+					yield coffle, entry
 				end
 			end
 		end #}}}
@@ -108,7 +108,7 @@ module Coffle
 
 
 		def test_paths #{{{
-			with_test_data do |dir, entries, by_name|
+			with_test_data do |dir, coffle, entries, by_name|
 				# The path names must be absolute
 				entries.each do |entry|
 					assert entry.source.absolute?
@@ -147,19 +147,19 @@ module Coffle
 		def test_with_test_entries #{{{
 			# Make sure the with_test_entries selection works properly
 
-			with_test_entries(:directories) do |entry|
+			with_test_entries(:directories) do |coffle, entry|
 				assert_equal true , entry.is_a?(DirectoryEntry)
 				assert_equal false, entry.is_a?(FileEntry)
 			end
 
-			with_test_entries(:files) do |entry|
+			with_test_entries(:files) do |coffle, entry|
 				assert_equal true , entry.is_a?(FileEntry)
 				assert_equal false, entry.is_a?(DirectoryEntry)
 			end
 		end #}}}
 
 		def test_entry_class #{{{
-			with_test_data do |dir, entries, by_name|
+			with_test_data do |dir, coffle, entries, by_name|
 				assert_equal FileEntry     , by_name[:foo].class
 				assert_equal DirectoryEntry, by_name[:bar].class
 				assert_equal FileEntry     , by_name[:baz].class
@@ -167,7 +167,7 @@ module Coffle
 		end #}}}
 
 		def test_link_target #{{{
-			with_test_data do |dir, entries, by_name|
+			with_test_data do |dir, coffle, entries, by_name|
 				# link_target must return a relative link to the output path
 				assert_equal    "../source/.coffle/work/output/.foo"    , by_name[:foo].link_target.to_s
 				assert_equal    "../source/.coffle/work/output/.bar"    , by_name[:bar].link_target.to_s
@@ -176,7 +176,7 @@ module Coffle
 		end #}}}
 
 		def test_installed #{{{
-			with_test_entries do |entry|
+			with_test_entries do |coffle, entry|
 				# Make sure that the target does not exist (not created yet)
 				assert_not_present entry.target
 
@@ -217,7 +217,7 @@ module Coffle
 		end #}}}
 
 		def test_build #{{{
-			with_test_entries do |entry|
+			with_test_entries do |coffle, entry|
 				# Before building, the output and org items may not exist
 				assert_not_present entry.output
 				assert_not_present entry.org
@@ -249,7 +249,7 @@ module Coffle
 
 		def test_built# {{{
 			# If either of org and output are missing, the entry is not built
-			with_test_entries do |entry|
+			with_test_entries do |coffle, entry|
 				entry.build
 
 				unless entry.skipped?
@@ -266,7 +266,7 @@ module Coffle
 		def test_build_outdated #{{{
 			# Test rebuilding of outdated entries, this only applies to
 			# file entries
-			with_test_entries(:files) do |entry|
+			with_test_entries(:files) do |coffle, entry|
 				# Build - must be current
 				entry.build
 				assert !entry.outdated?
@@ -284,7 +284,7 @@ module Coffle
 		def test_build_modified #{{{
 			# Test rebuilding of modified entries, this only applies to
 			# file entries
-			with_test_entries(:files) do |entry|
+			with_test_entries(:files) do |coffle, entry|
 				# Build - must be current
 				entry.build
 
@@ -325,7 +325,7 @@ module Coffle
 		end #}}}
 
 		def test_outdated #{{{
-			with_test_entries do |entry|
+			with_test_entries do |coffle, entry|
 				# Before building, the output must be outdated (it does
 				# not exist)
 				assert entry.outdated?
@@ -348,7 +348,7 @@ module Coffle
 		end #}}}
 
 		def test_modified #{{{
-			with_test_entries do |entry|
+			with_test_entries do |coffle, entry|
 				entry.build
 
 				unless entry.skipped?
@@ -365,7 +365,7 @@ module Coffle
 		end #}}}
 
 		def test_build_file_in_nonexistent_directory #{{{
-			with_test_data do |dir, entries, by_name|
+			with_test_data do |dir, coffle, entries, by_name|
 				# Building a file (baz) in a non-existing directory (bar)
 				assert_not_present by_name[:bar].output
 				assert_not_present by_name[:bar].org
@@ -376,7 +376,7 @@ module Coffle
 		end #}}}
 
 		def test_blocked_by? #{{{
-			with_test_data(:files) do |testdir, entries, by_name|
+			with_test_data(:files) do |testdir, coffle, entries, by_name|
 				dir_entries=DirectoryEntries.new(testdir)
 
 				entries.each do |entry|
@@ -394,7 +394,7 @@ module Coffle
 				end
 			end
 
-			with_test_data(:directories) do |testdir, entries, by_name|
+			with_test_data(:directories) do |testdir, coffle, entries, by_name|
 				dir_entries=DirectoryEntries.new(testdir)
 
 				entries.each do |entry|
@@ -414,10 +414,15 @@ module Coffle
 		end #}}}
 
 
+		def test_status_file
+			with_test_entries do |coffle, entry|
+
+			end
+		end
 
 		# Installing entries: regular install {{{
 		def test_install_regular
-			with_test_entries do |entry|
+			with_test_entries do |coffle, entry|
 				# Target does not exist before
 				result=entry.install(false)
 				assert_equal true, result           # Operation succeeded
@@ -433,7 +438,7 @@ module Coffle
 
 		# Installing entries: already current {{{
 		def test_install_current
-			with_test_entries do |entry|
+			with_test_entries do |coffle, entry|
 				# Install the entry
 				entry.install(false)
 
@@ -448,7 +453,7 @@ module Coffle
 
 		# Installing entries: file entry already exists (without/with overwrite) {{{
 		def test_install_file_exists
-			with_test_entries(:files) do |entry|
+			with_test_entries(:files) do |coffle, entry|
 				# Create a file where we want to install the entry
 				existing_contents="existing"
 				entry.target.dirname.mkpath
@@ -477,7 +482,7 @@ module Coffle
 
 		# Installing entries: directory entry already exists {{{
 		def test_install_directory_exists
-			with_test_entries(:directories) do |entry|
+			with_test_entries(:directories) do |coffle, entry|
 				# Create a directory where we want to install the entry
 				entry.target.mkpath
 
@@ -489,7 +494,7 @@ module Coffle
 				assert_not_present entry.backup     # Backup was not made
 			end
 
-			with_test_entries(:directories) do |entry|
+			with_test_entries(:directories) do |coffle, entry|
 				# Create a directory where we want to install the entry
 				entry.target.dirname.join("__test").mkpath
 				entry.target.make_symlink("__test")
@@ -505,7 +510,7 @@ module Coffle
 
 		# Installing entries: file blocked by directory {{{
 		def test_install_file_blocked
-			with_test_entries(:files) do |entry|
+			with_test_entries(:files) do |coffle, entry|
 				# Create a directory where we want to install the entry
 				entry.target.mkpath
 
@@ -528,7 +533,7 @@ module Coffle
 
 		# Installing entries: directory blocked by file {{{
 		def test_install_directory_blocked_by_file
-			with_test_entries(:directories) do |entry|
+			with_test_entries(:directories) do |coffle, entry|
 				# Create a file where we want to install the entry
 				existing_contents="existing"
 				entry.target.dirname.mkpath
@@ -552,7 +557,7 @@ module Coffle
 
 		# Installing entries: directory blocked by symlink {{{
 		def test_install_directory_blocked_by_symlink
-			with_test_entries(:directories) do |entry|
+			with_test_entries(:directories) do |coffle, entry|
 				# Create a symlink where we want to install the entry
 				link_target="missing"
 				entry.target.dirname.mkpath
@@ -581,7 +586,7 @@ module Coffle
 			# A file entry target (symlink) can be removed, replaced with a
 			# file or replaced with a directory
 			[:none, :file, :directory].each do |replace_option|
-				with_test_entries(:files) do |entry|
+				with_test_entries(:files) do |coffle, entry|
 					entry.build
 
 					unless entry.skipped?
@@ -619,7 +624,7 @@ module Coffle
 		# Uninstalling entries: individual regular uninstall {{{
 		def test_uninstall
 			# Each entry individually
-			with_test_entries do |entry|
+			with_test_entries do |coffle, entry|
 				assert_equal false, entry.installed?
 
 				entry.install(false)
@@ -633,7 +638,7 @@ module Coffle
 
 		# Uninstalling entries: collective regular uninstall {{{
 		def test_uninstall_collective
-			with_test_data do |dir, entries, by_name|
+			with_test_data do |dir, coffle, entries, by_name|
 				entries        .each do |entry|; assert_equal false           , entry.installed?; end
 				entries        .each do |entry|; entry.install(false); end
 				entries        .each do |entry|; assert_equal !entry.skipped? , entry.installed?; end
@@ -645,7 +650,7 @@ module Coffle
 		
 		# Uninstalling entries: file entry regular uninstall with restore {{{
 		def test_uninstall_with_restore
-			with_test_entries(:files) do |entry|
+			with_test_entries(:files) do |coffle, entry|
 				original_contents="original_contents"
 
 				# State before
@@ -689,7 +694,7 @@ module Coffle
 
 		# Uninstalling entries: not installed {{{
 		def test_uninstall_not_installed
-			with_test_entries do |entry|
+			with_test_entries do |coffle, entry|
 				# Uninstall the entry
 				result=entry.uninstall
 				assert_equal true , result
@@ -702,7 +707,7 @@ module Coffle
 
 		# Uninstalling entries: not installed, something else there {{{
 		def test_uninstall_not_installed_present
-			with_test_entries do |entry|
+			with_test_entries do |coffle, entry|
 				original_contents="original_contents"
 
 				# Write a previously existing file
@@ -728,7 +733,7 @@ module Coffle
 			# A file entry target (symlink) can be removed, replaced with a
 			# file or replaced with a directory
 			[:none, :file, :directory].each do |replace_option|
-				with_test_entries(:files) do |entry|
+				with_test_entries(:files) do |coffle, entry|
 					original_contents="original_contents"
 
 					entry.build
@@ -763,7 +768,7 @@ module Coffle
 
 		# Skipped entries: change to skipped {{{
 		def test_change_to_skipped
-			with_single_entry do |entry|
+			with_single_entry do |coffle, entry|
 				# Make the target already exist
 				original_contents="original"
 				entry.target.write original_contents

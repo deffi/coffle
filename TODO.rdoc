@@ -1,7 +1,7 @@
 == Next
 
 * Test status file
-** in full_test
+** contents in entry_test
 
 * coffle init
 * Test source configuration error messages (manually)

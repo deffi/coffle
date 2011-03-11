@@ -5,6 +5,7 @@ require File.dirname(__FILE__) + '/test_helper.rb'
 module Coffle
 	class EntryTest <Test::Unit::TestCase
 		include TestHelper
+		include Filenames
 
 		def with_test_dirs# {{{
 			with_testdir do |dir|
@@ -815,8 +816,8 @@ module Coffle
 
 				entries.each do |entry|
 					# The status for the entry must exist
-					assert entries_status.has_key?(entry.path.to_s), entry.path
-					entry_status=entries_status[entry.path.to_s]
+					assert entries_status.has_key?(unescape_path(entry.path).to_s), unescape_path(entry.path)
+					entry_status=entries_status[unescape_path(entry.path).to_s]
 
 					if entry.skipped?
 						assert entry_status.has_key?("timestamp")

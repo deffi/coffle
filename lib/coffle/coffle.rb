@@ -146,7 +146,7 @@ module Coffle
 				}.map { |dir|
 					# Create an entry with the (relative) pathname
 					path=Pathname.new(dir)
-					entry_status=entries_status[path.to_s]
+					entry_status=entries_status[unescape_path(path).to_s]
 					Entry.create(self, path, entry_status || {}, :verbose=>@verbose)
 				}
 			end
@@ -166,7 +166,7 @@ module Coffle
 			entries_hash={}
 			entries.each { |entry|
 				entry_status_hash=entry.status_hash
-				entries_hash[entry.path.to_s]=entry_status_hash
+				entries_hash[unescape_path(entry.path).to_s]=entry_status_hash
 			}
 
 			{"version"=>1, "entries"=>entries_hash}

@@ -1,10 +1,7 @@
 == Next
 
-* coffle init
-
 * Test source configuration error messages (manually)
-
-* Unescaped paths in status file?
+* No messages output
 
 
 

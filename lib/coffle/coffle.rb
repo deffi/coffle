@@ -179,7 +179,7 @@ module Coffle
 
 		def self.run(source, target, options)
 			begin
-				Coffle.new(source, target, options).run
+				run!(source, target, options)
 			rescue Exceptions::SourceConfigurationFileCorrupt => ex
 				puts "Source configuration file corrupt"
 			rescue Exceptions::CoffleVersionTooOld => ex
@@ -198,7 +198,7 @@ module Coffle
 			end
 		end
 
-		def run
+		def self.run!(source, target, options)
 			options = {}
 			opts=OptionParser.new
 
@@ -224,21 +224,48 @@ module Coffle
 				opts.parse!
 			rescue OptionParser::InvalidOption => ex
 				puts ex.message
+				return
 			end
 
 			action=ARGV[0]||""
 
 			case action.downcase
-			when "build"    : build!   options
-			when "install"  : install! options
-			when "uninstall": uninstall! options
-			when "info"     : info!    options
-			when "status"   : status!  options
-			when "diff"     : diff!    options
-			else puts opts # Output the options help message
+				when "init"     : Coffle.init! source, options
+				when "build"    : instance_action=:build
+				when "install"  : instance_action=:install
+				when "uninstall": instance_action=:uninstall
+				when "info"     : instance_action=:info
+				when "status"   : instance_action=:status
+				when "diff"     : instance_action=:diff
+				else puts opts # Output the options help message
+
 			end
 
-			write_status
+			if instance_action
+				coffle=Coffle.new(source, target, options)
+
+				case instance_action
+				when :build    : coffle.build!     options
+				when :install  : coffle.install!   options
+				when :uninstall: coffle.uninstall! options
+				when :info     : coffle.info!      options
+				when :status   : coffle.status!    options
+				when :diff     : coffle.diff!      options
+				end
+
+				coffle.write_status
+			end
+		end
+
+		def self.init! (source_dir, options)
+			source_dir=Pathname.new(source_dir) unless source_dir.is_a? Pathname
+
+			if coffle_source_directory?(source_dir)
+				puts "#{source_dir} is already a coffle source directory"
+			else
+				puts "Initializing coffle source directory #{source_dir}"
+				initialize_source_directory!(source_dir)
+			end
 		end
 
 		def build! (options={})

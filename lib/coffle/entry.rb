@@ -187,7 +187,9 @@ module Coffle
 		# Returns true if the entry is now installed (even if nothing had to
 		# be done)
 		def install(overwrite)
-			build # non-rebuilding, non-overwriting
+			if outdated?
+				build # non-rebuilding, non-overwriting
+			end
 
 			if skipped?
 				# Skipped entries are not installed

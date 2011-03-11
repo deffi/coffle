@@ -199,7 +199,6 @@ module Coffle
 		end
 
 		def self.run!(source, target, options)
-			options = {}
 			opts=OptionParser.new
 
 			opts.banner = "Usage: #{$0} [options] action\n    action is one of build, install, uninstall, info, status, diff"

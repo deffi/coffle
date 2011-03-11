@@ -3,6 +3,7 @@
 * no unescaped names in processing directories: so we can use dotfiles for
   bookkeeping
 
+
 == Directories
 
 On directories:
@@ -19,8 +20,6 @@ Notes on backups of directories (in case we want to make them one day):
 * Can we/do we have to distinguish a file backup in a directory from a
   directory backup?
 * What about uninstalling directories that contain non-coffle entries?
-
-
 
 
 == Skipping
@@ -163,6 +162,12 @@ Status file: YAML. Structure:
 
 Entries with no properties store nil rather than {}, it makes the YAML file
 more concise.
+
+
+== Manual tests
+
+* source configuration file error messages
+
 
 == Alternatives
 

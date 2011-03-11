@@ -1,11 +1,12 @@
 == Next
 
-* Test source configuration error messages (manually)
-* No messages output
-
-
-
 == High priority
+
+* Clean up coffle.rb
+
+* Versioning:
+  * need a target versioning mechanism
+  * status file version?
 
 * Allow uninstalling entries which are no longer present
 * Use .coffle_target link in target
@@ -13,6 +14,8 @@
     link, and deleting the old copy
   * simplifies link targets
   * useful for access from target directory (future extension)
+  * what about subdirectories?
+
 
 
 

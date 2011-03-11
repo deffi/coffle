@@ -1,9 +1,12 @@
 == Next
 
+* Test status file
+** path
+** written after actions
+** in full_test
+
 * coffle init
-
-* on startup, make sure our version is current (and unit test)
-
+* Test source configuration error messages (manually)
 
 
 

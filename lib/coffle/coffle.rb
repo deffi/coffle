@@ -7,6 +7,13 @@ require 'coffle/filenames'
 module Coffle
 	module Exceptions
 		class DirectoryIsNoCoffleSource < Exception; end
+		class CoffleVersionTooOld < Exception; end
+
+		class SourceConfigurationReadError < Exception; end
+		class SourceConfigurationFileCorrupt < SourceConfigurationReadError; end
+		class SourceConfigurationIsNotHash < SourceConfigurationReadError; end
+		class SourceVersionMissing < SourceConfigurationReadError; end
+		class SourceVersionIsNotInteger < SourceConfigurationReadError; end
 	end
 
 	class Coffle
@@ -52,6 +59,26 @@ module Coffle
 			file.write(configuration.to_yaml)
 		end
 
+		def read_source_configuration
+			# Read the configuration
+			begin
+				@source_configuration=YAML.load(self.class.source_configuration_file(@source_dir).read)
+			rescue ArgumentError
+				raise Exceptions::SourceConfigurationFileCorrupt
+			end
+			raise Exceptions::SourceConfigurationIsNotHash unless @source_configuration.is_a?(Hash)
+
+			# Extract values
+			raise Exceptions::SourceVersionMissing unless @source_configuration.has_key?("version")
+			source_dir_version=@source_configuration["version"]
+			raise Exceptions::SourceVersionIsNotInteger unless source_dir_version.is_a?(Integer)
+
+			# Make sure the version is new enough
+			if source_dir_version>self.class.source_version
+				msg="Source directory version is #{source_dir_version}, own source version is #{self.class.source_version}"
+				raise Exceptions::CoffleVersionTooOld, msg
+			end
+		end
 
 		# Options:
 		# * :verbose: print messages; recommended for interactive applications
@@ -69,8 +96,7 @@ module Coffle
 			# coffle source directory
 			self.class.assert_source_directory @source_dir
 
-			# Read the configuration
-			@source_configuration=YAML.load(self.class.source_configuration_file(@source_dir).read)
+			read_source_configuration
 
 			@coffle_dir=@source_dir.join(".coffle")
 			@work_dir  =@coffle_dir.join("work")
@@ -101,8 +127,8 @@ module Coffle
 			raise "Backup location #{@backup_dir} is not a directory" if @backup_dir.present? && !@backup_dir.directory? # Must not be a non-directory
 
 			# Files
-			@status_file=@source_dir.join(".status.yaml").absolute
-			raise "Status file #{backup_dir} is not a file" if @status_file.present? && !@status_file.file? # Must not be a non-file
+			@status_file=@work_dir.join("status.yaml").absolute
+			raise "Status file #{@status_file} is not a file" if @status_file.present? && !@status_file.file? # Must not be a non-file
 
 			read_status
 		end
@@ -128,15 +154,6 @@ module Coffle
 			@entries
 		end
 
-		def self.run(source, target, options)
-			begin
-				Coffle.new(source, target, options).run
-			rescue Exceptions::DirectoryIsNoCoffleSource => ex
-				puts "#{source} is not a coffle source directory."
-				puts "Use \"coffle init\" to initialize the directory."
-			end
-		end
-
 		def read_status
 			if status_file.exist?
 				@status_hash=YAML.load_file(status_file)
@@ -158,6 +175,27 @@ module Coffle
 		def write_status
 			status=make_status
 			status_file.write status.to_yaml
+		end
+
+		def self.run(source, target, options)
+			begin
+				Coffle.new(source, target, options).run
+			rescue Exceptions::SourceConfigurationFileCorrupt => ex
+				puts "Source configuration file corrupt"
+			rescue Exceptions::CoffleVersionTooOld => ex
+				puts "This version of coffle is too old for this source directory"
+			rescue Exceptions::SourceConfigurationIsNotHash => ex
+				puts "Source configuration file corrupt: not a hash"
+			rescue Exceptions::SourceVersionMissing => ex
+				puts "Source configuration file corrupt: version missing"
+			rescue Exceptions::SourceVersionIsNotInteger => ex
+				puts "Source configuration file corrupt: version not an integer"
+			rescue Exceptions::SourceConfigurationReadError => ex
+				puts "Source configuration file read error"
+			rescue Exceptions::DirectoryIsNoCoffleSource => ex
+				puts "#{source} is not a coffle source directory."
+				puts "Use \"coffle init\" to initialize the directory."
+			end
 		end
 
 		def run

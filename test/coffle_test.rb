@@ -93,6 +93,53 @@ module Coffle
 				assert_include "_bar/baz", entries
 			end
 		end
+
+		def test_version
+			with_testdir do |dir|
+				source_dir=dir.join("source")
+				target_dir=dir.join("target")
+
+				config_file=Coffle.source_configuration_file(source_dir)
+				assert_not_exist config_file
+
+				# Initialize and check
+				Coffle.initialize_source_directory!(source_dir)
+				assert_equal true, Coffle.coffle_source_directory?(source_dir)
+				assert_exist config_file
+
+				# Check configuration
+				config=YAML.load_file(config_file)
+				assert config.is_a?(Hash)
+
+				# Check version
+				assert config.has_key?("version")
+				assert config["version"].is_a?(Fixnum)
+
+				# Increment version, creating a Coffle instance must fail
+				config["version"]+=1
+				config_file.write(config.to_yaml)
+				assert_raise(Exceptions::CoffleVersionTooOld) { Coffle.new(source_dir, target_dir) }
+
+				# Replace the version with something else, creating a Coffle instance must fail
+				config["version"]=1.2
+				config_file.write(config.to_yaml)
+				assert_raise(Exceptions::SourceVersionIsNotInteger) { Coffle.new(source_dir, target_dir) }
+
+				# Remove the version, creating a Coffle instance must fail
+				config.delete "version"
+				config_file.write(config.to_yaml)
+				assert_raise(Exceptions::SourceVersionMissing) { Coffle.new(source_dir, target_dir) }
+
+				# Write an array instead of a hash, creating a Coffle instance must fail
+				config_file.write([].to_yaml)
+				assert_raise(Exceptions::SourceConfigurationIsNotHash) { Coffle.new(source_dir, target_dir) }
+
+				# Write a non-yaml file, creating a Coffle instance must fail
+				config_file.write("\n:\n:")
+				assert_raise(Exceptions::SourceConfigurationFileCorrupt) { Coffle.new(source_dir, target_dir) }
+
+			end
+		end
 	end
 end
 

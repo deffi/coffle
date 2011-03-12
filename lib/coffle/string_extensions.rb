@@ -7,5 +7,10 @@ class String
 	def prefix_lines(prefix)
 		split("\n").map { |line| prefix+line }.join("\n")
 	end
+
+	def to_pathname
+		Pathname.new(self)
+	end
+
 end
 

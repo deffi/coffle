@@ -282,6 +282,42 @@ module Coffle
 			end
 		end
 
+		def test_non_directory
+			with_testdir do |testdir|
+				dir_entries=DirectoryEntries.new(testdir)
+
+				assert_equal true , dir_entries.file     .non_directory?
+				assert_equal false, dir_entries.directory.non_directory?
+				assert_equal false, dir_entries.missing  .non_directory?
+
+				assert_equal true , dir_entries.file_link     .non_directory?
+				assert_equal false, dir_entries.directory_link.non_directory?
+				assert_equal true , dir_entries.missing_link  .non_directory?
+
+				assert_equal true , dir_entries.file_link_link     .non_directory?
+				assert_equal false, dir_entries.directory_link_link.non_directory?
+				assert_equal true , dir_entries.missing_link_link  .non_directory?
+			end
+		end
+
+		def test_non_file
+			with_testdir do |testdir|
+				dir_entries=DirectoryEntries.new(testdir)
+
+				assert_equal false, dir_entries.file     .non_file?
+				assert_equal true , dir_entries.directory.non_file?
+				assert_equal false, dir_entries.missing  .non_file?
+
+				assert_equal false, dir_entries.file_link     .non_file?
+				assert_equal true , dir_entries.directory_link.non_file?
+				assert_equal true , dir_entries.missing_link  .non_file?
+
+				assert_equal false, dir_entries.file_link_link     .non_file?
+				assert_equal true , dir_entries.directory_link_link.non_file?
+				assert_equal true , dir_entries.missing_link_link  .non_file?
+			end
+		end
+
 		def test_empty
 			with_testdir do |testdir|
 				# Directories with certain contents

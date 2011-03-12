@@ -1,15 +1,18 @@
 == Next
 
-== High priority
-
+* Make sure entry.status handles all cases correctly (see coffle.rdoc)
 * Clean up coffle.rb
   * source configuration class
+
+== High priority
+
 
 * Versioning:
   * need a target versioning mechanism
   * status file version?
 
 * Allow uninstalling entries which are no longer present
+
 * Use .coffle_target link in target
   * allows moving a source without breaking the link by copying, changing the
     link, and deleting the old copy
@@ -24,21 +27,18 @@
 == Low priority
 
 Operations:
-* init
 * remove org/output (if installed: refuse, or uninstall)
   * should uninstall do this?
 * uninstall all entries no longer present
-* diff (show difference between output and org)
-* import (existierende Konfigurationsdatei in source kopieren, escapen)
+* import (existierende Konfigurationsdatei in source kopieren, Dateiname escapen)
 
 Unit tests:
 * Use TestEntry whereever useful (especially in entry_test)
 * test Pathname.touch!
-* test the TestHelper methods
 * In full_test, also compare file contents
 * Test all test_helper methods, especially assert_tree_equal
 
-Build actions:
+Build results:
 * regular build (done)
 * skip (ignore) (done)
 * remove (file should not exist) (needs status file entry)
@@ -48,7 +48,8 @@ Build actions:
   * a build_result value instead of flags
 
 Source files:
-* distinguish preprocessor by file extension
+* Allow different preprocessors
+  * distinguish preprocessor by file extension?
   * additional file name escaping required
   * Pro: different pp possible
   * Con: collision possible
@@ -56,10 +57,10 @@ Source files:
     * special case of different preprocessor (pro/con see there)
     * symlink directly (target->source instead of ->output)?
       * Pro: changes to file possible
-      * Con: 
-* Whether a target is considered removed or replaced should not be depend on
+      * Con: inconsistent
+* Whether a target is considered removed or replaced should not depend on
   the existence of the backup, but instead on whether it was installed (keep a
-  list)
+  list) (?)
   * then we can distinguish removed (no backup) from not installed on uninstall
   * either in a status file or in flag files
 

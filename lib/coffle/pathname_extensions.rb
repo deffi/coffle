@@ -68,19 +68,11 @@ class Pathname
 		self.utime other.atime+seconds, other.mtime+seconds
 	end
 
-	# This is only different from exist? for symlinks that cannot be resolved
-	# (including symlinks to symlinks to missing entries)
-	def present?
-		File.present?(@path)
-	end
-
-	def proper_directory?
-		File.proper_directory?(@path)
-	end
-
-	def proper_file?
-		File.proper_file?(@path)
-	end
+	def present?         ; File.present?(         @path); end
+	def proper_directory?; File.proper_directory?(@path); end
+	def proper_file?     ; File.proper_file?(     @path); end
+	def non_directory?   ; File.non_directory?(   @path); end
+	def non_file?        ; File.non_file?(        @path); end
 
 	def empty?
 		raise Errno::ENOTDIR, to_s unless directory?
@@ -91,6 +83,10 @@ class Pathname
 
 	def ls(options="-lad")
 		puts `ls #{options} --color=always #{@path}`
+	end
+
+	def to_pathname
+		self
 	end
 end
 

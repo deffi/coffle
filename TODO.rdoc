@@ -3,8 +3,6 @@
 == High priority
 
 * Clean up coffle.rb
-  * runner class
-  * file for exceptions
   * source configuration class
 
 * Versioning:

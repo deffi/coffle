@@ -1,9 +1,5 @@
 == Next
 
-* Make sure entry.status handles all cases correctly (see coffle.rdoc)
-* Clean up coffle.rb
-  * source configuration class
-
 == High priority
 
 
@@ -13,18 +9,16 @@
 
 * Allow uninstalling entries which are no longer present
 
-* Use .coffle_target link in target
-  * allows moving a source without breaking the link by copying, changing the
-    link, and deleting the old copy
-  * simplifies link targets
-  * useful for access from target directory (future extension)
-  * what about subdirectories?
 
 
 
 
 
 == Low priority
+
+Cleanup:
+* coffle.rb
+  * source configuration class
 
 Operations:
 * remove org/output (if installed: refuse, or uninstall)
@@ -37,6 +31,7 @@ Unit tests:
 * test Pathname.touch!
 * In full_test, also compare file contents
 * Test all test_helper methods, especially assert_tree_equal
+* Tests for target status methods
 
 Build results:
 * regular build (done)
@@ -95,9 +90,17 @@ UI:
 * tell the user what he did wrong and what to do on refuse
 
 Target:
+* Use .coffle_target link in target
+  * allows moving a source without breaking the link by copying, changing the
+    link, and deleting the old copy
+  * simplifies link targets
+  * useful for access from target directory (future extension)
+  * what about subdirectories?
 * Make it possible to use coffle commands from the target directory (and
   subdirectories), using the actual (unescaped) filenames (allow completion)
   * add .coffle_target/ to the target
+* Proper creation/checks of target status
+* Allow mutliple sources for one target
 
 Error conditions:
 * backup directory is blocked by a file

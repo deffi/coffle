@@ -155,6 +155,23 @@ module Coffle
 		end
 
 
+		###################
+		## Target status ##
+		###################
+
+		def write_target_status
+			if target_dir.exist?
+				target_status_file=target_dir.join('.coffle_target.yaml')
+
+				target_status={
+					"version"=>1
+				}
+
+				target_status_file.write(target_status.to_yaml)
+			end
+		end
+
+
 		#############
 		## Actions ##
 		#############

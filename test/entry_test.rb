@@ -775,6 +775,7 @@ module Coffle
 				entry.source.write "moo"
 				entry.build
 				assert_equal false, entry.skipped?
+				assert_nil entry.timestamp
 				entry.install(true)
 				assert_equal true, entry.installed?
 				assert_equal true, entry.target.exist?
@@ -785,6 +786,7 @@ module Coffle
 				entry.outdate # Need to do this because it's probably the same second
 				entry.build(true)
 				assert_equal true , entry.skipped?
+				assert_not_nil entry.timestamp
 				assert_equal false, entry.installed?
 				assert_equal true , entry.target.exist? # The restored original file
 				assert_equal false, entry.backup.exist?
@@ -795,6 +797,24 @@ module Coffle
 				assert_equal false, entry.installed?
 				assert_equal true , entry.target.exist? # The restored original file
 				assert_equal false, entry.backup.exist?
+
+				# Now, change the entry source contents back so it will not be
+				# skipped and rebuild it
+				entry.source.write "bert"
+				entry.outdate # Need to do this because it's probably the same second
+				entry.build(true)
+				assert_equal false, entry.skipped?
+				assert_nil entry.timestamp
+				assert_equal false, entry.installed?
+				assert_equal true , entry.target.exist? # The restored original file
+				assert_equal false, entry.backup.exist?
+
+				# Install  the entry
+				entry.install(true)
+				assert_equal false, entry.skipped?
+				assert_equal true , entry.installed?
+				assert_equal true , entry.target.exist?
+				assert_equal true , entry.backup.exist?
 			end
 		end
 		#}}}

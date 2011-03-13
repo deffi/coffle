@@ -1,6 +1,7 @@
 require 'coffle/coffle'
 
 module Coffle
+	# Basically, the command line interface to coffle
 	class Runner
 		def initialize(source, target, options)
 			@source=source
@@ -85,6 +86,7 @@ module Coffle
 				end
 
 				coffle.write_status
+				coffle.write_target_status
 			end
 		end
 	end

@@ -9,6 +9,7 @@
 
 * Allow uninstalling entries which are no longer present
 
+* Test: target path contains symlinks
 
 
 

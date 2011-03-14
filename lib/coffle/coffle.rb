@@ -77,6 +77,13 @@ module Coffle
 			Coffle.assert_source_directory @source_dir
 			read_source_configuration
 
+			# Create the target directory
+			@target_dir.mkpath
+
+			# Resolve symlinks in the source and target directories
+			@source_dir=@source_dir.realpath
+			@target_dir=@target_dir.realpath
+
 			# Create the pathnames for the subdirectories. This may depend on
 			# the source directory configuration.
 			@coffle_dir=@source_dir.join(".coffle")
@@ -88,7 +95,6 @@ module Coffle
 			# Create some of the directories if they don't exist yet
 			@output_dir.mkpath
 			@org_dir   .mkpath
-			@target_dir.mkpath
 
 			# Make sure they are directories
 			raise "Source location #{@source_dir} is not a directory" if !@source_dir.directory?     # Must exist

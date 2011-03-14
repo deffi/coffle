@@ -4,7 +4,6 @@ require 'yaml'
 
 require 'coffle/filenames'
 require 'coffle/exceptions'
-require 'coffle/lazy'
 
 module Coffle
 	class Coffle
@@ -13,8 +12,6 @@ module Coffle
 		# Absolute
 		attr_reader :source_dir, :coffle_dir, :work_dir, :output_dir, :org_dir, :target_dir, :backup_dir
 		attr_reader :status_file
-
-		lazy_attr_reader :entries
 
 		class <<self
 			attr_reader :source_version
@@ -109,21 +106,25 @@ module Coffle
 			read_status
 		end
 
-		def entries!
-			entries_status=@status_hash["entries"] || {}
+		def entries
+			if !@entries
+				entries_status=@status_hash["entries"] || {}
 
-			Dir["#{@source_dir}/**/*"].reject { |dir|
-				# Reject entries beginning with .
-				dir =~ /^\./
-			}.map { |dir|
-				# Remove the source and any slashes from the beginning
-				dir.gsub(/^#{@source_dir}/, '').gsub(/^\/*/, '')
-			}.map { |dir|
-				# Create an entry with the (relative) pathname
-				path=Pathname.new(dir)
-				entry_status=entries_status[unescape_path(path).to_s]
-				Entry.create(self, path, entry_status || {}, :verbose=>@verbose)
-			}
+				@entries=Dir["#{@source_dir}/**/*"].reject { |dir|
+					# Reject entries beginning with .
+					dir =~ /^\./
+				}.map { |dir|
+					# Remove the source and any slashes from the beginning
+					dir.gsub(/^#{@source_dir}/, '').gsub(/^\/*/, '')
+				}.map { |dir|
+					# Create an entry with the (relative) pathname
+					path=Pathname.new(dir)
+					entry_status=entries_status[unescape_path(path).to_s]
+					Entry.create(self, path, entry_status || {}, :verbose=>@verbose)
+				}
+			end
+
+			@entries
 		end
 
 

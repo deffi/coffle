@@ -4,6 +4,13 @@
   bookkeeping
 
 
+== Implementation notes
+
+Compatibility:
+* Not using any gems because gems may not be available
+* Not using lazy_attr_reader because 1.8.5 has no instance_variable_defined?
+
+
 == Directories
 
 On directories:

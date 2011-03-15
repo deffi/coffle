@@ -1,11 +1,9 @@
-== Next
-
 == High priority
 
+* coffle build in uninitialized directory fails
+* symlink to coffle script does not work
 * Symlink removed: should reinstall
 * Handle modified files
-* coffle status with 1.8.5
-
 
 * Versioning:
   * need a target versioning mechanism
@@ -14,9 +12,6 @@
 * Allow uninstalling entries which are no longer present
 
 * Test: target path contains symlinks
-
-
-
 
 
 == Low priority
@@ -48,6 +43,9 @@ Build results:
   * a build_result value instead of flags
 
 Source files:
+* If possible, get rid of escaping
+  * syntax highlighting
+  * manual work
 * Allow different preprocessors
   * distinguish preprocessor by file extension?
   * additional file name escaping required

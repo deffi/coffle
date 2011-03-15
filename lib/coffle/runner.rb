@@ -34,7 +34,7 @@ module Coffle
 		def run!
 			opts=OptionParser.new
 
-			opts.banner = "Usage: #{$0} [options] action\n    action is one of build, install, uninstall, info, status, diff"
+			opts.banner = "Usage: #{$0} [options] action\n    action is one of init, build, install, uninstall, info, status, diff"
 
 			opts.separator ""
 			opts.separator "install options:"

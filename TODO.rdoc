@@ -2,6 +2,10 @@
 
 == High priority
 
+* Symlink removed: should reinstall
+* Handle modified files
+* coffle status with 1.8.5
+
 
 * Versioning:
   * need a target versioning mechanism
@@ -133,6 +137,7 @@ Naming:
 
 Entries:
 * Directory entries:
+  * allow skipping directories
   * no directory entries?
     * (try to) create the containing directory for file entries
     * pro: simplifies stuff

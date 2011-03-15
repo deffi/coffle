@@ -18,13 +18,17 @@ class Array
 		self.each do |row|
 			column_widths.fill_length!(row.length, 0)
 
-			row.each_with_index do |value, column|
+			#row.each_with_index do |value, column|
+			(0...row.size).each do |column|
+				value=row[column]
 				column_widths[column]=[column_widths[column], value.to_s.length].max
 			end
 		end
 
 		self.map { |row|
-			row.each_with_index.map { |value, column|
+			#row.each_with_index.map { |value, column|
+			(0...row.size).map { |column|
+				value=row[column]
 				value.to_s.ljust(column_widths[column])
 			}.join(separator)
 		}.join("\n")

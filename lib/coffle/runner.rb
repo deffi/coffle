@@ -25,7 +25,7 @@ module Coffle
 			rescue Exceptions::SourceConfigurationReadError => ex
 				puts "Source configuration file read error"
 			rescue Exceptions::DirectoryIsNoCoffleSource => ex
-				puts "#{source} is not a coffle source directory."
+				puts "#{@source} is not a coffle source directory."
 				puts "Use \"coffle init\" to initialize the directory."
 			end
 		end

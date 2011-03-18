@@ -1,0 +1,11 @@
+<%= automessage %>
+<%- include TemplateMethods::Ssh -%>
+<%- define_keys do -%>
+ssh-dss AAAA-A= martin@foo with comment
+ssh-dss AAAA-B= martin@bar
+ssh-dss AAAA-C= martin@baz
+from="google.de",command="bin/flightlist_today" ssh-dss AAAA-D= martin@qux
+<%- end -%>
+
+<%= key "martin@foo", "martin@qux" %>
+

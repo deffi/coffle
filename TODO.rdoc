@@ -13,6 +13,13 @@
 
 * Test: target path contains symlinks
 
+* Build in subdirectory of coffle directory
+
+* SSH: support
+  * quoted spaces in command
+  * quoted quotes in command
+  * quoted backslashes in command
+  * SSH1 keys
 
 == Low priority
 
@@ -32,6 +39,7 @@ Unit tests:
 * In full_test, also compare file contents
 * Test all test_helper methods, especially assert_tree_equal
 * Tests for target status methods
+* Full test with SSH define_keys
 
 Build results:
 * regular build (done)

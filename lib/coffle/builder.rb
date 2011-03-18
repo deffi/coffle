@@ -15,7 +15,7 @@ module Coffle
 		end
 
 		def process(input)
-			template=ERB.new(input, nil, "-")
+			template=ERB.new(input, nil, "-", "@_output")
 			result=template.result(binding)
 			result unless skipped?
 		end

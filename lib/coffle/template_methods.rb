@@ -1,6 +1,8 @@
 require 'socket'
 require 'etc'
 
+require 'coffle/template_methods_ssh'
+
 module Coffle
 	module TemplateMethods
 		def automessage(comment="# ", width=80)
@@ -29,12 +31,50 @@ end
 			yield if hosts.include? hostname
 		end
 
+		def not_host(*hosts)
+			yield unless hosts.include? hostname
+		end
+
 		def skip!
 			@skipped=true
 		end
 
 		def skipped?
 			@skipped
+		end
+
+		# Use from helper method:
+		#   text=capture { yield }
+		#   output process(text)
+		#
+		# Or from erb:
+		#   <% output process(capture { %>
+		#     ...
+		#   <% }) %>
+		def capture
+			saved_output=@_output
+			@_output=""
+
+			yield
+			captured=@_output
+
+			@_output=saved_output
+
+			captured
+		end
+
+		def output(string)
+			@_output+=string
+		end
+
+		def include(mod)
+			# Ugly hack because in the class<<self block, we cannot access
+			# local variables
+			@@module_to_include=mod
+
+			class <<self
+				include @@module_to_include
+			end
 		end
 	end
 end

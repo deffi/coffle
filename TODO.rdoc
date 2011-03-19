@@ -15,11 +15,6 @@
 
 * Build in subdirectory of coffle directory
 
-* SSH: support
-  * quoted spaces in command
-  * quoted quotes in command
-  * quoted backslashes in command
-  * SSH1 keys
 
 == Low priority
 
@@ -71,18 +66,7 @@ Source files:
   * either in a status file or in flag files
 
 Template processing:
-* Special files, like ssh authorized keys: define keys, then invoke keys in
-  host blocks:
-  {{{
-  <% ssh_define_keys do %>
-    ssh-dss AAAAB3N...DjB/A martin@magrathea
-    ssh-dss AAAAB3N...Y2KjL martin@damogran
-  <% end %>
-
-  <% host "sedna" do %>
-    <%= ssh_keys "martin@magrathea", "martin@damogran" %>
-  <% end %>
-  }}}
+* SSH: better key parsing
 * Conditionals: host classes, user names
 
 UI:

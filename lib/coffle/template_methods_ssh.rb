@@ -13,11 +13,27 @@ module Coffle
 
 					# May fail in academic cases with an invalid key type and
 					# the string "ssh-dss" or "ssh-rsa" in the key or comment.
+					#           .-- command (optional)    .-- whitespace
+					#           |   .-- whitespace        |  .-- key
+					#           |   |    .-- key type     |  |       .-- whitespace
+					#           |   |    |                |  |       |  .-- comment
+					#           |   |    |                |  |       |  |
 					if line=~/^((.*)\s+)?(ssh-dss|ssh-rsa)\s+([^\s]+)\s+(.*)$/
 						@options=$2
 						@type=$3
 						@key=$4
 						@comment=$5
+					#             .-- command (optional)
+					#             |         .-- bits
+					#             |         |     .-- exponent
+					#             |         |     |     .-- modulus
+					#             |         |     |     |       .-- comment
+					#             |         |     |     |       |
+					elsif line=~/^((.*)\s+)?\d+\s+\d+\s+(\d+)\s+(.*)$/
+						@options=$2
+						@type=nil
+						@key=$3
+						@comment=$4
 					else
 						raise ArgumentError, "invalid key #{line.inspect}"
 					end
@@ -25,11 +41,13 @@ module Coffle
 					# Better, but does not support quoted spaces, quotes or
 					# backslashes in command
 					#if line=~/^(ssh-dss|ssh_rsa)\s+([^\s]+)\s+(.*)$/
+					#	# Without options
 					#	@options=""
 					#	@type=$1
 					#	@key=$2
 					#	@comment=$3
 					#elsif line=~/^([^\s]+)\s+(ssh-dss|ssh_rsa)\s+([^\s]+)\s+(.*)$/
+					#	# With options
 					#	@options=$1
 					#	@type=$2
 					#	@key=$3

@@ -37,8 +37,9 @@ module Coffle
 			assert_equal "deffi@limefrost", key.name
 
 			# With quoted quote in command
-			key=Key.new('command="ls \"/tmp\"" ssh-dss AAAAB3Nz...fz8= deffi@baloris')
-			assert_equal 'command="ls \"/tmp\""', key.options
+			# Note the additional escaping of the string literal
+			key=Key.new('command="ls \\"/tmp\\"" ssh-dss AAAAB3Nz...fz8= deffi@baloris')
+			assert_equal 'command="ls \\"/tmp\\""', key.options
 			assert_equal "ssh-dss", key.type
 			assert_equal "AAAAB3Nz...fz8=", key.key
 			assert_equal "deffi@baloris", key.comment
@@ -49,10 +50,37 @@ module Coffle
 				key=Key.new('ssh-dss AAAAB3Nz...fz8=')
 			}
 
-			# Puuma
+			# With quoted backspace in command
+			# Note the additional escaping of the string literal
+			key=Key.new('command="echo -e \\\\\\\\n" ssh-dss AAAAB3Nz...fz8= deffi@puuma')
+			assert_equal 'command="echo -e \\\\\\\\n"', key.options
+			assert_equal "ssh-dss", key.type
+			assert_equal "AAAAB3Nz...fz8=", key.key
+			assert_equal "deffi@puuma", key.comment
+			assert_equal "deffi@puuma", key.name
+
 			# Omega
-			# Tycho
-			# Brahe
+
+			# SSH1 RSA key without options
+			assert_nothing_raised {
+				key=Key.new('2048 65537 1234567890 deffi@tycho (SSH1)')
+				assert_equal nil, key.options
+				assert_equal nil, key.type
+				assert_equal '1234567890', key.key
+				assert_equal "deffi@tycho (SSH1)", key.comment
+				assert_equal "deffi@tycho", key.name
+			}
+
+			# SSH1 RSA key with options
+			assert_nothing_raised {
+				key=Key.new('foo=bar 2048 65537 1234567890 deffi@brahe (SSH1)')
+				assert_equal 'foo=bar', key.options
+				assert_equal nil, key.type
+				assert_equal '1234567890', key.key
+				assert_equal "deffi@brahe (SSH1)", key.comment
+				assert_equal "deffi@brahe", key.name
+			}
+
 		end
 
 		def test_parse_keys

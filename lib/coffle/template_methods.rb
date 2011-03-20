@@ -27,12 +27,24 @@ end
 			Socket.gethostname
 		end
 
+		def matches(array, string)
+			array.each do |element|
+				if element.is_a? String
+					return true if element==string
+				elsif element.is_a? Regexp
+					return true if element.match(string)
+				end
+			end
+
+			false
+		end
+
 		def host(*hosts)
-			yield if hosts.include? hostname
+			yield if matches(hosts, hostname)
 		end
 
 		def not_host(*hosts)
-			yield unless hosts.include? hostname
+			yield unless matches(hosts, hostname)
 		end
 
 		def skip!

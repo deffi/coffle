@@ -1,8 +1,6 @@
 == High priority
 
-* coffle build in uninitialized directory fails
 * symlink to coffle script does not work
-* Symlink removed: should reinstall
 * Handle modified files
 
 * Versioning:
@@ -11,9 +9,10 @@
 
 * Allow uninstalling entries which are no longer present
 
-* Test: target path contains symlinks
-
-* Build in subdirectory of coffle directory
+Build in
+* subdirectory of coffle directory
+* target directory
+* subdirectory of target directory
 
 
 == Low priority
@@ -35,6 +34,7 @@ Unit tests:
 * Test all test_helper methods, especially assert_tree_equal
 * Tests for target status methods
 * Full test with SSH define_keys
+* target path contains symlinks
 
 Build results:
 * regular build (done)

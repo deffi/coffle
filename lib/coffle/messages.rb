@@ -21,6 +21,7 @@ module Coffle
 			MSkipped      = "Skipped        "
 			MModified     = "Modified       "
 			MReplaced     = "Replaced       "
+			MRestored     = "Restored       "
 			MRemoved      = "Removed        "
 			MNotInstalled = "Not installed  "
 		end

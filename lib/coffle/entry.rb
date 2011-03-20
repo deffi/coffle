@@ -203,13 +203,17 @@ module Coffle
 				# The entry is not installed, but there is a backup, which
 				# means that the entry was installed once. This should not
 				# happen - the user either replaced or removed the installed
-				# entry. Refuse.
+				# entry.
 				if target.present?
+					# Target was replaced. Refuse.
 					message "#{MReplaced} #{target}"
+					false
 				else
-					message "#{MRemoved} #{target}"
+					# Target was removed. Restore.
+					message "#{MRestored} #{target}"
+					install!
+					true
 				end
-				false
 			elsif !target.present?
 				# Regular install
 				message "#{MInstall} #{target} #{create_description}"

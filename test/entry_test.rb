@@ -575,13 +575,44 @@ module Coffle
 			end
 		end #}}}
 
-		# Installing entries: file was removed or replaced by the user {{{
-		# Note that a directory removal/replacement cannot be detected because
-		# it has no backup.
+		# Installing entries: file was removed by the user {{{
+		# Removed target symlinks are replaced
+		def test_install_file_removed
+			with_test_entries(:files) do |coffle, entry|
+				entry.build
+
+				unless entry.skipped?
+					# Make the target already exist, so a backup will be created
+					# Use a symlink because they might not be recognized as
+					# existing if they are invalid in the backup.
+					entry.target.dirname.mkpath
+					entry.target.make_symlink("invalid")
+					assert_equal false, entry.installed? # Not installed
+
+					# Install, overwriting the target
+					result=entry.install(true)
+					assert_equal true, result
+					assert_equal true, entry.installed? # Installed
+
+					# Remove the target (bad user!)
+					entry.target.delete
+
+					# Try to install (without overwriting)
+					result=entry.install(false)
+					assert_equal true, result                    # Operation did not succeed
+					assert_equal true, entry.installed?          # Entry is not installed
+				end
+			end
+		end
+		#}}}
+
+		# Installing entries: file was replaced by the user {{{
+		# Note that a directory replacement cannot be detected because it has
+		# no backup.
 		def test_install_file_replaced
-			# A file entry target (symlink) can be removed, replaced with a
-			# file or replaced with a directory
-			[:none, :file, :directory].each do |replace_option|
+			# A file entry target (symlink) can be replaced with a file or a
+			# directory
+			[:file, :directory].each do |replace_option|
 				with_test_entries(:files) do |coffle, entry|
 					entry.build
 
@@ -598,7 +629,7 @@ module Coffle
 						assert_equal true, result
 						assert_equal true, entry.installed? # Installed
 
-						# Remove or replace the target (bad user!)
+						# Replace the target (bad user!)
 						replace_with replace_option, entry.target
 
 						# Try to install (without overwriting)

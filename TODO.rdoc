@@ -3,6 +3,10 @@
 * symlink to coffle script does not work
 * Handle modified files
 
+* SSH: error when invoking undefined key
+
+* Allow unskipping, so we can skip by default and build only on specified hosts
+
 * Versioning:
   * need a target versioning mechanism
   * status file version?

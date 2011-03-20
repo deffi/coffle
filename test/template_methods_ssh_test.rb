@@ -8,12 +8,14 @@ module Coffle
 
 		def test_parse_key
 			# Plain key (with long comment)
-			key=Key.new('ssh-dss AAAAB3Nz...fz8= deffi@aquilae (Zeta Aquilae)')
-			assert_equal nil, key.options
-			assert_equal "ssh-dss", key.type
-			assert_equal "AAAAB3Nz...fz8=", key.key
-			assert_equal "deffi@aquilae (Zeta Aquilae)", key.comment
-			assert_equal "deffi@aquilae", key.name
+			assert_nothing_raised {
+				key=Key.new('ssh-dss AAAAB3Nz...fz8= deffi@aquilae (Zeta Aquilae)')
+				assert_equal nil, key.options
+				assert_equal "ssh-dss", key.type
+				assert_equal "AAAAB3Nz...fz8=", key.key
+				assert_equal "deffi@aquilae (Zeta Aquilae)", key.comment
+				assert_equal "deffi@aquilae", key.name
+			}
 
 			# Unknown key type
 			assert_raise(ArgumentError) {
@@ -21,29 +23,35 @@ module Coffle
 			}
 
 			# With options
-			key=Key.new('from="acme.de",command="bin/bam" ssh-dss AAAAB3Nz...fz8= deffi@brimspark')
-			assert_equal 'from="acme.de",command="bin/bam"', key.options
-			assert_equal "ssh-dss", key.type
-			assert_equal "AAAAB3Nz...fz8=", key.key
-			assert_equal "deffi@brimspark", key.comment
-			assert_equal "deffi@brimspark", key.name
+			assert_nothing_raised {
+				key=Key.new('from="acme.de",command="bin/bam" ssh-dss AAAAB3Nz...fz8= deffi@brimspark')
+				assert_equal 'from="acme.de",command="bin/bam"', key.options
+				assert_equal "ssh-dss", key.type
+				assert_equal "AAAAB3Nz...fz8=", key.key
+				assert_equal "deffi@brimspark", key.comment
+				assert_equal "deffi@brimspark", key.name
+			}
 
 			# With quoted space in command
-			key=Key.new('command="ls /tmp" ssh-dss AAAAB3Nz...fz8= deffi@limefrost')
-			assert_equal 'command="ls /tmp"', key.options
-			assert_equal "ssh-dss", key.type
-			assert_equal "AAAAB3Nz...fz8=", key.key
-			assert_equal "deffi@limefrost", key.comment
-			assert_equal "deffi@limefrost", key.name
+			assert_nothing_raised {
+				key=Key.new('command="ls /tmp" ssh-dss AAAAB3Nz...fz8= deffi@limefrost')
+				assert_equal 'command="ls /tmp"', key.options
+				assert_equal "ssh-dss", key.type
+				assert_equal "AAAAB3Nz...fz8=", key.key
+				assert_equal "deffi@limefrost", key.comment
+				assert_equal "deffi@limefrost", key.name
+			}
 
 			# With quoted quote in command
 			# Note the additional escaping of the string literal
-			key=Key.new('command="ls \\"/tmp\\"" ssh-dss AAAAB3Nz...fz8= deffi@baloris')
-			assert_equal 'command="ls \\"/tmp\\""', key.options
-			assert_equal "ssh-dss", key.type
-			assert_equal "AAAAB3Nz...fz8=", key.key
-			assert_equal "deffi@baloris", key.comment
-			assert_equal "deffi@baloris", key.name
+			assert_nothing_raised {
+				key=Key.new('command="ls \\"/tmp\\"" ssh-dss AAAAB3Nz...fz8= deffi@baloris')
+				assert_equal 'command="ls \\"/tmp\\""', key.options
+				assert_equal "ssh-dss", key.type
+				assert_equal "AAAAB3Nz...fz8=", key.key
+				assert_equal "deffi@baloris", key.comment
+				assert_equal "deffi@baloris", key.name
+			}
 
 			# Without comment - must fail
 			assert_raise(ArgumentError) {
@@ -52,12 +60,14 @@ module Coffle
 
 			# With quoted backspace in command
 			# Note the additional escaping of the string literal
-			key=Key.new('command="echo -e \\\\\\\\n" ssh-dss AAAAB3Nz...fz8= deffi@puuma')
-			assert_equal 'command="echo -e \\\\\\\\n"', key.options
-			assert_equal "ssh-dss", key.type
-			assert_equal "AAAAB3Nz...fz8=", key.key
-			assert_equal "deffi@puuma", key.comment
-			assert_equal "deffi@puuma", key.name
+			assert_nothing_raised {
+				key=Key.new('command="echo -e \\\\\\\\n" ssh-dss AAAAB3Nz...fz8= deffi@puuma')
+				assert_equal 'command="echo -e \\\\\\\\n"', key.options
+				assert_equal "ssh-dss", key.type
+				assert_equal "AAAAB3Nz...fz8=", key.key
+				assert_equal "deffi@puuma", key.comment
+				assert_equal "deffi@puuma", key.name
+			}
 
 			# Omega
 

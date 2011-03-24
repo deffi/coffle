@@ -106,6 +106,7 @@ Error conditions:
 * when a directory was refused, all other entries in this directory must also
   be skipped (if the target directory for a file entry does not exist, we can
   probably assume that it was refused and skip its contents)
+* Permission denied on install (e. g. parent directory not owned by user)
 
 Implementation:
 * Remove hack @included_messages - why is the file read twice (require should

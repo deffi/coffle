@@ -47,6 +47,8 @@ module Coffle
 				@source_configuration=YAML.load(self.class.source_configuration_file(@source_dir).read)
 			rescue ArgumentError
 				raise Exceptions::SourceConfigurationFileCorrupt
+			rescue Psych::SyntaxError
+				raise Exceptions::SourceConfigurationFileCorrupt
 			end
 			raise Exceptions::SourceConfigurationIsNotHash unless @source_configuration.is_a?(Hash)
 

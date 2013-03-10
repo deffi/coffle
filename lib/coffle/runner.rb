@@ -62,13 +62,13 @@ module Coffle
 			action=ARGV[0]||""
 
 			case action.downcase
-				when "init"     : Coffle.init! @source, @options
-				when "build"    : instance_action=:build
-				when "install"  : instance_action=:install
-				when "uninstall": instance_action=:uninstall
-				when "info"     : instance_action=:info
-				when "status"   : instance_action=:status
-				when "diff"     : instance_action=:diff
+				when "init"     then Coffle.init! @source, @options
+				when "build"    then instance_action=:build
+				when "install"  then instance_action=:install
+				when "uninstall"then instance_action=:uninstall
+				when "info"     then instance_action=:info
+				when "status"   then instance_action=:status
+				when "diff"     then instance_action=:diff
 				else puts opts # Output the options help message
 
 			end
@@ -77,12 +77,12 @@ module Coffle
 				coffle=Coffle.new(@source, @target, @options)
 
 				case instance_action
-				when :build    : coffle.build!     @options
-				when :install  : coffle.install!   @options
-				when :uninstall: coffle.uninstall! @options
-				when :info     : coffle.info!      @options
-				when :status   : coffle.status!    @options
-				when :diff     : coffle.diff!      @options
+				when :build     then coffle.build!     @options
+				when :install   then coffle.install!   @options
+				when :uninstall then coffle.uninstall! @options
+				when :info      then coffle.info!      @options
+				when :status    then coffle.status!    @options
+				when :diff      then coffle.diff!      @options
 				end
 
 				coffle.write_status

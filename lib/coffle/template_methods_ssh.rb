@@ -76,7 +76,7 @@ module Coffle
 			end
 
 			def define_keys
-				@keys=_parse_keys(capture{yield})
+				@keys=_parse_keys(capture{yield}.lines)
 			end
 
 			def key(*names)

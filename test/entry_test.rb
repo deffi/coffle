@@ -867,7 +867,7 @@ module Coffle
 
 				entries.each do |entry|
 					# The status for the entry must exist
-					assert entries_status.has_key?(unescape_path(entry.path).to_s), unescape_path(entry.path)
+					assert entries_status.has_key?(unescape_path(entry.path).to_s), unescape_path(entry.path).to_s
 					entry_status=entries_status[unescape_path(entry.path).to_s]
 
 					if entry.skipped?

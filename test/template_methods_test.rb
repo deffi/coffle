@@ -9,7 +9,7 @@ module Coffle
 		def test_username
 			un=username
 
-			assert_equal ENV['USERNAME'], un
+			assert_equal ENV['USER']    , un
 			assert_equal `whoami`.chomp , un
 			assert_equal Etc.getlogin   , un
 		end

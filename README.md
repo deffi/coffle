@@ -230,7 +230,7 @@ contains symbolic links to the build results.
 directory), the build status and the installation status.
 
 
-### Show differences
+### Showing differences
 
 In case an installed (auto-generated) file has been manually modified,
 ```coffle diff``` shows the difference between the automatically generated and

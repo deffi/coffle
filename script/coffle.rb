@@ -1,6 +1,6 @@
 #!/usr/bin/env ruby
 
-require File.dirname(File.realpath(__FILE__)) + '/../lib/coffle'
+require_relative '../lib/coffle'
 
 repository = "."
 target = ENV['HOME']

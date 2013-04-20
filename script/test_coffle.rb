@@ -1,6 +1,6 @@
 #!/usr/bin/env ruby
 
-require File.dirname(__FILE__) + '/../lib/coffle'
+require_relative '../lib/coffle'
 
 repository = "testdata/source"
 target     = "testdata/target"

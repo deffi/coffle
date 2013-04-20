@@ -15,14 +15,17 @@ ERB).
 Usage
 -----
 
-This is the typical way to use coffle with configuration files from a repository:
+This is the typical way to use coffle with configuration files from a repository in
+bash (assuming that ~/bin exists and is part of $PATH):
 
-    # Checkout and install coffle
-    git clone git://github.com/deffi/coffle coffle
-    ln -s `pwd`/coffle/script/coffle.rb ~/bin/coffle
-  
-    # Checkout and install the configuration
-    git clone [your configuration files repository] config
-    cd config
-    coffle install --overwrite
+```bash
+# Checkout and install coffle
+git clone git://github.com/deffi/coffle coffle
+ln -s `pwd`/coffle/script/coffle.rb ~/bin/coffle
+ 
+# Checkout and install the configuration
+git clone [your configuration files repository] config
+cd config
+coffle install --overwrite
+````
 

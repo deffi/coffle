@@ -1,5 +1,10 @@
 == High priority
 
+* use the term "repository" instead of "source directory", that's confusing
+* escaping: can we have -.bashrc => .bashrc? Simplify escaping: just remove one
+  single leading underscore?
+
+
 * symlink to coffle script does not work
 * Handle modified files
 

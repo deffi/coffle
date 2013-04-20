@@ -1,6 +1,8 @@
 == High priority
 
-* use the term "repository" instead of "source directory", that's confusing
+* Add documentation: status "modified" is not updated
+* Need "coffle reset"?
+
 * escaping: can we have -.bashrc => .bashrc? Simplify escaping: just remove one
   single leading underscore?
 

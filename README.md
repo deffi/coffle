@@ -40,9 +40,8 @@ User guide
 ----------
 
 All configuration file templates managed by coffle are placed beneath one directory, the
-*coffle repository* (also called *source directory*; note that this has nothing to do with
-the directory where the coffle source code is located). All commands shown in this section
-must be executed in the coffle repository.
+*coffle repository*. All commands shown in this section must be executed in the
+coffle repository.
 
 The files are *built* by processing the templates from the coffle repository
 and writing the results to a subdirectory of the coffle repository. The files

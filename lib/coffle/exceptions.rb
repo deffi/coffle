@@ -1,13 +1,13 @@
 module Coffle
 	module Exceptions
-		class DirectoryIsNoCoffleSource < Exception; end
+		class DirectoryIsNoRepository < Exception; end
 		class CoffleVersionTooOld < Exception; end
 
-		class SourceConfigurationReadError < Exception; end
-		class SourceConfigurationFileCorrupt < SourceConfigurationReadError; end
-		class SourceConfigurationIsNotHash < SourceConfigurationReadError; end
-		class SourceVersionMissing < SourceConfigurationReadError; end
-		class SourceVersionIsNotInteger < SourceConfigurationReadError; end
+		class RepositoryConfigurationReadError < Exception; end
+		class RepositoryConfigurationFileCorrupt < RepositoryConfigurationReadError; end
+		class RepositoryConfigurationIsNotHash < RepositoryConfigurationReadError; end
+		class RepositoryVersionMissing < RepositoryConfigurationReadError; end
+		class RepositoryVersionIsNotInteger < RepositoryConfigurationReadError; end
 	end
 end
 

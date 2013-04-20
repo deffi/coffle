@@ -3,8 +3,8 @@ require 'coffle/coffle'
 module Coffle
 	# Basically, the command line interface to coffle
 	class Runner
-		def initialize(source, target, options)
-			@source=source
+		def initialize(repository, target, options)
+			@repository=repository
 			@target=target
 			@options=options
 		end
@@ -12,20 +12,20 @@ module Coffle
 		def run
 			begin
 				run!
-			rescue Exceptions::SourceConfigurationFileCorrupt => ex
-				puts "Source configuration file corrupt"
+			rescue Exceptions::RepositoryConfigurationFileCorrupt => ex
+				puts "Repository configuration file corrupt"
 			rescue Exceptions::CoffleVersionTooOld => ex
-				puts "This version of coffle is too old for this source directory"
-			rescue Exceptions::SourceConfigurationIsNotHash => ex
-				puts "Source configuration file corrupt: not a hash"
-			rescue Exceptions::SourceVersionMissing => ex
-				puts "Source configuration file corrupt: version missing"
-			rescue Exceptions::SourceVersionIsNotInteger => ex
-				puts "Source configuration file corrupt: version not an integer"
-			rescue Exceptions::SourceConfigurationReadError => ex
-				puts "Source configuration file read error"
-			rescue Exceptions::DirectoryIsNoCoffleSource => ex
-				puts "#{@source} is not a coffle source directory."
+				puts "This version of coffle is too old for this repository"
+			rescue Exceptions::RepositoryConfigurationIsNotHash => ex
+				puts "Repository configuration file corrupt: not a hash"
+			rescue Exceptions::RepositoryVersionMissing => ex
+				puts "Repository configuration file corrupt: version missing"
+			rescue Exceptions::RepositoryVersionIsNotInteger => ex
+				puts "Repository configuration file corrupt: version not an integer"
+			rescue Exceptions::RepositoryConfigurationReadError => ex
+				puts "Repository configuration file read error"
+			rescue Exceptions::DirectoryIsNoRepository => ex
+				puts "#{@repository} is not a coffle repository."
 				puts "Use \"coffle init\" to initialize the directory."
 			end
 		end
@@ -62,7 +62,7 @@ module Coffle
 			action=ARGV[0]||""
 
 			case action.downcase
-				when "init"     then Coffle.init! @source, @options
+				when "init"     then Coffle.init! @repository, @options
 				when "build"    then instance_action=:build
 				when "install"  then instance_action=:install
 				when "uninstall"then instance_action=:uninstall
@@ -74,7 +74,7 @@ module Coffle
 			end
 
 			if instance_action
-				coffle=Coffle.new(@source, @target, @options)
+				coffle=Coffle.new(@repository, @target, @options)
 
 				case instance_action
 				when :build     then coffle.build!     @options

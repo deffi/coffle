@@ -9,24 +9,24 @@ module Coffle
 
 		def with_test_dirs# {{{
 			with_testdir do |dir|
-				source_dir=dir.join("source")
-				target_dir=dir.join("target")
+				repository_dir=dir.join("repository")
+				target_dir    =dir.join("target")
 
-				# Create and initialize the source directory
-				source_dir.mkdir
-				Coffle.initialize_source_directory!(source_dir)
+				# Create and initialize the repository
+				repository_dir.mkdir
+				Coffle.initialize_repository!(repository_dir)
 
-				yield dir, source_dir, target_dir
+				yield dir, repository_dir, target_dir
 			end
 		end# }}}
 
 		def with_single_entry# {{{
-			with_test_dirs do |dir, source_dir, target_dir|
-				source_file=source_dir.join("entry")
+			with_test_dirs do |dir, repository_dir, target_dir|
+				source_file=repository_dir.join("entry")
 				source_file.touch
 
 				# Create the coffle (also creates the target directory)
-				coffle=Coffle.new(source_dir, target_dir)
+				coffle=Coffle.new(repository_dir, target_dir)
 				entries=coffle.entries
 				assert_equal 1, entries.size
 				entry=entries[0]
@@ -39,11 +39,11 @@ module Coffle
 		# The directory name will be passed to the block.
 		#
 		# Paths (relative to dir):
-		# * source: .source/
-		# * output: .output/
-		# * org:    .output/.org
-		# * target: .target/
-		# * backup: .backup/
+		# * repository: .repository/
+		# * output:     .output/
+		# * org:        .output/.org
+		# * target:     .target/
+		# * backup:     .backup/
 		#
 		# Test entries:
 		# * file      _foo
@@ -53,15 +53,15 @@ module Coffle
 		# Use with_test_entries instead if you do not need the dir or
 		# the entries array }}}
 		def with_test_data(selection=:all) #{{{
-			with_test_dirs do |dir, source_dir, target_dir|
+			with_test_dirs do |dir, repository_dir, target_dir|
 				# Create some files/directories
-				source_dir.join("_foo").write("Foo")
-				source_dir.join("_bar").mkdir
-				source_dir.join("_bar", "baz").write("Baz")
-				source_dir.join("_skip").write("<% skip! %>")
+				repository_dir.join("_foo").write("Foo")
+				repository_dir.join("_bar").mkdir
+				repository_dir.join("_bar", "baz").write("Baz")
+				repository_dir.join("_skip").write("<% skip! %>")
 
 				# Create the coffle (also creates the target directory)
-				coffle=Coffle.new(source_dir, target_dir)
+				coffle=Coffle.new(repository_dir, target_dir)
 				entries=coffle.entries
 
 				# Extract the entries by name and make sure they are found
@@ -119,28 +119,28 @@ module Coffle
 				end
 
 				# The path names must have the correct values
-				assert_equal dir.join("source"                             , "_foo").absolute, by_name[:foo].source
-				assert_equal dir.join("source", ".coffle", "work", "output", ".foo").absolute, by_name[:foo].output
-				assert_equal dir.join("source", ".coffle", "work", "org"   , ".foo").absolute, by_name[:foo].org
-				assert_equal dir.join("source", ".coffle", "work", "backup", ".foo").absolute, by_name[:foo].backup
+				assert_equal dir.join("repository"                             , "_foo").absolute, by_name[:foo].source
+				assert_equal dir.join("repository", ".coffle", "work", "output", ".foo").absolute, by_name[:foo].output
+				assert_equal dir.join("repository", ".coffle", "work", "org"   , ".foo").absolute, by_name[:foo].org
+				assert_equal dir.join("repository", ".coffle", "work", "backup", ".foo").absolute, by_name[:foo].backup
 				assert_equal dir.join("target"                             , ".foo").absolute, by_name[:foo].target
-				#assert_match /^#{dir.join("source", ".backups").absolute}\/\d\d\d\d-\d\d-\d\d_\d\d-\d\d-\d\d\/.foo$/,
+				#assert_match /^#{dir.join("repository", ".backups").absolute}\/\d\d\d\d-\d\d-\d\d_\d\d-\d\d-\d\d\/.foo$/,
 				#	                                                                  by_name[:foo].backup.to_s
 
-				assert_equal dir.join("source"                              , "_bar").absolute, by_name[:bar].source
-				assert_equal dir.join("source", ".coffle", "work", "output" , ".bar").absolute, by_name[:bar].output
-				assert_equal dir.join("source", ".coffle", "work", "org"    , ".bar").absolute, by_name[:bar].org
-				assert_equal dir.join("source", ".coffle", "work", "backup" , ".bar").absolute, by_name[:bar].backup
+				assert_equal dir.join("repository"                              , "_bar").absolute, by_name[:bar].source
+				assert_equal dir.join("repository", ".coffle", "work", "output" , ".bar").absolute, by_name[:bar].output
+				assert_equal dir.join("repository", ".coffle", "work", "org"    , ".bar").absolute, by_name[:bar].org
+				assert_equal dir.join("repository", ".coffle", "work", "backup" , ".bar").absolute, by_name[:bar].backup
 				assert_equal dir.join("target"                              , ".bar").absolute, by_name[:bar].target
-				#assert_match /^#{dir.join("source", ".backups").absolute}\/\d\d\d\d-\d\d-\d\d_\d\d-\d\d-\d\d\/.bar$/,
+				#assert_match /^#{dir.join("repository", ".backups").absolute}\/\d\d\d\d-\d\d-\d\d_\d\d-\d\d-\d\d\/.bar$/,
 				#	                                                                  by_name[:bar].backup.to_s
 
-				assert_equal dir.join("source"                              , "_bar", "baz").absolute, by_name[:baz].source
-				assert_equal dir.join("source", ".coffle", "work", "output" , ".bar", "baz").absolute, by_name[:baz].output
-				assert_equal dir.join("source", ".coffle", "work", "org"    , ".bar", "baz").absolute, by_name[:baz].org
-				assert_equal dir.join("source", ".coffle", "work", "backup" , ".bar", "baz").absolute, by_name[:baz].backup
+				assert_equal dir.join("repository"                              , "_bar", "baz").absolute, by_name[:baz].source
+				assert_equal dir.join("repository", ".coffle", "work", "output" , ".bar", "baz").absolute, by_name[:baz].output
+				assert_equal dir.join("repository", ".coffle", "work", "org"    , ".bar", "baz").absolute, by_name[:baz].org
+				assert_equal dir.join("repository", ".coffle", "work", "backup" , ".bar", "baz").absolute, by_name[:baz].backup
 				assert_equal dir.join("target"                              , ".bar", "baz").absolute, by_name[:baz].target
-				#assert_match /^#{dir.join("source", ".backups").absolute}\/\d\d\d\d-\d\d-\d\d_\d\d-\d\d-\d\d\/.bar\/baz$/,
+				#assert_match /^#{dir.join("repository", ".backups").absolute}\/\d\d\d\d-\d\d-\d\d_\d\d-\d\d-\d\d\/.bar\/baz$/,
 				#	                                                                         by_name[:baz].backup.to_s
 			end
 		end #}}}
@@ -170,9 +170,9 @@ module Coffle
 		def test_link_target #{{{
 			with_test_data do |dir, coffle, entries, by_name|
 				# link_target must return a relative link to the output path
-				assert_equal    "../source/.coffle/work/output/.foo"    , by_name[:foo].link_target.to_s
-				assert_equal    "../source/.coffle/work/output/.bar"    , by_name[:bar].link_target.to_s
-				assert_equal "../../source/.coffle/work/output/.bar/baz", by_name[:baz].link_target.to_s
+				assert_equal    "../repository/.coffle/work/output/.foo"    , by_name[:foo].link_target.to_s
+				assert_equal    "../repository/.coffle/work/output/.bar"    , by_name[:bar].link_target.to_s
+				assert_equal "../../repository/.coffle/work/output/.bar/baz", by_name[:baz].link_target.to_s
 			end
 		end #}}}
 

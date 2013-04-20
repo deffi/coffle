@@ -10,85 +10,89 @@ module Coffle
 		include Filenames
 
 		# Absolute
-		attr_reader :source_dir, :coffle_dir, :work_dir, :output_dir, :org_dir, :target_dir, :backup_dir
+		attr_reader :repository_dir, :coffle_dir, :work_dir, :output_dir, :org_dir, :target_dir, :backup_dir
 		attr_reader :status_file
 
 		class <<self
-			attr_reader :source_version
+			attr_reader :repository_version
 		end
-		@source_version=1
+		@repository_version=1
 
-		def self.source_configuration_file(directory)
+		def self.repository_configuration_file(directory)
+			# The repository used to be called "source directory", but that's
+			# misleading. The file is still called .coffle_source.yaml.
+			# Renaming it will introduce some legacy code to recognize and
+			# upgrade old repositories.
 			directory.join(".coffle_source.yaml")
 		end
 
-		def self.coffle_source_directory?(directory)
-			source_configuration_file(directory).file?
+		def self.coffle_repository?(directory)
+			repository_configuration_file(directory).file?
 		end
 
-		def self.assert_source_directory(directory, msg=nil)
-			if !coffle_source_directory?(directory)
-				msg ||= "#{directory} is not a coffle source directory"
-				raise Exceptions::DirectoryIsNoCoffleSource, msg
+		def self.assert_repository(directory, msg=nil)
+			if !coffle_repository?(directory)
+				msg ||= "#{directory} is not a coffle repository"
+				raise Exceptions::DirectoryIsNoRepository, msg
 			end
 		end
 
-		def self.initialize_source_directory!(directory)
-			configuration={"version"=>source_version}
+		def self.initialize_repository!(directory)
+			configuration={"version"=>repository_version}
 
-			file=source_configuration_file(directory)
+			file=repository_configuration_file(directory)
 			file.dirname.mkpath
 			file.write(configuration.to_yaml)
 		end
 
-		def read_source_configuration
+		def read_repository_configuration
 			# Read the configuration
 			begin
-				@source_configuration=YAML.load(self.class.source_configuration_file(@source_dir).read)
+				@repository_configuration=YAML.load(self.class.repository_configuration_file(@repository_dir).read)
 			rescue ArgumentError
-				raise Exceptions::SourceConfigurationFileCorrupt
+				raise Exceptions::RepositoryConfigurationFileCorrupt
 			rescue Psych::SyntaxError
-				raise Exceptions::SourceConfigurationFileCorrupt
+				raise Exceptions::RepositoryConfigurationFileCorrupt
 			end
-			raise Exceptions::SourceConfigurationIsNotHash unless @source_configuration.is_a?(Hash)
+			raise Exceptions::RepositoryConfigurationIsNotHash unless @repository_configuration.is_a?(Hash)
 
 			# Extract values
-			raise Exceptions::SourceVersionMissing unless @source_configuration.has_key?("version")
-			source_dir_version=@source_configuration["version"]
-			raise Exceptions::SourceVersionIsNotInteger unless source_dir_version.is_a?(Integer)
+			raise Exceptions::RepositoryVersionMissing unless @repository_configuration.has_key?("version")
+			repository_version=@repository_configuration["version"]
+			raise Exceptions::RepositoryVersionIsNotInteger unless repository_version.is_a?(Integer)
 
 			# Make sure the version is new enough
-			if source_dir_version>self.class.source_version
-				msg="Source directory version is #{source_dir_version}, own source version is #{self.class.source_version}"
+			if repository_version>self.class.repository_version
+				msg="Repository version is #{repository_version}, own repository version is #{self.class.repository_version}"
 				raise Exceptions::CoffleVersionTooOld, msg
 			end
 		end
 
 		# Options:
 		# * :verbose: print messages; recommended for interactive applications
-		def initialize (source, target, options={})
+		def initialize (repository, target, options={})
 			@verbose = options.fetch :verbose, false
 
 			# Use absolute paths for the directories. Do not use realpath
 			# because some of the directories might not exist at this point.
-			@source_dir=source.to_pathname.absolute
+			@repository_dir=repository.to_pathname.absolute
 			@target_dir=target.to_pathname.absolute
 
-			# Make sure that the specified source directory is actually a
-			# coffle source directory
-			Coffle.assert_source_directory @source_dir
-			read_source_configuration
+			# Make sure that the specified repository directory is actually a
+			# coffle repository directory
+			Coffle.assert_repository @repository_dir
+			read_repository_configuration
 
 			# Create the target directory
 			@target_dir.mkpath
 
-			# Resolve symlinks in the source and target directories
-			@source_dir=@source_dir.realpath
+			# Resolve symlinks in the repository and target directories
+			@repository_dir=@repository_dir.realpath
 			@target_dir=@target_dir.realpath
 
 			# Create the pathnames for the subdirectories. This may depend on
-			# the source directory configuration.
-			@coffle_dir=@source_dir.join(".coffle")
+			# the repository directory configuration.
+			@coffle_dir=@repository_dir.join(".coffle")
 			@work_dir  =@coffle_dir.join("work")
 			@output_dir=@work_dir  .join("output")
 			@org_dir   =@work_dir  .join("org")
@@ -99,13 +103,13 @@ module Coffle
 			@org_dir   .mkpath
 
 			# Make sure they are directories
-			raise "Source location #{@source_dir} is not a directory" if !@source_dir.directory?     # Must exist
-			raise "Target location #{@target_dir} is not a directory" if !@target_dir.directory?     # Has been created
-			raise "Coffle location #{@coffle_dir} is not a directory" if !@coffle_dir.directory?     # Has been created
-			raise "Work   location #{@work_dir  } is not a directory" if !@work_dir  .directory?     # Has been created
-			raise "Output location #{@output_dir} is not a directory" if !@output_dir.directory?     # Has been created
-			raise "Output location #{@org_dir   } is not a directory" if !@org_dir   .directory?     # Has been created
-			raise "Backup location #{@backup_dir} is not a directory" if  @backup_dir.non_directory? # Must not be a non-directory
+			raise "Repository location #{@repository_dir} is not a directory" if !@repository_dir.directory?     # Must exist
+			raise "Target     location #{@target_dir    } is not a directory" if !@target_dir    .directory?     # Has been created
+			raise "Coffle     location #{@coffle_dir    } is not a directory" if !@coffle_dir    .directory?     # Has been created
+			raise "Work       location #{@work_dir      } is not a directory" if !@work_dir      .directory?     # Has been created
+			raise "Output     location #{@output_dir    } is not a directory" if !@output_dir    .directory?     # Has been created
+			raise "Output     location #{@org_dir       } is not a directory" if !@org_dir       .directory?     # Has been created
+			raise "Backup     location #{@backup_dir    } is not a directory" if  @backup_dir    .non_directory? # Must not be a non-directory
 
 			# Files
 			@status_file=@work_dir.join("status.yaml")
@@ -118,12 +122,12 @@ module Coffle
 			if !@entries
 				entries_status=@status_hash["entries"] || {}
 
-				@entries=Dir["#{@source_dir}/**/*"].reject { |dir|
+				@entries=Dir["#{@repository_dir}/**/*"].reject { |dir|
 					# Reject entries beginning with .
 					dir =~ /^\./
 				}.map { |dir|
-					# Remove the source and any slashes from the beginning
-					dir.gsub(/^#{@source_dir}/, '').gsub(/^\/*/, '')
+					# Remove the repository and any slashes from the beginning
+					dir.gsub(/^#{@repository_dir}/, '').gsub(/^\/*/, '')
 				}.map { |dir|
 					# Create an entry with the (relative) pathname
 					path=Pathname.new(dir)
@@ -185,14 +189,14 @@ module Coffle
 		## Actions ##
 		#############
 
-		def self.init! (source_dir, options)
-			source_dir=Pathname.new(source_dir) unless source_dir.is_a? Pathname
+		def self.init! (repository_dir, options)
+			repository_dir=Pathname.new(repository_dir) unless repository_dir.is_a? Pathname
 
-			if coffle_source_directory?(source_dir)
-				puts "#{source_dir} is already a coffle source directory"
+			if coffle_repository?(repository_dir)
+				puts "#{repository_dir} is already a coffle repository"
 			else
-				puts "Initializing coffle source directory #{source_dir}"
-				initialize_source_directory!(source_dir)
+				puts "Initializing coffle repository #{repository_dir}"
+				initialize_repository!(repository_dir)
 			end
 		end
 
@@ -223,12 +227,12 @@ module Coffle
 		end
 
 		def info! (options={})
-			puts "Source: #{@source_dir}"
-			puts "Target: #{@target_dir}"
+			puts "Repository: #{@repository_dir}"
+			puts "Target:     #{@target_dir}"
 			puts
-			puts "Output: #{@output_dir}"
-			puts "Org:    #{@org_dir}"
-			puts "Backup: #{@backup_dir}"
+			puts "Output:     #{@output_dir}"
+			puts "Org:        #{@org_dir}"
+			puts "Backup:     #{@backup_dir}"
 		end
 
 		def status! (options={})

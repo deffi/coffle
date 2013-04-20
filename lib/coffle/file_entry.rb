@@ -45,7 +45,7 @@ module Coffle
 			target.symlink? && target.readlink==link_target
 		end
 
-		# The source has to be rebuilt (because it has been modified after it
+		# The entry has to be rebuilt (because it has been modified after it
 		# was last built, or it doesn't exist)
 		def outdated?
 			built=built?

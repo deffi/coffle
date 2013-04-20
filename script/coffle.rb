@@ -2,8 +2,8 @@
 
 require File.dirname(File.realpath(__FILE__)) + '/../lib/coffle'
 
-source = "."
+repository = "."
 target = ENV['HOME']
 
-Coffle::Runner.new(source, target, :verbose=>true).run
+Coffle::Runner.new(repository, target, :verbose=>true).run
 

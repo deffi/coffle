@@ -45,7 +45,7 @@ module Coffle
 			target.directory?
 		end
 
-		# The source has to be rebuilt (because it has been modified after it
+		# The entry has to be rebuilt (because it has been modified after it
 		# was last built, or it doesn't exist)
 		def outdated?
 			# Existing directories are never outdated

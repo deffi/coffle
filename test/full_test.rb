@@ -6,7 +6,7 @@ module Coffle
 
 		def test_full
 			with_testdir do |dir|
-				# source                                        in actual/source
+				# repository                                    in actual/repository
 				# target                                        in actual/target
 				# expected directories for after installation   in expected_install/
 				# expected directories for after uninstallation in expected_uninstall/
@@ -16,23 +16,23 @@ module Coffle
 
 
 				##### Create the coffle (also creates the output and target directories)
-				actual.join("source", ".coffle").mkpath
-				Coffle.initialize_source_directory!(dir.join("actual", "source"))
-				coffle=Coffle.new(dir.join("actual", "source"), dir.join("actual", "target"))
+				actual.join("repository", ".coffle").mkpath
+				Coffle.initialize_repository!(dir.join("actual", "repository"))
+				coffle=Coffle.new(dir.join("actual", "repository"), dir.join("actual", "target"))
 
 
 				##### Create the actual directory
 
-				# Source
-				actual.join("source").mkpath                         # source
-				actual.join("source", "_reg_file").touch             # |-.reg_file   - Regular file
-				actual.join("source", "_reg_dir").mkdir              # |-.reg_dir    - Regular directory
-				actual.join("source", "_reg_dir", "reg_file").touch  # | '-reg_file  - Regular file in directory
-				actual.join("source", "_ex_file").touch              # |-.ex_file    - Existing file
-				actual.join("source", "_ex_dir").mkdir               # |-.ex_dir     - Existing directory
-				actual.join("source", "_ex_dir", "ex_file").touch    # | '-ex_file   - Existing file in directory
-				actual.join("source", "_link_dir").mkdir             # '-.link_dir   - Existing symlinked directory
-				actual.join("source", "_link_dir", "ex_file").touch  #   '-ex_file   - Existing file in symlinked directory
+				# Repository
+				actual.join("repository").mkpath                         # repository
+				actual.join("repository", "_reg_file").touch             # |-.reg_file   - Regular file
+				actual.join("repository", "_reg_dir").mkdir              # |-.reg_dir    - Regular directory
+				actual.join("repository", "_reg_dir", "reg_file").touch  # | '-reg_file  - Regular file in directory
+				actual.join("repository", "_ex_file").touch              # |-.ex_file    - Existing file
+				actual.join("repository", "_ex_dir").mkdir               # |-.ex_dir     - Existing directory
+				actual.join("repository", "_ex_dir", "ex_file").touch    # | '-ex_file   - Existing file in directory
+				actual.join("repository", "_link_dir").mkdir             # '-.link_dir   - Existing symlinked directory
+				actual.join("repository", "_link_dir", "ex_file").touch  #   '-ex_file   - Existing file in symlinked directory
 
 
 				# Target (already existing)
@@ -49,64 +49,64 @@ module Coffle
 
 				##### Create the expected_install directory
 
-				# Source - same as actual
-				FileUtils.cp_r actual.join("source").to_s, expected_install.join("source").to_s
+				# Repository - same as actual
+				FileUtils.cp_r actual.join("repository").to_s, expected_install.join("repository").to_s
 
 				# Output
-				expected_install.join("source", ".coffle", "work", "output").mkpath
-				expected_install.join("source", ".coffle", "work", "output", ".reg_file"            ).touch
-				expected_install.join("source", ".coffle", "work", "output", ".reg_dir"             ).mkdir
-				expected_install.join("source", ".coffle", "work", "output", ".reg_dir", "reg_file" )  .touch
-				expected_install.join("source", ".coffle", "work", "output", ".ex_file"             ).touch
-				expected_install.join("source", ".coffle", "work", "output", ".ex_dir"              ).mkdir
-				expected_install.join("source", ".coffle", "work", "output", ".ex_dir", "ex_file"   )  .touch
-				expected_install.join("source", ".coffle", "work", "output", ".link_dir"            ).mkdir
-				expected_install.join("source", ".coffle", "work", "output", ".link_dir", "ex_file" )  .touch
+				expected_install.join("repository", ".coffle", "work", "output").mkpath
+				expected_install.join("repository", ".coffle", "work", "output", ".reg_file"            ).touch
+				expected_install.join("repository", ".coffle", "work", "output", ".reg_dir"             ).mkdir
+				expected_install.join("repository", ".coffle", "work", "output", ".reg_dir", "reg_file" )  .touch
+				expected_install.join("repository", ".coffle", "work", "output", ".ex_file"             ).touch
+				expected_install.join("repository", ".coffle", "work", "output", ".ex_dir"              ).mkdir
+				expected_install.join("repository", ".coffle", "work", "output", ".ex_dir", "ex_file"   )  .touch
+				expected_install.join("repository", ".coffle", "work", "output", ".link_dir"            ).mkdir
+				expected_install.join("repository", ".coffle", "work", "output", ".link_dir", "ex_file" )  .touch
 
 				# Org
-				expected_install.join("source", ".coffle", "work", "org").mkpath
-				expected_install.join("source", ".coffle", "work", "org", ".reg_file"            ).touch
-				expected_install.join("source", ".coffle", "work", "org", ".reg_dir"             ).mkdir
-				expected_install.join("source", ".coffle", "work", "org", ".reg_dir", "reg_file" )  .touch
-				expected_install.join("source", ".coffle", "work", "org", ".ex_file"             ).touch
-				expected_install.join("source", ".coffle", "work", "org", ".ex_dir"              ).mkdir
-				expected_install.join("source", ".coffle", "work", "org", ".ex_dir", "ex_file"   )  .touch
-				expected_install.join("source", ".coffle", "work", "org", ".link_dir"            ).mkdir
-				expected_install.join("source", ".coffle", "work", "org", ".link_dir", "ex_file" )  .touch
+				expected_install.join("repository", ".coffle", "work", "org").mkpath
+				expected_install.join("repository", ".coffle", "work", "org", ".reg_file"            ).touch
+				expected_install.join("repository", ".coffle", "work", "org", ".reg_dir"             ).mkdir
+				expected_install.join("repository", ".coffle", "work", "org", ".reg_dir", "reg_file" )  .touch
+				expected_install.join("repository", ".coffle", "work", "org", ".ex_file"             ).touch
+				expected_install.join("repository", ".coffle", "work", "org", ".ex_dir"              ).mkdir
+				expected_install.join("repository", ".coffle", "work", "org", ".ex_dir", "ex_file"   )  .touch
+				expected_install.join("repository", ".coffle", "work", "org", ".link_dir"            ).mkdir
+				expected_install.join("repository", ".coffle", "work", "org", ".link_dir", "ex_file" )  .touch
 
 				# Backup
-				expected_install.join("source", ".coffle", "work", "backup").mkpath
-				expected_install.join("source", ".coffle", "work", "backup", ".ex_file"             ).touch
-				expected_install.join("source", ".coffle", "work", "backup", ".ex_dir"              ).mkdir
-				expected_install.join("source", ".coffle", "work", "backup", ".ex_dir", "ex_file"   )  .touch
-				expected_install.join("source", ".coffle", "work", "backup", ".link_dir"            ).mkdir
-				expected_install.join("source", ".coffle", "work", "backup", ".link_dir", "ex_file" )  .touch
+				expected_install.join("repository", ".coffle", "work", "backup").mkpath
+				expected_install.join("repository", ".coffle", "work", "backup", ".ex_file"             ).touch
+				expected_install.join("repository", ".coffle", "work", "backup", ".ex_dir"              ).mkdir
+				expected_install.join("repository", ".coffle", "work", "backup", ".ex_dir", "ex_file"   )  .touch
+				expected_install.join("repository", ".coffle", "work", "backup", ".link_dir"            ).mkdir
+				expected_install.join("repository", ".coffle", "work", "backup", ".link_dir", "ex_file" )  .touch
  
 				# Target
 				expected_install.join("target").mkpath
-				expected_install.join("target", ".reg_file"                     ).make_symlink("../source/.coffle/work/output/.reg_file")
+				expected_install.join("target", ".reg_file"                     ).make_symlink("../repository/.coffle/work/output/.reg_file")
 				expected_install.join("target", ".reg_dir"                      ).mkdir
-				expected_install.join("target", ".reg_dir", "reg_file"          )  .make_symlink("../../source/.coffle/work/output/.reg_dir/reg_file")
-				expected_install.join("target", ".ex_file"                      ).make_symlink("../source/.coffle/work/output/.ex_file")
+				expected_install.join("target", ".reg_dir", "reg_file"          )  .make_symlink("../../repository/.coffle/work/output/.reg_dir/reg_file")
+				expected_install.join("target", ".ex_file"                      ).make_symlink("../repository/.coffle/work/output/.ex_file")
 				expected_install.join("target", ".ex_dir"                       ).mkdir
-				expected_install.join("target", ".ex_dir", "ex_file"            )  .make_symlink("../../source/.coffle/work/output/.ex_dir/ex_file")
+				expected_install.join("target", ".ex_dir", "ex_file"            )  .make_symlink("../../repository/.coffle/work/output/.ex_dir/ex_file")
 				expected_install.join("target", ".ex_dir", "other_file"         )  .touch
 				expected_install.join("target", ".link_dir"                     ).make_symlink(".link_dir_target")
 				expected_install.join("target", ".link_dir_target"              ).mkpath
-				expected_install.join("target", ".link_dir_target", "ex_file"   )  .make_symlink("../../source/.coffle/work/output/.link_dir/ex_file")
+				expected_install.join("target", ".link_dir_target", "ex_file"   )  .make_symlink("../../repository/.coffle/work/output/.link_dir/ex_file")
 				expected_install.join("target", ".link_dir_target", "other_file")  .touch
 
 
 				##### Create the expected_uninstall directory
 
 				# Start with the expected_install state
-				FileUtils.cp_r expected_install.join("source").to_s, expected_uninstall.join("source").to_s
+				FileUtils.cp_r expected_install.join("repository").to_s, expected_uninstall.join("repository").to_s
 
-				# Source, output and org are not affected by uninstall.
+				# Repository, output and org are not affected by uninstall.
 
 				# The backup directory should be empty
-				expected_uninstall.join("source", ".coffle", "work", "backup").rmtree
-				expected_uninstall.join("source", ".coffle", "work", "backup").mkpath
+				expected_uninstall.join("repository", ".coffle", "work", "backup").rmtree
+				expected_uninstall.join("repository", ".coffle", "work", "backup").mkpath
 
 				# The target should be the same as before installation
 				FileUtils.cp_r actual.join("target").to_s, expected_uninstall.join("target").to_s

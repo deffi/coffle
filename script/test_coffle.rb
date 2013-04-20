@@ -2,8 +2,8 @@
 
 require File.dirname(__FILE__) + '/../lib/coffle'
 
-source = "testdata/source"
-target = "testdata/target"
+repository = "testdata/source"
+target     = "testdata/target"
 
-Coffle::Runner.new(source, target, :verbose=>true).run
+Coffle::Runner.new(repository, target, :verbose=>true).run
 

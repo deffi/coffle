@@ -260,3 +260,13 @@ if a file had been overwritten by the install operation.
 Note that directories created by coffle may not be removed by the uninstall
 operation.
 
+
+### Removing the repository
+
+Warning: the installed configuration files, as well as the backups created when
+overwriting files, are stored beneath the repository directory. Before deleting
+a repository, execute `coffle uninstall` within the repository, or you may end
+up deleting both the generated files (leaving your dotfiles as invalid
+symlinks) and the backups.
+
+

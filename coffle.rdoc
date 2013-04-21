@@ -1,41 +1,101 @@
-* Not copying directly to target: because it is unclear whether the file was
-  installed by coffle and later modified
-* no unescaped names in processing directories: so we can use dotfiles for
-  bookkeeping
+This file contains notes about the implementation of coffle. For user
+documentation, see the file README.md.
 
 
-== Implementation notes
+== Repository layout
 
-Compatibility:
-* Not using any gems because gems may not be available
-* Not using lazy_attr_reader because 1.8.5 has no instance_variable_defined?
+We keep the configuration file templates in the top level directory, with
+escaped names, and the coffle related files in a dotdir (see the notes on
+filename escaping below):
+
+repository
+|- config file templates  <-- escaped file names, never start with a period
+|- .coffle_source.yaml    <-- configures the directory as a coffle repository
+|- .svn                   <-- if the repository is under version control
+'- .coffle                <-- may contain more files in the future
+   '- work                <-- ignore this in version control
+      |- status.yaml
+      |- output           <-- unescaped file names, links point here
+      |- org              <-- unescaped file names
+      '- backup           <-- unescaped file names
+
+The .coffle_source.yaml file marks the directory as a coffle repository and
+contains some additional information and configuration (at the moment just
+the version of the repository layout).
+
+The coffle directory may contain more files/subdirectories in the future, for
+example, more elaborate repository configuration or user-defined template
+functionality (like the OpenSSH functionality included in coffle). It should
+therefore not be ignored in version control. All "transient" files are placed
+beneath .coffle/work, which should be ignored.
+
+This is an alternative repository layout, keeping the source files in a
+subdirectory:
+
+repository                   <-- may contain more files in the future
+|- coffle_source.yaml        <-- configures the directory as a coffle repository
+|- source
+|  '- config file templates  <-- escaped file names
+'- work                      <-- ignore this in version control
+   |- output                 <-- links point here
+   |- org
+   '- backup
+
+The first (and currently used) layout is simpler from a user's point of view,
+who is not usually interested in any files except his templates.
+
+In any case, we need to escape the filenames so we can use dotfiles for
+bookkeeping (e. g. .coffleignore, or local settings) or other purposes, like
+version control (we could potentially get around this by using a global
+ignore pattern).
 
 
-== Directories
+== File processing
 
-On directories:
-* If the target of a directory entry already exists, we use it and keep its contents.
-** coffle directores are the same as other directories
-** we want to keep, for example, .ssh/identity when installing .ssh/config
-* We accept a symlink to a directory as existing target directory
+We use a symbolic link to a coffle work/output directory (beneath the
+repository) rather than copying the built files to the target. This allows us
+to recognize whether a file is currently under coffle control, even if the
+installed file has been modified manually by the user.
+
+In the work directories, we use the unescaped names (reason?).
+
+
+== Directory processing
+
+Unlike files, directories are not a symbolic link but are created in the target
+directory. This is necessary because a directory may contain both files that
+are under coffle control and files that are not (e. g. .ssh/config vs.
+.ssh/identity). Note that this means thay we cannot remove a directory when
+uninstalling, even if it was created when installing.
+
+On installing a directory entry, if a target directory alredy exists, its
+contents are not modified. If it does not exist, it is created. If it is a
+symlink to a directory, we accept it as an existing directory.
 
 For now, we don't allow overwriting a file with a directory or vice versa.
-We never make a backup of a directory (cannot be overwritten by a file
-(refused) nor a directory (exists)).
+
+We never make a backup of a directory. This is not necessary because an
+existing directory can not be overwritten with a file (refused) nor a directory
+(will be kept if it already exists).
 
 Notes on backups of directories (in case we want to make them one day):
-* Can we/do we have to distinguish a file backup in a directory from a
-  directory backup?
+* Can/do we have to distinguish a file backup in a directory from a directory
+  backup?
 * What about uninstalling directories that contain non-coffle entries?
 
 
-== Skipping
+== Ruby compatibility
 
-Skipped means:
-* not under coffle control (on this machine)
-* act as if the entry didn't exist
-* do not install the file
-* if the file is already installed, uninstall it
+We're not using any gems because gems may not be available.
+
+We're not using lazy_attr_reader because Ruby 1.8.5 has no
+instance_variable_defined?
+
+We're including a definition of Kernel.require_relative in the main script
+because older Ruby version don't have it.
+
+
+== Skipping
 
 Notes:
 * We do not want to rebuild a skipped entry if the source has not changed.
@@ -65,39 +125,6 @@ false  |false    |not built       |always
 false  |true     |regular skipped |source newer than timestamp
 true   |false    |regular built   |source newer than org (or timestamp)
 true   |true     |inconsistent    |always
-
-
-== Source layout
-
-We keep the configuration file templates in the top level directory, with
-escaped names, and the coffle related files in a dotdir (see the notes on
-filename escaping below):
-.
-|-_config file templates   <---- escaped file names
-|-.coffle_source.yaml
-'-.coffle
-  |-coffle files
-  |-...
-  '-work                   <---- ignore for version control
-    |-output -> unescaped  <---- links point here
-	|-org    -> unescaped
-	'-backup -> unescaped
-
-We could also keep the source files in a subdirectory:
-.
-|-[.]coffle_source.yaml
-|-source
-| |-_config file templates
-| '-...
-'-work
-  |-output -> unescaped
-  |-org    -> unescaped
-  '-backup -> unescaped
-
-In any case, we need to escape the filenames so we can use dotfiles for
-bookkeeping (e. g. .coffleignore, or local settings) or other purposes, like
-version control (we could potentially get around this by using a global
-ignore pattern).
 
 
 == Backups

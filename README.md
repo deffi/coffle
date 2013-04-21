@@ -118,11 +118,24 @@ alias ls='ls --color=never'
 
 #### Skipping files
 
-The `skip!` command can be used to specify that the file should not exist. This
-is particularly useful in combination with host-specific output:
+A file can be *skipped*. Skipping a file indicates that it is not under coffle
+control. This is useful in conbination with host-specific processing to place a
+file under coffle control on some hosts and leave it alone on other hosts.
 
+A file is skipped using the `skip!` command:
+```erb
 <%- not_host("magrathea", "damogran") { skip! } -%> 
+```
 
+Files can also be skipped unconditionally:
+```erb
+<%- skip! -%>
+```
+
+A skipped file will be trated as if it didn't exist. It is not installed by
+`coffle install`. If the file was installed before, it will be uninstalled when
+the file is rebuilt (note, however, that it will not be reinstalled
+automatically on build when it is no longer skipped).
 
 
 #### Message about auto-created files
@@ -170,7 +183,7 @@ SSH keys can be defined using the `define_keys` command:
 ssh-dss AAAAB3Nz[...]kUmH/S== martin@magrathea
 ssh-dss AAAAB3Nz[...]8sMmHg== martin@damogran
 ssh-dss AAAAB3Nz[...]OKRmAe1= apache@websrv
-ssh-dss AAAAB3Nz[...]OKRmAe1= mongrel@websrv
+ssh-dss AAAAB3Nz[...]HYMxHb7= mongrel@websrv
 <%- } -%> 
 ```
 
@@ -207,8 +220,7 @@ coffle install --overwrite
 ```
 
 In this case, a backup of the original file will be made in a subdirectory of
-the coffle repository. If a file is skipped, it will be deleted if it already
-exists when ``--overwrite`` is specified.
+the coffle repository.
 
 
 ### Updating the configuration files

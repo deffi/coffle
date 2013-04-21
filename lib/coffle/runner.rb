@@ -49,8 +49,8 @@ module Coffle
 			opts.separator ""
 			opts.separator "Common options:"
 
-			opts.on("-h", "--help"   , "Show this message") { puts opts           ; exit }
-			opts.on(      "--version", "Show version"     ) { puts Coffle::VERSION; exit }
+			opts.on("-h", "--help"   , "Show this message") { puts opts   ; exit }
+			opts.on(      "--version", "Show version"     ) { puts VERSION; exit }
 
 			begin
 				opts.parse!

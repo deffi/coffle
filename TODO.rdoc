@@ -94,6 +94,8 @@ UI:
   * operation drop_backup
 * similarly, allow uninstalling of removed or replaced target with a switch
 * tell the user what he did wrong and what to do on refuse
+* --verbose parameter for increased verbosity (we already have verbosity!)
+* coffle status: add table header
 
 Target:
 * Use .coffle_target link in target

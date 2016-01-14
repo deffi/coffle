@@ -92,6 +92,7 @@ UI:
   * rainbow gem can be used
     * allow operation without gem (rubygems may not be available)
 * colored status
+* On build, only output changed files
 * allow help message/coffle init even in non-source-directory
 * better solution for installing a removed or replaced target:
   * switches to drop the old back or the target

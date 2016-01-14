@@ -29,6 +29,9 @@ Allow force rebuilding modified files
 
 Output warnings if there is no automessage in a file on build
 
+Documentation:
+* states of files/directories (and state transitions)
+
 
 == Low priority
 
@@ -92,6 +95,8 @@ UI:
 * colored messages
   * rainbow gem can be used
     * allow operation without gem (rubygems may not be available)
+* colored status
+* On build, only output changed files
 * allow help message/coffle init even in non-source-directory
 * better solution for installing a removed or replaced target:
   * switches to drop the old back or the target

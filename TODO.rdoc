@@ -26,8 +26,12 @@ Build in
 * target directory
 * subdirectory of target directory
 
+Allow force rebuilding modified files
+
+Output warnings if there is no automessage in a file on build
+
 Documentation:
-* states of files/directories
+* states of files/directories (and state transitions)
 
 
 == Low priority

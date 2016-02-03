@@ -6,6 +6,7 @@
 * escaping: can we have -.bashrc => .bashrc? Simplify escaping: just remove one
   single leading underscore?
 
+* A way to skip whole directories
 
 * symlink to coffle script does not work
 * Handle modified files
